@@ -1,0 +1,43 @@
+ext.deps = [:]
+
+def isModule = false
+deps.isModule = isModule
+
+
+def build_versions = [:]
+build_versions.compileSdkVersion      = 26
+build_versions.minSdkVersion          = 15
+build_versions.targetSdkVersion       = 26
+build_versions.versionCode            = 1
+build_versions.versionName            = "1.0"
+build_versions.applicationId          = "com.chao.mediasimple"
+deps.build_versions = build_versions
+
+def versions = [:]
+versions.v_appcompat_v7                 = '26.0.0-beta1'
+versions.v_constraint_layout            = '1.1.2'
+versions.v_junit                        = '4.12'
+versions.v_test_runner                  = '1.0.1'
+versions.v_test_espresso_core           = '3.0.1'
+versions.v_multidex                     = '1.0.3'
+versions.v_arouter_api                  = '1.4.0'
+versions.v_arouter_compiler             = '1.2.1'
+versions.v_design                       = '26.0.0-beta1'
+
+
+
+def supports = [:]
+supports.junit                  = "junit:junit:$versions.v_junit"
+supports.test_runner            = "com.android.support.test:runner:$versions.v_test_runner"
+supports.test_espresso_core     = "com.android.support.test.espresso:espresso-core:$versions.v_test_espresso_core"
+
+supports.multidex               = "com.android.support:multidex:$versions.v_multidex"
+
+supports.appcompat_v7           = "com.android.support:appcompat-v7:$versions.v_appcompat_v7"
+supports.constraint_layout      = "com.android.support.constraint:constraint-layout:$versions.v_constraint_layout"
+supports.design                 = "com.android.support:design:$versions.v_design"
+//arouter
+supports.arouter_api            = "com.alibaba:arouter-api:$versions.v_arouter_api"
+supports.arouter_compiler       = "com.alibaba:arouter-compiler:$versions.v_arouter_compiler"
+
+deps.supports = supports
