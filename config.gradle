@@ -23,6 +23,8 @@ versions.v_multidex                     = '1.0.3'
 versions.v_arouter_api                  = '1.4.0'
 versions.v_arouter_compiler             = '1.2.1'
 versions.v_design                       = '26.0.0-beta1'
+versions.v_butterknife                  = '8.8.1'
+versions.v_butterknife_compiler         = '8.8.1'
 
 
 
@@ -36,6 +38,10 @@ supports.multidex               = "com.android.support:multidex:$versions.v_mult
 supports.appcompat_v7           = "com.android.support:appcompat-v7:$versions.v_appcompat_v7"
 supports.constraint_layout      = "com.android.support.constraint:constraint-layout:$versions.v_constraint_layout"
 supports.design                 = "com.android.support:design:$versions.v_design"
+//butterknife
+supports.butterknife            = "com.jakewharton:butterknife:$versions.v_butterknife"
+supports.butterknife_compiler   = "com.jakewharton:butterknife-compiler:$versions.v_butterknife_compiler"
+
 //arouter
 supports.arouter_api            = "com.alibaba:arouter-api:$versions.v_arouter_api"
 supports.arouter_compiler       = "com.alibaba:arouter-compiler:$versions.v_arouter_compiler"

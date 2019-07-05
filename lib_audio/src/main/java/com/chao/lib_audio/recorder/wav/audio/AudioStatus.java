@@ -1,14 +1,5 @@
 package com.chao.lib_audio.recorder.wav.audio;
 
-/**
- * **********************************************
- * Project_Name: FxRecorder
- * Author : CFOX
- * Github : https://github.com/CNCFOX/FxRecorder
- * Instruction :
- * Msg:
- * **********************************************
- */
 public interface AudioStatus {
     /*1 ~ 100 is status */
     int STARTING                                = 0x0001;

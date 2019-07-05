@@ -57,5 +57,8 @@ dependencies {
     implementation              deps.supports.arouter_api
     annotationProcessor         deps.supports.arouter_compiler
 
+    implementation              deps.supports.butterknife
+    annotationProcessor         deps.supports.butterknife_compiler
+
     implementation project(':lib_common')
 }

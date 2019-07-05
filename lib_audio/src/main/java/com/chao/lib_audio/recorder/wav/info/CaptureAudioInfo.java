@@ -3,15 +3,6 @@ package com.chao.lib_audio.recorder.wav.info;
 import android.media.AudioFormat;
 import android.media.MediaRecorder;
 
-/**
- * **********************************************
- * Project_Name: FxRecorder
- * Author : CFOX
- * Github : https://github.com/CNCFOX/FxRecorder
- * Instruction :
- * Msg:
- * **********************************************
- */
 public class CaptureAudioInfo extends AudioInfo {
 
     private static CaptureAudioInfo sCaptureAudioInfo = new CaptureAudioInfo();

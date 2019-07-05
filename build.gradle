@@ -2,15 +2,16 @@
 apply from: "config.gradle"
 buildscript {
     repositories {
+        mavenCentral()
         google()
         jcenter()
-        mavenCentral()
         //Add the JitPack repository
         maven { url "https://jitpack.io" }
         maven{ url 'http://maven.aliyun.com/nexus/content/groups/public/'}
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.3.2'
+        classpath 'com.jakewharton:butterknife-gradle-plugin:10.1.0'
 
 
         // NOTE: Do not place your application dependencies here; they belong
@@ -20,9 +21,9 @@ buildscript {
 
 allprojects {
     repositories {
+        mavenCentral()
         google()
         jcenter()
-        mavenCentral()
         //Add the JitPack repository
         maven { url "https://jitpack.io" }
         maven{ url 'http://maven.aliyun.com/nexus/content/groups/public/'}

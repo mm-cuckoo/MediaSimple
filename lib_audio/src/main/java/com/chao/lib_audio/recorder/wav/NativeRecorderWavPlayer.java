@@ -1,22 +1,14 @@
 package com.chao.lib_audio.recorder.wav;
 
-import com.cfox.fxrlib.log.FxLog;
-import com.cfox.fxrlib.recorder.wav.audio.AudioPlayer;
-import com.cfox.fxrlib.recorder.wav.audio.AudioStatus;
-import com.cfox.fxrlib.recorder.wav.info.PlayerAudioInfo;
-import com.cfox.fxrlib.recorder.wav.wavfile.WavFileReader;
+
+import com.chao.lib_audio.log.FxLog;
+import com.chao.lib_audio.recorder.wav.audio.AudioPlayer;
+import com.chao.lib_audio.recorder.wav.audio.AudioStatus;
+import com.chao.lib_audio.recorder.wav.info.PlayerAudioInfo;
+import com.chao.lib_audio.recorder.wav.wavfile.WavFileReader;
 
 import java.io.IOException;
 
-/**
- * **********************************************
- * Project_Name: FxRecorder
- * Author : CFOX
- * Github : https://github.com/CNCFOX/FxRecorder
- * Instruction :
- * Msg:
- * **********************************************
- */
 public class NativeRecorderWavPlayer implements AudioPlayer.PalyStatusListener{
 
     private static final String TAG = "NativeRecorderWavPlayer";

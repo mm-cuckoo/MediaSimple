@@ -4,17 +4,8 @@ import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 
-import com.cfox.fxrlib.recorder.wav.wavfile.WavFileHeader;
+import com.chao.lib_audio.recorder.wav.wavfile.WavFileHeader;
 
-/**
- * **********************************************
- * Project_Name: FxRecorder
- * Author : CFOX
- * Github : https://github.com/CNCFOX/FxRecorder
- * Instruction :
- * Msg:
- * **********************************************
- */
 public class PlayerAudioInfo extends AudioInfo {
 
 

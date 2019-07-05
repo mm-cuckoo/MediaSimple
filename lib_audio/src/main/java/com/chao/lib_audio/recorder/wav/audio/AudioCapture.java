@@ -2,19 +2,10 @@ package com.chao.lib_audio.recorder.wav.audio;
 
 import android.media.AudioRecord;
 
-import com.cfox.fxrlib.log.FxLog;
-import com.cfox.fxrlib.recorder.wav.info.CaptureAudioInfo;
+import com.chao.lib_audio.log.FxLog;
+import com.chao.lib_audio.recorder.wav.info.CaptureAudioInfo;
 
 
-/**
- * **********************************************
- * Project_Name: FxRecorder
- * Author : CFOX
- * Github : https://github.com/CNCFOX/FxRecorder
- * Instruction :
- * Msg:
- * **********************************************
- */
 public class AudioCapture {
 
     private static final String TAG = "AudioCapture";

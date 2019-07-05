@@ -1,16 +1,3 @@
-/*
- *  COPYRIGHT NOTICE  
- *  Copyright (C) 2016, Jhuster <lujun.hust@gmail.com>
- *  https://github.com/Jhuster/AudioDemo
- *   
- *  @license under the Apache License, Version 2.0 
- *
- *  @file    WavFileHeader.java
- *  
- *  @version 1.0     
- *  @author  Jhuster
- *  @date    2016/03/19
- */
 package com.chao.lib_audio.recorder.wav.wavfile;
 
 public class WavFileHeader {

@@ -1,21 +1,11 @@
 package com.chao.lib_audio.recorder.wav;
 
-
-import com.cfox.fxrlib.recorder.wav.audio.AudioCapture;
-import com.cfox.fxrlib.recorder.wav.info.CaptureAudioInfo;
-import com.cfox.fxrlib.recorder.wav.wavfile.WavFileWriter;
+import com.chao.lib_audio.recorder.wav.audio.AudioCapture;
+import com.chao.lib_audio.recorder.wav.info.CaptureAudioInfo;
+import com.chao.lib_audio.recorder.wav.wavfile.WavFileWriter;
 
 import java.io.IOException;
 
-/**
- * **********************************************
- * Project_Name: FxRecorder
- * Author : CFOX
- * Github : https://github.com/CNCFOX/FxRecorder
- * Instruction :
- * Msg:
- * **********************************************
- */
 public class NativeRecorderWavCapture implements AudioCapture.AudioStatusListener,
         AudioCapture.OnAudioFrameCapturedListener {
 

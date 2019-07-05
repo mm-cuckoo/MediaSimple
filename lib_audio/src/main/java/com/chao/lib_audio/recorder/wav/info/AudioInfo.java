@@ -2,15 +2,6 @@ package com.chao.lib_audio.recorder.wav.info;
 
 import android.media.AudioFormat;
 
-/**
- * **********************************************
- * Project_Name: FxRecorder
- * Author : CFOX
- * Github : https://github.com/CNCFOX/FxRecorder
- * Instruction :
- * Msg:
- * **********************************************
- */
 public abstract class AudioInfo {
 
     private static final int SAMPLE_RATE_44100 = 44100;

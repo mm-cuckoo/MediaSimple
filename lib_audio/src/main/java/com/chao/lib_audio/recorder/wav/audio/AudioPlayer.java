@@ -3,18 +3,9 @@ package com.chao.lib_audio.recorder.wav.audio;
 import android.media.AudioTrack;
 import android.util.Log;
 
-import com.cfox.fxrlib.log.FxLog;
-import com.cfox.fxrlib.recorder.wav.info.PlayerAudioInfo;
+import com.chao.lib_audio.log.FxLog;
+import com.chao.lib_audio.recorder.wav.info.PlayerAudioInfo;
 
-/**
- * **********************************************
- * Project_Name: FxRecorder
- * Author : CFOX
- * Github : https://github.com/CNCFOX/FxRecorder
- * Instruction :
- * Msg:
- * **********************************************
- */
 public class AudioPlayer {
     private static final String TAG = "AudioPlayer";
     private boolean isPlaying = false;
