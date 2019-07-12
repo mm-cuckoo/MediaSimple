@@ -1,7 +1,8 @@
 package com.chao.mediasimple;
 
 import android.content.Context;
-import android.support.multidex.MultiDex;
+
+import androidx.multidex.MultiDex;
 
 import com.chao.lib_common.base.BaseApplication;
 

@@ -1,6 +1,7 @@
 package com.chao.module_main.theme_one;
 
-import android.support.v4.app.Fragment;
+
+import androidx.fragment.app.Fragment;
 
 import com.alibaba.android.arouter.launcher.ARouter;
 import com.chao.lib_common.arouter.RouterPath;
@@ -9,7 +10,7 @@ import com.chao.module_main.R;
 
 import java.util.List;
 
-public class MainOneActivity extends ActivtyWrapper {
+public class MainOneActivity extends ActivityWrapper {
 
     @Override
     public void initPagerViews(List<PagerInfo> views) {

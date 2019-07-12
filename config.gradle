@@ -5,9 +5,9 @@ deps.isModule = isModule
 
 
 def build_versions = [:]
-build_versions.compileSdkVersion      = 26
+build_versions.compileSdkVersion      = 28
 build_versions.minSdkVersion          = 15
-build_versions.targetSdkVersion       = 26
+build_versions.targetSdkVersion       = 28
 build_versions.versionCode            = 1
 build_versions.versionName            = "1.0"
 build_versions.applicationId          = "com.chao.mediasimple"
@@ -23,8 +23,8 @@ versions.v_multidex                     = '1.0.3'
 versions.v_arouter_api                  = '1.4.0'
 versions.v_arouter_compiler             = '1.2.1'
 versions.v_design                       = '26.0.0-beta1'
-versions.v_butterknife                  = '8.8.1'
-versions.v_butterknife_compiler         = '8.8.1'
+versions.v_butterknife                  = '10.1.0'
+versions.v_butterknife_compiler         = '10.1.0'
 
 
 

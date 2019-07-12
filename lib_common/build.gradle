@@ -9,7 +9,7 @@ android {
         versionCode deps.build_versions.versionCode
         versionName deps.build_versions.versionName
 
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         //Arouter路由配置
         javaCompileOptions {

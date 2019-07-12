@@ -13,7 +13,7 @@ android {
         versionCode deps.build_versions.versionCode
         versionName deps.build_versions.versionName
 
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
         //Arouter路由配置
         javaCompileOptions {
@@ -57,8 +57,8 @@ dependencies {
     implementation              deps.supports.arouter_api
     annotationProcessor         deps.supports.arouter_compiler
 
-    implementation              deps.supports.butterknife
-    annotationProcessor         deps.supports.butterknife_compiler
+//    implementation              deps.supports.butterknife
+//    annotationProcessor         deps.supports.butterknife_compiler
 
     implementation project(':lib_common')
 }

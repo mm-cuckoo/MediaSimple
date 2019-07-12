@@ -1,22 +1,23 @@
 package com.chao.module_main.theme_one;
 
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.view.ViewPager;
 import android.view.View;
+
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.viewpager.widget.ViewPager;
 
 import com.chao.lib_common.base.BaseActivity;
 import com.chao.module_main.PagerInfo;
 import com.chao.module_main.R;
 import com.chao.module_main.TabView;
+import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
-public abstract class ActivtyWrapper extends BaseActivity {
+public abstract class ActivityWrapper extends BaseActivity {
     private ViewPager mViewPager;
     private TabLayout mTabLayout;
     private MainViewAdapter mAdapter;
