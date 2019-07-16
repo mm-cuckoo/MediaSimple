@@ -62,7 +62,7 @@ public class RecorderPlayer implements IAudioStatusListener,
 
     public void resumePlay() {
         try {
-            mNativeRecorderWavPlayer.resumePaly();
+            mNativeRecorderWavPlayer.resumePlay();
         } catch (IOException e) {
             e.printStackTrace();
         }

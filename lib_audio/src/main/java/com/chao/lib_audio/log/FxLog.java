@@ -16,38 +16,38 @@ public class FxLog {
 
     public static void e(String tag, String msg) {
         if (LOG_WE) {
-            Log.e(tag, LOG_TITLE + msg.replaceAll("\r|\n|\t", ""));
+            Log.e(tag, LOG_TITLE + msg);
         }
     }
 
     public static void e(String tag, String msg, Exception e) {
         if (LOG_WE) {
-            Log.e(tag, LOG_TITLE + msg.replaceAll("\r|\n|\t", "")  , e);
+            Log.e(tag, LOG_TITLE + msg  , e);
         }
     }
 
     public static void d(String tag, String msg) {
         if (LOG_WE) {
-            Log.d(tag, LOG_TITLE +  msg.replaceAll("\r|\n|\t", ""));
+            Log.d(tag, LOG_TITLE +  msg);
         }
     }
 
 
     public static void v(String tag, String msg) {
         if (LOG_WE) {
-            Log.v(tag, LOG_TITLE +  msg.replaceAll("\r|\n|\t", ""));
+            Log.v(tag, LOG_TITLE +  msg);
         }
     }
 
     public static void w(String tag, String msg) {
         if (LOG_WE) {
-            Log.w(tag, LOG_TITLE +  msg.replaceAll("\r|\n|\t", ""));
+            Log.w(tag, LOG_TITLE +  msg);
         }
     }
 
     public static void s(String msg) {
         if (LOG_WE) {
-            System.out.println( msg.replaceAll("\r|\n|\t", ""));
+            System.out.println( msg);
         }
     }
 }

@@ -52,7 +52,7 @@ public class NativeRecorderWavCapture implements AudioCapture.AudioStatusListene
     }
 
     public void stopRecorder() {
-        mAudioCapture.stopCapure();
+        mAudioCapture.stopCapture();
         closeWavFileWriter();
     }
 

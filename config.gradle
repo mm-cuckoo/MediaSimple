@@ -1,6 +1,6 @@
 ext.deps = [:]
 
-def isModule = false
+def isModule = true
 deps.isModule = isModule
 
 

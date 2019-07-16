@@ -32,7 +32,7 @@ public class RecorderService extends Service implements ServiceConstants {
             return mCreateRecorderBind;
         }
 
-        if (action.equals(ServiceConstants.BIND_TYPE_PALY)) {
+        if (action.equals(ServiceConstants.BIND_TYPE_PLAY)) {
             return mPlayRecorderBind;
         }
         return null;

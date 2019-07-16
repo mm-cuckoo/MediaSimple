@@ -90,7 +90,7 @@ public class AudioCapture {
         }
     }
 
-    public void stopCapure() {
+    public void stopCapture() {
         if (!isRecording || mStartRecorderThread == null || mAudioRecord == null) {
             return;
         }

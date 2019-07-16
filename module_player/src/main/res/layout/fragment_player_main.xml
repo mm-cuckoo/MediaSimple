@@ -16,14 +16,14 @@
         android:layout_height="wrap_content">
 
         <Button
-            android:id="@+id/btn_open_recorder_audio"
+            android:id="@+id/btn_open_audio_recorder"
             android:text="录制raw音频"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
         <Button
             android:id="@+id/btn_open_audio_player"
-            android:text="录制raw音频"
+            android:text="播放raw音频"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
     </LinearLayout>

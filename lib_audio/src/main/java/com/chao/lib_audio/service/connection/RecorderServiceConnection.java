@@ -14,7 +14,7 @@ import com.chao.lib_audio.service.ServiceConstants;
 
 
 public class RecorderServiceConnection implements ServiceConnection , ServiceConstants {
-    private static final String TAG = "RecorderServiceConnecti";
+    private static final String TAG = "RecorderServiceConnection";
 
     private IWaveCallBack mWaveCallBack;
     private ICreateRecorderService mRecorderService;
@@ -51,7 +51,7 @@ public class RecorderServiceConnection implements ServiceConnection , ServiceCon
 
     public void starRecorder(String filePath, String fileName, ICallBack.Stub callBack) {
         Bundle bundle = null;
-        if (!fileName.isEmpty() || filePath.isEmpty()) {
+        if (!fileName.isEmpty() || !filePath.isEmpty()) {
             bundle = new Bundle();
         }
 

@@ -12,21 +12,21 @@ public class AudioPlayer {
     private int mAudioStatus = AudioStatus.STOP;
     private AudioTrack mAudioTrack;
     private int mAudioBufferSzie;
-    private PalyStatusListener mStatusChangeListener;
+    private PlayStatusListener mStatusChangeListener;
 
-    public interface PalyStatusListener {
+    public interface PlayStatusListener {
         void statusChange(int status);
     }
 
-    public void setStatusChengeListener(PalyStatusListener mStatusChengeListener) {
-        this.mStatusChangeListener = mStatusChengeListener;
+    public void setStatusChangeListener(PlayStatusListener mStatusChangeListener) {
+        this.mStatusChangeListener = mStatusChangeListener;
     }
 
-    public int getAudioBufferSzie() {
+    public int getAudioBufferSize() {
         return mAudioBufferSzie;
     }
 
-    public boolean statrPlay(PlayerAudioInfo audioInfo) {
+    public boolean startPlay(PlayerAudioInfo audioInfo) {
         if (isPlaying) {
             FxLog.i(TAG, "Player already started !");
             return false;

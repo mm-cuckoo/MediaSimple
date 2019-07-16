@@ -8,7 +8,7 @@ import java.io.File;
 
 public class FileControl {
     private static final String TAG = "FileControl";
-    private static final String DEFAULT_FILE_PATH = "/FxRecorder/";
+    private static final String DEFAULT_FILE_PATH = "/AudioRecorder/";
 
     private static FileControl sFileControl = new FileControl();
 

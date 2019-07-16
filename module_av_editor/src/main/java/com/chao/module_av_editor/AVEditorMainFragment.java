@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import com.alibaba.android.arouter.facade.annotation.Route;
 import com.chao.lib_common.arouter.RouterPath;
 import com.chao.lib_common.base.BaseFragment;
+import com.chao.module_player.R;
 
 @Route(path = RouterPath.MAIN_AVEDITOR_FG)
 public class AVEditorMainFragment extends BaseFragment {

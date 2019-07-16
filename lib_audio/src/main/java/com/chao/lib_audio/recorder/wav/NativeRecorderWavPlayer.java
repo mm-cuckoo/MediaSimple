@@ -9,7 +9,7 @@ import com.chao.lib_audio.recorder.wav.wavfile.WavFileReader;
 
 import java.io.IOException;
 
-public class NativeRecorderWavPlayer implements AudioPlayer.PalyStatusListener{
+public class NativeRecorderWavPlayer implements AudioPlayer.PlayStatusListener {
 
     private static final String TAG = "NativeRecorderWavPlayer";
     private AudioPlayer mAudioPlayer;
@@ -29,7 +29,7 @@ public class NativeRecorderWavPlayer implements AudioPlayer.PalyStatusListener{
     public NativeRecorderWavPlayer() {
         mAudioPlayer = new AudioPlayer();
         mWavFileReader = new WavFileReader();
-        mAudioPlayer.setStatusChengeListener(this);
+        mAudioPlayer.setStatusChangeListener(this);
     }
 
 
@@ -40,7 +40,7 @@ public class NativeRecorderWavPlayer implements AudioPlayer.PalyStatusListener{
             return;
         }
         PlayerAudioInfo audioInfo = PlayerAudioInfo.parse(mWavFileReader.getWavFileHeader());
-        if (mAudioPlayer.statrPlay(audioInfo)) {
+        if (mAudioPlayer.startPlay(audioInfo)) {
             new Thread(AudioPlayRunnable).start();
         }
     }
@@ -50,7 +50,7 @@ public class NativeRecorderWavPlayer implements AudioPlayer.PalyStatusListener{
         mAudioPlayer.pausePlay();
     }
 
-    public void resumePaly() throws IOException {
+    public void resumePlay() throws IOException {
         if (mAudioPlayer.resumePlay()) {
             mWavFileReader.seek(mFilePointer);
             new Thread(AudioPlayRunnable).start();
@@ -76,7 +76,7 @@ public class NativeRecorderWavPlayer implements AudioPlayer.PalyStatusListener{
     private Runnable AudioPlayRunnable = new Runnable() {
         @Override
         public void run() {
-            byte[] buffer = new byte[getBufferSizse() * 2];
+            byte[] buffer = new byte[getBufferSize() * 2];
             while (mAudioPlayer.isPalying() && mWavFileReader.readData(buffer, 0, buffer.length) > 0) {
                 int audioStatus = mAudioPlayer.getAudioStatus();
                 if (audioStatus == AudioStatus.PAUSE || audioStatus == AudioStatus.STOP) {
@@ -100,8 +100,8 @@ public class NativeRecorderWavPlayer implements AudioPlayer.PalyStatusListener{
         mAudioPlayer.release();
     }
 
-    private int getBufferSizse() {
-        return mAudioPlayer.getAudioBufferSzie();
+    private int getBufferSize() {
+        return mAudioPlayer.getAudioBufferSize();
     }
 
     @Override

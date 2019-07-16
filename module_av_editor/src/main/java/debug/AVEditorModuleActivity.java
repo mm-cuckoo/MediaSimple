@@ -1,7 +1,8 @@
 package debug;
 
 
-import androidx.core.app.Fragment;
+
+import androidx.fragment.app.Fragment;
 
 import com.alibaba.android.arouter.launcher.ARouter;
 import com.chao.lib_common.arouter.RouterPath;

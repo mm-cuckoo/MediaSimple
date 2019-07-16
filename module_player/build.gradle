@@ -61,4 +61,5 @@ dependencies {
 //    annotationProcessor         deps.supports.butterknife_compiler
 
     implementation project(':lib_common')
+    implementation project(':lib_audio')
 }
