@@ -1,0 +1,33 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion deps.build_versions.compileSdkVersion
+
+    defaultConfig {
+        minSdkVersion deps.build_versions.minSdkVersion
+        targetSdkVersion deps.build_versions.targetSdkVersion
+        versionCode deps.build_versions.versionCode
+        versionName deps.build_versions.versionName
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+    }
+
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation              deps.supports.appcompat_v7
+    implementation              deps.supports.constraint_layout
+    testImplementation          deps.supports.junit
+    androidTestImplementation   deps.supports.test_runner
+    androidTestImplementation   deps.supports.test_espresso_core
+}

@@ -157,19 +157,15 @@ public class AudioRecorderActivity extends BaseActivity implements View.OnClickL
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.btn_start_recorder:
-                startRecorder();
-                break;
-            case R.id.btn_pause_recorder:
-                pauseRecorder();
-                break;
-            case R.id.btn_resume_recorder:
-                resumeRecorder();
-                break;
-            case R.id.btn_stop_recorder:
-                stopRecorder();
-                break;
+        int i = view.getId();
+        if (i == R.id.btn_start_recorder) {
+            startRecorder();
+        } else if (i == R.id.btn_pause_recorder) {
+            pauseRecorder();
+        } else if (i == R.id.btn_resume_recorder) {
+            resumeRecorder();
+        } else if (i == R.id.btn_stop_recorder) {
+            stopRecorder();
         }
     }
 

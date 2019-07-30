@@ -10,7 +10,6 @@ import androidx.annotation.Nullable;
 import com.alibaba.android.arouter.facade.annotation.Route;
 import com.chao.lib_common.arouter.RouterPath;
 import com.chao.lib_common.base.BaseFragment;
-import com.chao.module_player.R;
 
 @Route(path = RouterPath.MAIN_AVEDITOR_FG)
 public class AVEditorMainFragment extends BaseFragment {
@@ -18,6 +17,6 @@ public class AVEditorMainFragment extends BaseFragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_aveditor_main, null);
+        return inflater.inflate(R.layout.fragment_aveditor_main, container, false);
     }
 }

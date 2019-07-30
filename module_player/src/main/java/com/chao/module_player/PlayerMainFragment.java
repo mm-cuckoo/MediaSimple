@@ -45,13 +45,11 @@ public class PlayerMainFragment extends BaseFragment implements View.OnClickList
     @Override
     public void onClick(View v) {
         Intent intent = null;
-        switch (v.getId()) {
-            case R.id.btn_open_audio_player:
-                intent = new Intent(getContext(), AudioPlayerActivity.class);
-                break;
-            case R.id.btn_open_audio_recorder:
-                intent = new Intent(getContext(), AudioRecorderActivity.class);
-                break;
+        int i = v.getId();
+        if (i == R.id.btn_open_audio_player) {
+            intent = new Intent(getContext(), AudioPlayerActivity.class);
+        } else if (i == R.id.btn_open_audio_recorder) {
+            intent = new Intent(getContext(), AudioRecorderActivity.class);
         }
 
         if (intent == null) return;

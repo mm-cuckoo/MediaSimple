@@ -148,28 +148,19 @@ public class AudioPlayerActivity extends BaseActivity  implements View.OnClickLi
     @Override
     public void onClick(View view) {
 
-        switch (view.getId()) {
-            case R.id.btn_start_play:
-                startPlay();
-                break;
-            case R.id.btn_pause_play:
-                pausePlay();
-                break;
-
-            case R.id.btn_resume_play:
-                resumePlay();
-                break;
-            case R.id.btn_stop_play:
-                stopPlay();
-                break;
-
-            case R.id.btn_back:
-                backPlay();
-                break;
-
-            case R.id.btn_forward:
-                forwardPlay();
-                break;
+        int i = view.getId();
+        if (i == R.id.btn_start_play) {
+            startPlay();
+        } else if (i == R.id.btn_pause_play) {
+            pausePlay();
+        } else if (i == R.id.btn_resume_play) {
+            resumePlay();
+        } else if (i == R.id.btn_stop_play) {
+            stopPlay();
+        } else if (i == R.id.btn_back) {
+            backPlay();
+        } else if (i == R.id.btn_forward) {
+            forwardPlay();
         }
 
     }

@@ -14,14 +14,19 @@ public class MainOneActivity extends ActivityWrapper {
 
     @Override
     public void initPagerViews(List<PagerInfo> views) {
-        Fragment viewFg = (Fragment) ARouter.getInstance().build(RouterPath.MAIN_PLAYER_FG).navigation();
-        if (viewFg != null) {
-            views.add(createPagerInfo(R.string.main_tab_player, R.mipmap.main_tab_mine_select, R.mipmap.main_tab_mine_unselect, viewFg));
+        Fragment cameraFg = (Fragment) ARouter.getInstance().build(RouterPath.MAIN_CAMERA_FG).navigation();
+        if (cameraFg != null) {
+            views.add(createPagerInfo(R.string.main_tab_camera, R.mipmap.main_tab_mine_select, R.mipmap.main_tab_mine_unselect, cameraFg));
         }
 
-        Fragment dbFg = (Fragment) ARouter.getInstance().build(RouterPath.MAIN_AVEDITOR_FG).navigation();
-        if (dbFg != null) {
-            views.add(createPagerInfo( R.string.main_tab_aveditor, R.mipmap.main_tab_mine_select, R.mipmap.main_tab_mine_unselect, dbFg));
+        Fragment playFg = (Fragment) ARouter.getInstance().build(RouterPath.MAIN_PLAYER_FG).navigation();
+        if (playFg != null) {
+            views.add(createPagerInfo(R.string.main_tab_player, R.mipmap.main_tab_mine_select, R.mipmap.main_tab_mine_unselect, playFg));
+        }
+
+        Fragment avEditorFg = (Fragment) ARouter.getInstance().build(RouterPath.MAIN_AVEDITOR_FG).navigation();
+        if (avEditorFg != null) {
+            views.add(createPagerInfo( R.string.main_tab_aveditor, R.mipmap.main_tab_mine_select, R.mipmap.main_tab_mine_unselect, avEditorFg));
         }
 
         Fragment mineFg = (Fragment) ARouter.getInstance().build(RouterPath.MAIN_MINE_FG).navigation();

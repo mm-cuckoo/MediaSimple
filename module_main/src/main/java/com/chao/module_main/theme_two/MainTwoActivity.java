@@ -13,14 +13,16 @@ import java.util.List;
 
 public class MainTwoActivity extends ActivityWrapper{
 
-    private static final String TAB_FLAG_PALYER = "player";
-    private static final String TAB_FLAG_AVEDITOR = "aveditor";
+    private static final String TAB_FLAG_CAMERA     = "camera";
+    private static final String TAB_FLAG_PLAYER     = "player";
+    private static final String TAB_FLAG_AVEDITOR   = "aveditor";
     private static final String TAB_FLAG_MINE       = "mine";
 
 
     @Override
-    public void initPagerInfos(List<PagerInfo> views) {
-        views.add(createPagerInfo(TAB_FLAG_PALYER,R.string.main_tab_player, R.mipmap.main_tab_mine_select, R.mipmap.main_tab_mine_unselect));
+    public void initPagerInfo(List<PagerInfo> views) {
+        views.add(createPagerInfo(TAB_FLAG_CAMERA,R.string.main_tab_camera, R.mipmap.main_tab_mine_select, R.mipmap.main_tab_mine_unselect));
+        views.add(createPagerInfo(TAB_FLAG_PLAYER,R.string.main_tab_player, R.mipmap.main_tab_mine_select, R.mipmap.main_tab_mine_unselect));
         views.add(createPagerInfo(TAB_FLAG_AVEDITOR,R.string.main_tab_aveditor, R.mipmap.main_tab_mine_select, R.mipmap.main_tab_mine_unselect));
         views.add(createPagerInfo(TAB_FLAG_MINE,R.string.main_tab_mine, R.mipmap.main_tab_mine_select, R.mipmap.main_tab_mine_unselect));
     }
@@ -29,7 +31,10 @@ public class MainTwoActivity extends ActivityWrapper{
     public Fragment createView(String flag) {
         Fragment fragmentView = null;
         switch (flag) {
-            case TAB_FLAG_PALYER:
+            case TAB_FLAG_CAMERA:
+                fragmentView = (Fragment) ARouter.getInstance().build(RouterPath.MAIN_CAMERA_FG).navigation();
+                break;
+            case TAB_FLAG_PLAYER:
                 fragmentView = (Fragment) ARouter.getInstance().build(RouterPath.MAIN_PLAYER_FG).navigation();
                 break;
             case TAB_FLAG_AVEDITOR:
@@ -38,7 +43,6 @@ public class MainTwoActivity extends ActivityWrapper{
             case TAB_FLAG_MINE:
                 fragmentView = (Fragment) ARouter.getInstance().build(RouterPath.MAIN_MINE_FG).navigation();
                 break;
-
             default:
         }
 

@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">module_main</string>
 
+    <string name="main_tab_camera">Camera</string>
     <string name="main_tab_player">Player</string>
     <string name="main_tab_aveditor">AVEditor</string>
     <string name="main_tab_mine">Mine</string>

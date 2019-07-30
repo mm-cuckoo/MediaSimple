@@ -81,11 +81,10 @@ dependencies {
     implementation project(':lib_common')
 
     if (!Boolean.valueOf(deps.isModule)) {
-//        implementation project(':module_db')
         implementation project(':module_main')
         implementation project(':module_mine')
         implementation project(':module_player')
         implementation project(':module_av_editor')
-//        implementation project(':module_media')
+        implementation project(':module_camera')
     }
 }

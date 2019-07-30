@@ -31,7 +31,7 @@ public abstract class ActivityWrapper extends BaseActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_two_activity);
         mManager = getSupportFragmentManager();
-        initPagerInfos(mViews);
+        initPagerInfo(mViews);
         initView();
         initTab();
     }
@@ -112,7 +112,7 @@ public abstract class ActivityWrapper extends BaseActivity{
 
     }
 
-    public abstract void initPagerInfos(List<PagerInfo> views);
+    public abstract void initPagerInfo(List<PagerInfo> views);
     public abstract Fragment createView(String flag);
 
 }
