@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.chao.module_player">
+    package="com.cfox.module_player">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
@@ -15,8 +15,8 @@
         android:theme="@style/AppTheme">
 
 
-        <activity android:name=".audio.AudioPlayerActivity"/>
-        <activity android:name=".audio.AudioRecorderActivity"/>
+        <activity android:name="com.cfox.module_player.audio.AudioPlayerActivity"/>
+        <activity android:name="com.cfox.module_player.audio.AudioRecorderActivity"/>
     </application>
 
 </manifest>

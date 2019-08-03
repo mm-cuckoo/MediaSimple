@@ -2,8 +2,8 @@ package debug;
 
 import android.os.Environment;
 
-import com.chao.lib_audio.file.FileControl;
-import com.chao.lib_common.base.BaseApplication;
+import com.cfox.lib_audio.file.FileControl;
+import com.cfox.lib_common.base.BaseApplication;
 
 public class PlayerApplication extends BaseApplication {
 

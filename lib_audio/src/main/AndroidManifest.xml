@@ -1,8 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.chao.lib_audio" >
+    package="com.cfox.lib_audio" >
 
     <application android:allowBackup="true"
         android:supportsRtl="true">
-        <service android:name=".service.RecorderService"/>
+        <service android:name="com.cfox.lib_audio.service.RecorderService"/>
     </application>
 </manifest>

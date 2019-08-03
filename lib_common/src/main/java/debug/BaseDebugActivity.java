@@ -9,7 +9,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import android.widget.FrameLayout;
 
-import com.chao.lib_common.base.BaseActivity;
+import com.cfox.lib_common.base.BaseActivity;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

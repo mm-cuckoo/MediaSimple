@@ -4,7 +4,7 @@ package debug;
 import androidx.fragment.app.Fragment;
 
 import com.alibaba.android.arouter.launcher.ARouter;
-import com.chao.lib_common.arouter.RouterPath;
+import com.cfox.lib_common.arouter.RouterPath;
 
 public class CameraModuleActivity extends BaseDebugActivity{
     @Override

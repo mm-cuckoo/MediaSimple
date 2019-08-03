@@ -10,7 +10,7 @@ build_versions.minSdkVersion          = 15
 build_versions.targetSdkVersion       = 28
 build_versions.versionCode            = 1
 build_versions.versionName            = "1.0"
-build_versions.applicationId          = "com.chao.mediasimple"
+build_versions.applicationId          = "com.cfox.mediasimple"
 deps.build_versions = build_versions
 
 def versions = [:]
