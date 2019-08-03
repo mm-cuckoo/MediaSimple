@@ -57,5 +57,5 @@ dependencies {
     implementation              deps.supports.arouter_api
     annotationProcessor         deps.supports.arouter_compiler
 
-    implementation project(':lib_common')
+    implementation project(':fx_lib_common')
 }

@@ -78,7 +78,7 @@ dependencies {
     androidTestImplementation   deps.supports.test_espresso_core
     implementation              deps.supports.multidex
 
-    implementation project(':lib_common')
+    implementation project(':fx_lib_common')
 
     if (!Boolean.valueOf(deps.isModule)) {
         implementation project(':module_main')

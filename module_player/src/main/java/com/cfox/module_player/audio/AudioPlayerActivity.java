@@ -12,14 +12,14 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
-import com.cfox.lib_audio.ICallBack;
-import com.cfox.lib_audio.IWaveCallBack;
-import com.cfox.lib_audio.log.FxLog;
-import com.cfox.lib_audio.recorder.RecorderConstants;
-import com.cfox.lib_audio.recorder.wav.audio.AudioStatus;
-import com.cfox.lib_audio.service.RecorderService;
-import com.cfox.lib_audio.service.ServiceConstants;
-import com.cfox.lib_audio.service.connection.PlayerServiceConnection;
+import com.cfox.rpaudio.ICallBack;
+import com.cfox.rpaudio.IWaveCallBack;
+import com.cfox.rpaudio.log.FxLog;
+import com.cfox.rpaudio.recorder.RecorderConstants;
+import com.cfox.rpaudio.recorder.wav.audio.AudioStatus;
+import com.cfox.rpaudio.service.RecorderService;
+import com.cfox.rpaudio.service.ServiceConstants;
+import com.cfox.rpaudio.service.connection.PlayerServiceConnection;
 import com.cfox.lib_common.base.BaseActivity;
 import com.cfox.module_player.Constants;
 import com.cfox.module_player.R;

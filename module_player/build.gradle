@@ -60,6 +60,6 @@ dependencies {
 //    implementation              deps.supports.butterknife
 //    annotationProcessor         deps.supports.butterknife_compiler
 
-    implementation project(':lib_common')
-    implementation project(':lib_audio')
+    implementation project(':fx_lib_common')
+    implementation project(':fx_lib_rpaudio')
 }

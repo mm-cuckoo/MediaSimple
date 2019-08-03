@@ -2,7 +2,7 @@ package debug;
 
 import android.os.Environment;
 
-import com.cfox.lib_audio.file.FileControl;
+import com.cfox.rpaudio.file.FileControl;
 import com.cfox.lib_common.base.BaseApplication;
 
 public class PlayerApplication extends BaseApplication {
