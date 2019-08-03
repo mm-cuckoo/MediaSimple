@@ -58,4 +58,5 @@ dependencies {
     annotationProcessor         deps.supports.arouter_compiler
 
     implementation project(':fx_lib_common')
+    implementation project(path: ':fx_lib_camera')
 }
