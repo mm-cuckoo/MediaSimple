@@ -5,9 +5,16 @@ import com.cfox.lib_common.base.BaseApplication;
 
 public class CameraApplication extends BaseApplication {
 
+    FxCamera mFxCamera;
     @Override
     public void onCreate() {
         super.onCreate();
-        FxCamera.init(this);
+        mFxCamera = FxCamera.init(this);
+    }
+
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        mFxCamera.release();
     }
 }

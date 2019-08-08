@@ -9,23 +9,28 @@ public class FxCamera implements IFxCamera{
     private FxCamera() {
     }
 
-    private IFxCamera setContext(Context context) {
+    private FxCamera setContext(Context context) {
         this.mContext = context.getApplicationContext();
         return this;
     }
 
-    public static IFxCamera init(Context context){
+    public static FxCamera init(Context context){
         return Create.sFxCamera.setContext(context);
     }
 
-    public static IFxCamera getInstance() {
+    public static FxCamera getInstance() {
         Create.sFxCamera.checkContextUNLL();
         return Create.sFxCamera;
     }
 
     @Override
-    public IFxCameraLifecycle getLifecycle() {
+    public CameraLifecycle getLifecycle() {
         return new CameraLifecycle();
+    }
+
+    @Override
+    public void release() {
+
     }
 
     private static class Create {
