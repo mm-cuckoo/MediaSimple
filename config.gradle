@@ -6,7 +6,7 @@ deps.isModule = isModule
 
 def build_versions = [:]
 build_versions.compileSdkVersion      = 28
-build_versions.minSdkVersion          = 15
+build_versions.minSdkVersion          = 21
 build_versions.targetSdkVersion       = 28
 build_versions.versionCode            = 1
 build_versions.versionName            = "1.0"

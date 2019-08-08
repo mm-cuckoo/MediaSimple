@@ -1,7 +1,11 @@
 package com.cfox.camera;
 
+import android.content.Context;
+
 public interface IFxCamera {
 
     IFxCameraLifecycle getLifecycle();
-    public void release();
+    void initCamera(Context context);
+    void release();
+
 }

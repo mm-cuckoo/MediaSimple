@@ -2,6 +2,9 @@ package com.cfox.camera;
 
 import android.content.Context;
 
+import com.cfox.camera.camera.CameraInfoHelper;
+import com.cfox.camera.utils.ThreadHandlerManager;
+
 public class FxCamera implements IFxCamera{
 
     private Context mContext;
@@ -26,6 +29,12 @@ public class FxCamera implements IFxCamera{
     @Override
     public CameraLifecycle getLifecycle() {
         return new CameraLifecycle();
+    }
+
+    @Override
+    public void initCamera(Context context) {
+        CameraInfoHelper.getInstance().load(context,
+                ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_LOAD).getHandler());
     }
 
     @Override
