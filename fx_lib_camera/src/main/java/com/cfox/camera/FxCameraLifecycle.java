@@ -1,6 +1,6 @@
 package com.cfox.camera;
 
-public class CameraLifecycle implements IFxCameraLifecycle{
+public class FxCameraLifecycle implements IFxCameraLifecycle{
     @Override
     public void onCreate() {
 

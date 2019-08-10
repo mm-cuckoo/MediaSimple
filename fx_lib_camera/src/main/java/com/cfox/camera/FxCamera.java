@@ -27,8 +27,13 @@ public class FxCamera implements IFxCamera{
     }
 
     @Override
-    public CameraLifecycle getLifecycle() {
-        return new CameraLifecycle();
+    public FxCameraLifecycle getLifecycle() {
+        return new FxCameraLifecycle();
+    }
+
+    @Override
+    public FxSurfaceManager getSurfaceManager() {
+        return null;
     }
 
     @Override
@@ -39,12 +44,12 @@ public class FxCamera implements IFxCamera{
 
     @Override
     public void release() {
-
+        ThreadHandlerManager.getInstance().release();
     }
 
     private static class Create {
         static FxCamera sFxCamera = new FxCamera();
-    }
+}
 
     private void checkContextUNLL() {
         if (mContext == null) {

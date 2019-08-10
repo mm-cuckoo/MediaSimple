@@ -1,4 +1,4 @@
-package com.cfox.camera.module;
+package com.cfox.camera.model;
 
 public class ModuleFactroy {
 }

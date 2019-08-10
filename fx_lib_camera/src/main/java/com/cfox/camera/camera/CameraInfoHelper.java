@@ -6,9 +6,7 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
 import android.os.Handler;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class CameraInfoHelper {
@@ -62,7 +60,7 @@ public class CameraInfoHelper {
             synchronized (obj) {
                 if (!mIsLoadFinish) {
                     try {
-                        obj.wait(2000);
+                        obj.wait();
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
