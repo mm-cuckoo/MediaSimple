@@ -1,12 +1,13 @@
 package com.cfox.camera;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.cfox.camera.camera.CameraInfoHelper;
 import com.cfox.camera.utils.ThreadHandlerManager;
 
-public class FxCamera implements IFxCamera{
-
+public class FxCamera implements IFxCamera , IFxCameraLifecycle{
+    private static final String TAG = "FxCamera";
     private Context mContext;
 
     private FxCamera() {
@@ -14,6 +15,7 @@ public class FxCamera implements IFxCamera{
 
     private FxCamera setContext(Context context) {
         this.mContext = context.getApplicationContext();
+        initCamera(context);
         return this;
     }
 
@@ -28,7 +30,7 @@ public class FxCamera implements IFxCamera{
 
     @Override
     public FxCameraLifecycle getLifecycle() {
-        return new FxCameraLifecycle();
+        return new FxCameraLifecycle(this);
     }
 
     @Override
@@ -38,6 +40,7 @@ public class FxCamera implements IFxCamera{
 
     @Override
     public void initCamera(Context context) {
+        Log.d(TAG, "init camera .....");
         CameraInfoHelper.getInstance().load(context,
                 ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_LOAD).getHandler());
     }
@@ -55,5 +58,40 @@ public class FxCamera implements IFxCamera{
         if (mContext == null) {
             throw new RuntimeException("FxCamera context is null , place use init set context !!!!!!!");
         }
+    }
+
+    @Override
+    public void onCreate() {
+
+    }
+
+    @Override
+    public void onStart() {
+
+    }
+
+    @Override
+    public void onRestart() {
+
+    }
+
+    @Override
+    public void onResume() {
+
+    }
+
+    @Override
+    public void onPause() {
+
+    }
+
+    @Override
+    public void onStop() {
+
+    }
+
+    @Override
+    public void onDestroy() {
+
     }
 }
