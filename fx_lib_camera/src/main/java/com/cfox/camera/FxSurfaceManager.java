@@ -1,4 +1,4 @@
 package com.cfox.camera;
 
-public class FxSurfaceManager {
+public interface FxSurfaceManager {
 }

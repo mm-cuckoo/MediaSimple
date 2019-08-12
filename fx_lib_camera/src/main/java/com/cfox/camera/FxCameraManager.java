@@ -6,23 +6,13 @@ import android.view.TextureView;
 import com.cfox.camera.controller.FxPhotoController;
 import com.cfox.camera.controller.FxVideoController;
 
-public class FxCameraManager implements IFxCameraManager{
-    @Override
-    public void addTextureView(TextureView textureView) {
+public interface FxCameraManager {
 
-    }
+    void addTextureView(TextureView textureView);
 
-    @Override
-    public void addSurfaceTexture(SurfaceTexture surfaceTexture) {
+    void addSurfaceTexture(SurfaceTexture surfaceTexture);
 
-    }
-    @Override
-    public FxPhotoController photo() {
-        return null;
-    }
+    FxPhotoController photo();
+    FxVideoController video();
 
-    @Override
-    public FxVideoController video() {
-        return null;
-    }
 }

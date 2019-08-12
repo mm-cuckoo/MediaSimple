@@ -1,6 +1,7 @@
 package debug;
 
 import com.cfox.camera.FxCamera;
+import com.cfox.camera.FxCameraImpl;
 import com.cfox.lib_common.base.BaseApplication;
 
 public class CameraApplication extends BaseApplication {
@@ -9,7 +10,7 @@ public class CameraApplication extends BaseApplication {
     @Override
     public void onCreate() {
         super.onCreate();
-        mFxCamera = FxCamera.init(this);
+        mFxCamera = FxCameraImpl.init(this);
     }
 
     @Override
