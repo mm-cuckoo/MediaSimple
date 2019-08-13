@@ -5,7 +5,6 @@ import android.content.Context;
 import com.cfox.camera.utils.ThreadHandlerManager;
 
 public class FxCameraImpl implements FxCamera {
-    private static final String TAG = "FxCamera";
     private FxCameraEngine mFxCameraEngine;
 
     private FxCameraImpl() {
@@ -23,18 +22,23 @@ public class FxCameraImpl implements FxCamera {
     }
 
     public static FxCamera getInstance() {
-        // TODO: 19-8-11 check set context
+        Create.sFxCamera.mFxCameraEngine.checkContextUNLL();
         return Create.sFxCamera;
     }
 
     @Override
     public FxCameraLifecycle getLifecycle() {
-        return null;
+        return mFxCameraEngine.getLifecycle();
     }
 
     @Override
     public FxSurfaceManager getSurfaceManager() {
-        return null;
+        return mFxCameraEngine.getSurfaceManager();
+    }
+
+    @Override
+    public FxCameraManager getCameraManager() {
+        return mFxCameraEngine.getCameraManager();
     }
 
     private void initCamera() {

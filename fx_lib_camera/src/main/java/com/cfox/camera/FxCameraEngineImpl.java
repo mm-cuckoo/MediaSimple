@@ -23,7 +23,7 @@ public class FxCameraEngineImpl implements FxCameraEngine, FxCameraLifecycle {
 
     @Override
     public void setContext(Context context) {
-        mContext = context;
+        mContext = context.getApplicationContext();
     }
 
     @Override
@@ -34,6 +34,11 @@ public class FxCameraEngineImpl implements FxCameraEngine, FxCameraLifecycle {
     @Override
     public FxSurfaceManager getSurfaceManager() {
         return mSurfaceManager;
+    }
+
+    @Override
+    public FxCameraManager getCameraManager() {
+        return mCameraManager;
     }
 
     @Override
@@ -82,9 +87,10 @@ public class FxCameraEngineImpl implements FxCameraEngine, FxCameraLifecycle {
         static FxCameraEngineImpl sFxCameraEngine = new FxCameraEngineImpl();
     }
 
-    void checkContextUNLL() {
+    public void checkContextUNLL() {
         if (mContext == null) {
-            throw new RuntimeException("FxCameraEngine context is null , place use init set context !!!!!!!");
+            throw new RuntimeException("FxCameraEngine context is null , " +
+                    "place use FxCamera init(Context context) method set context !!!!!!!");
         }
     }
 }
