@@ -25,9 +25,7 @@ public class FxCameraDeviceImpl implements FxCameraDevice {
     private CameraManager mCameraManager;
 
     private FxCameraDeviceImpl(Context context) {
-
         mCameraManager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
-
     }
 
 
@@ -44,12 +42,12 @@ public class FxCameraDeviceImpl implements FxCameraDevice {
 
     @SuppressLint("MissingPermission")
     @Override
-    public Observable<FxResult> openCameraDevice(FxRequest fxRequest) {
+    public Observable<FxResult> openCameraDevice(final FxRequest fxRequest) {
 
         return Observable.create(new ObservableOnSubscribe<FxResult>() {
             @Override
             public void subscribe(ObservableEmitter<FxResult> emitter) throws Exception {
-                String cameraId = "";
+                String cameraId = fxRequest.getString(FxRequest.Key.CAMERA_ID);
                 try {
                     if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
                         throw new RuntimeException("Time out waiting to lock camera opening.");
