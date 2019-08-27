@@ -42,6 +42,11 @@ public class FxCameraEngineImpl implements FxCameraEngine, FxCameraLifecycle {
     }
 
     @Override
+    public void setSurfaceManager(FxSurfaceManager surfaceManager) {
+        ((FxCameraConfig)mCameraManager).setSurfaceManager(surfaceManager);
+    }
+
+    @Override
     public void init() {
         checkContextUNLL();
         CameraInfoHelper.getInstance().load(mContext,

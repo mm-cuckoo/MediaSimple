@@ -77,4 +77,24 @@ public class FxCameraDeviceImpl implements FxCameraDevice {
             }
         });
     }
+
+    @Override
+    public Observable<FxResult> closeCameraDevice(FxRequest request) {
+        final CameraDevice cameraDevice =null;
+        return Observable.create(new ObservableOnSubscribe<FxResult>() {
+            @Override
+            public void subscribe(ObservableEmitter<FxResult> emitter) throws Exception {
+                try {
+                    mCameraOpenCloseLock.acquire();
+                    if (cameraDevice != null) {
+                        cameraDevice.close();
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } finally {
+                    mCameraOpenCloseLock.release();
+                }
+            }
+        });
+    }
 }

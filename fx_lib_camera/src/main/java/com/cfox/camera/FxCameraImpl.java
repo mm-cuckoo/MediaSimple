@@ -41,6 +41,11 @@ public class FxCameraImpl implements FxCamera {
         return mFxCameraEngine.getCameraManager();
     }
 
+    @Override
+    public void setSurfaceManager(FxSurfaceManager surfaceManager) {
+        mFxCameraEngine.setSurfaceManager(surfaceManager);
+    }
+
     private void initCamera() {
         mFxCameraEngine.init();
     }

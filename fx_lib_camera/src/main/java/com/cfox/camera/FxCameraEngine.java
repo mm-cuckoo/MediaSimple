@@ -7,6 +7,7 @@ public interface FxCameraEngine {
     FxCameraLifecycle getLifecycle();
     FxSurfaceManager getSurfaceManager();
     FxCameraManager getCameraManager();
+    void setSurfaceManager(FxSurfaceManager surfaceManager);
     void checkContextUNLL();
 
     void init();

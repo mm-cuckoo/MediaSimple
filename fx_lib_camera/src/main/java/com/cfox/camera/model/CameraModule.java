@@ -6,17 +6,5 @@ public class CameraModule {
 
     }
 
-    public void capture() {
 
-    }
-
-
-    public void startVideo() {
-
-    }
-
-
-    public void stopVideo() {
-
-    }
 }

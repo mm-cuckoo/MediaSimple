@@ -8,4 +8,5 @@ import io.reactivex.Observable;
 public interface FxCameraDevice {
 
     Observable<FxResult> openCameraDevice(FxRequest fxRequest);
+    Observable<FxResult> closeCameraDevice(FxRequest request);
 }

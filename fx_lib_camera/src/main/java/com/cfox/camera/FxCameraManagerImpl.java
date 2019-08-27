@@ -3,7 +3,7 @@ package com.cfox.camera;
 import com.cfox.camera.controller.FxPhotoController;
 import com.cfox.camera.controller.FxVideoController;
 
-public class FxCameraManagerImpl implements FxCameraManager {
+public class FxCameraManagerImpl implements FxCameraManager, FxCameraConfig {
     @Override
     public FxPhotoController photo() {
         return null;
@@ -12,5 +12,10 @@ public class FxCameraManagerImpl implements FxCameraManager {
     @Override
     public FxVideoController video() {
         return null;
+    }
+
+    @Override
+    public void setSurfaceManager(FxSurfaceManager surfaceManager) {
+
     }
 }
