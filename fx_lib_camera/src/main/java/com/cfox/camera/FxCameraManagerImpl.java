@@ -4,6 +4,9 @@ import com.cfox.camera.controller.FxPhotoController;
 import com.cfox.camera.controller.FxVideoController;
 
 public class FxCameraManagerImpl implements FxCameraManager, FxCameraConfig {
+
+    private FxSurfaceManager mSurfaceManager;
+
     @Override
     public FxPhotoController photo() {
         return null;
@@ -16,6 +19,6 @@ public class FxCameraManagerImpl implements FxCameraManager, FxCameraConfig {
 
     @Override
     public void setSurfaceManager(FxSurfaceManager surfaceManager) {
-
+        mSurfaceManager = surfaceManager;
     }
 }
