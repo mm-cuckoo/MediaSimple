@@ -1,31 +1,61 @@
 package com.cfox.camera.utils;
 
-public interface FxRequest {
-    interface Camera {
-        enum ID {
-            FONT("0"),
-            BACK("1");
-            private String id;
-            ID(String id) {
-                this.id = id;
-            }
+import java.util.HashMap;
+import java.util.Map;
+
+public class FxRequest {
+
+    private Map<String, Object> mMapObject = new HashMap<>();
+
+    public void put(String key, Object value) {
+        mMapObject.put(key,value);
+    }
+
+    public void put(String key, int value) {
+        mMapObject.put(key, value);
+    }
+
+    public void put(String key, float value) {
+        mMapObject.put(key, value);
+    }
+
+    public Object getObj(String key) {
+        if (mMapObject.containsKey(key)) {
+            return mMapObject.get(key);
         }
+        return null;
     }
 
-    interface Key {
-        String CAMERA_ID = "camera_id";
+    public String getString(String key, String def) {
+        if (mMapObject.containsKey(key)) {
+            return (String) mMapObject.get(key);
+        }
+        return def;
     }
 
-    void put(String key , Object value);
-    void put(String key , int value);
-    void put(String key , float value);
+    public String getString(String key) {
+        return getString(key, null);
+    }
 
-    Object getObj(String key);
-    String getString(String key, String def);
-    String getString(String key);
-    int getInt(String key, int def);
-    int getInt(String key);
-    float getFloat(String key, float def);
-    float getFloat(String key);
+    public int getInt(String key, int def) {
+        if (mMapObject.containsKey(key)) {
+            return (int) mMapObject.get(key);
+        }
+        return def;
+    }
 
+    public int getInt(String key) {
+        return getInt(key, 0);
+    }
+
+    public float getFloat(String key, float def) {
+        if (mMapObject.containsKey(key)) {
+            return (float) mMapObject.get(key);
+        }
+        return def;
+    }
+
+    public float getFloat(String key) {
+        return getInt(key, 0);
+    }
 }

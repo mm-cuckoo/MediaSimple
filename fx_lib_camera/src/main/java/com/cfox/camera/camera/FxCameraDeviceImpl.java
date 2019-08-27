@@ -5,9 +5,11 @@ import android.content.Context;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.cfox.camera.utils.FxReq;
 import com.cfox.camera.utils.FxRequest;
 import com.cfox.camera.utils.FxResult;
 
@@ -20,6 +22,7 @@ import io.reactivex.ObservableOnSubscribe;
 
 public class FxCameraDeviceImpl implements FxCameraDevice {
 
+    private static final String TAG = "FxCameraDeviceImpl";
     private static FxCameraDevice sInstance;
     private Semaphore mCameraOpenCloseLock = new Semaphore(1);
     private CameraManager mCameraManager;
@@ -46,8 +49,9 @@ public class FxCameraDeviceImpl implements FxCameraDevice {
 
         return Observable.create(new ObservableOnSubscribe<FxResult>() {
             @Override
-            public void subscribe(ObservableEmitter<FxResult> emitter) throws Exception {
-                String cameraId = fxRequest.getString(FxRequest.Key.CAMERA_ID);
+            public void subscribe(final ObservableEmitter<FxResult> emitter) throws Exception {
+                String cameraId = fxRequest.getString(FxReq.Key.CAMERA_ID);
+                Log.d(TAG, "subscribe: cameraId:----->" + cameraId);
                 try {
                     if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
                         throw new RuntimeException("Time out waiting to lock camera opening.");
@@ -56,16 +60,21 @@ public class FxCameraDeviceImpl implements FxCameraDevice {
                     mCameraManager.openCamera(cameraId, new CameraDevice.StateCallback() {
                         @Override
                         public void onOpened(@NonNull CameraDevice camera) {
-
+                            Log.d(TAG, "onOpened: ");
+                            FxResult result = new FxResult();
+                            result.put(FxReq.Key.CAMERA_DEVICE, camera);
+                            emitter.onNext(result);
                         }
 
                         @Override
                         public void onDisconnected(@NonNull CameraDevice camera) {
+                            Log.d(TAG, "onDisconnected: ");
 
                         }
 
                         @Override
                         public void onError(@NonNull CameraDevice camera, int error) {
+                            Log.d(TAG, "onError: ");
 
                         }
                     }, null);

@@ -21,12 +21,24 @@ import io.reactivex.ObservableOnSubscribe;
 
 public class FxCameraSessionImpl implements FxCameraSession {
     private List<Surface> mSurfaces;
+    private static FxCameraSessionImpl sInstance;
     private CameraDevice mCameraDevice;
     private CameraCaptureSession mCaptureSession;
 
     @Override
     public void setCameraDevice(CameraDevice cameraDevice) {
         mCameraDevice = cameraDevice;
+    }
+
+    public static FxCameraSessionImpl getsInstance() {
+        if (sInstance == null) {
+            synchronized (FxCameraSessionImpl.class) {
+                if (sInstance == null) {
+                    sInstance = new FxCameraSessionImpl();
+                }
+            }
+        }
+        return sInstance;
     }
 
     @Override
