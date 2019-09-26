@@ -1,20 +1,28 @@
 package com.cfox.camera;
 
+import android.content.Context;
+
+import com.cfox.camera.controller.Controller;
 import com.cfox.camera.controller.FxPhotoController;
 import com.cfox.camera.controller.FxVideoController;
 
 public class FxCameraManagerImpl implements FxCameraManager, FxCameraConfig {
 
+    private Context mContext;
     private FxSurfaceManager mSurfaceManager;
 
-    @Override
-    public FxPhotoController photo() {
-        return null;
+    public FxCameraManagerImpl(Context context) {
+        this.mContext = context;
     }
 
     @Override
-    public FxVideoController video() {
-        return null;
+    public Controller photo() {
+        return new FxPhotoController(mContext);
+    }
+
+    @Override
+    public Controller video() {
+        return new FxVideoController(mContext);
     }
 
     @Override

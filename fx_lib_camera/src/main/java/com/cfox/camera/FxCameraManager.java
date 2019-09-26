@@ -1,12 +1,11 @@
 package com.cfox.camera;
 
 
-import com.cfox.camera.controller.FxPhotoController;
-import com.cfox.camera.controller.FxVideoController;
+import com.cfox.camera.controller.Controller;
 
 public interface FxCameraManager {
 
-    FxPhotoController photo();
-    FxVideoController video();
+    Controller photo();
+    Controller video();
 
 }

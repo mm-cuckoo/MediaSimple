@@ -1,10 +1,18 @@
 package com.cfox.camera.surface;
 
 import android.graphics.SurfaceTexture;
+import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
 
+import com.cfox.camera.utils.FxRequest;
+
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+
 public class SurfaceHelper {
+    private static final String TAG = "SurfaceHelper";
     private final Object obj = new Object();
     private TextureView mTextureView;
 
@@ -48,6 +56,19 @@ public class SurfaceHelper {
             }
         }
         return mTextureView != null ? mTextureView.getSurfaceTexture() : null;
+    }
+
+    public Observable<FxRequest> isAvailable() {
+        return Observable.create(new ObservableOnSubscribe<FxRequest>() {
+            @Override
+            public void subscribe(ObservableEmitter<FxRequest> emitter) throws Exception {
+                Log.d(TAG, "subscribe: ..........");
+                FxRequest request = new FxRequest();
+                emitter.onNext(request);
+//                emitter.onComplete();
+
+            }
+        });
     }
 
     private TextureView.SurfaceTextureListener mTextureListener = new TextureView.SurfaceTextureListener() {

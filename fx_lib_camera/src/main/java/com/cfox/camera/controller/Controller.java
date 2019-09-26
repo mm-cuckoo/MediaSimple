@@ -1,13 +1,11 @@
-package com.cfox.camera.model;
+package com.cfox.camera.controller;
 
 import com.cfox.camera.utils.FxRequest;
 import com.cfox.camera.utils.FxResult;
 
 import io.reactivex.Observable;
 
-public interface CameraModule {
-
+public interface Controller {
+    Observable<FxResult> startPreview(FxRequest request);
     Observable<FxResult> openCamera(FxRequest request);
-
-    Observable<FxResult> changeModule(CameraModuleImpl.ModuleFlag moduleFlag);
 }

@@ -26,6 +26,7 @@ public class FxCameraDeviceImpl implements FxCameraDevice {
     private static FxCameraDevice sInstance;
     private Semaphore mCameraOpenCloseLock = new Semaphore(1);
     private CameraManager mCameraManager;
+    private CameraDevice mCameraDevice;
 
     private FxCameraDeviceImpl(Context context) {
         mCameraManager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
@@ -60,10 +61,12 @@ public class FxCameraDeviceImpl implements FxCameraDevice {
                     mCameraManager.openCamera(cameraId, new CameraDevice.StateCallback() {
                         @Override
                         public void onOpened(@NonNull CameraDevice camera) {
+                            mCameraDevice = camera;
                             Log.d(TAG, "onOpened: ");
                             FxResult result = new FxResult();
                             result.put(FxReq.Key.CAMERA_DEVICE, camera);
                             emitter.onNext(result);
+//                            emitter.onComplete();
                         }
 
                         @Override

@@ -53,8 +53,8 @@ public class CameraMainFragment extends BaseFragment {
         mBtnOpenDevice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                mCameraController.openPreview(mSurfaceHelper);
-                openCameraDevice("1");
+                mCameraController.openPreview(mSurfaceHelper);
+//                openCameraDevice("1");
             }
         });
 
