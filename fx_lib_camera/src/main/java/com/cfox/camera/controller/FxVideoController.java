@@ -2,9 +2,10 @@ package com.cfox.camera.controller;
 
 import android.content.Context;
 
-public class FxVideoController extends AbsController {
+import com.cfox.camera.surface.ISurfaceHelper;
 
-    public FxVideoController(Context context) {
-        super(context);
+public class FxVideoController extends AbsController {
+    public FxVideoController(Context context, ISurfaceHelper surfaceHelper) {
+        super(context, surfaceHelper);
     }
 }

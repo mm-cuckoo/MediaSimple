@@ -11,7 +11,7 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 
-public class SurfaceHelper {
+public class SurfaceHelper implements ISurfaceHelper {
     private static final String TAG = "SurfaceHelper";
     private final Object obj = new Object();
     private TextureView mTextureView;

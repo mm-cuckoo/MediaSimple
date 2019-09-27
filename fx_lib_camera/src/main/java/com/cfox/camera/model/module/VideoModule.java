@@ -1,10 +1,10 @@
 package com.cfox.camera.model.module;
 
-import com.cfox.camera.camera.FxCameraDevice;
-import com.cfox.camera.camera.FxCameraSession;
+import com.cfox.camera.camera.IFxCameraDevice;
+import com.cfox.camera.camera.IFxCameraSession;
 
 public class VideoModule extends BaseModule{
-    public VideoModule(FxCameraDevice mCameraDevice, FxCameraSession mCameraSession) {
+    public VideoModule(IFxCameraDevice mCameraDevice, IFxCameraSession mCameraSession) {
         super(mCameraDevice, mCameraSession);
     }
 }

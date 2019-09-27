@@ -1,6 +1,6 @@
 package com.cfox.camera.utils;
 
-public interface FxReq {
+public interface IFxReq {
     interface Camera {
         enum ID {
             FONT("0"),
