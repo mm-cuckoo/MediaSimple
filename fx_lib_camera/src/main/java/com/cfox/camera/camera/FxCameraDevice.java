@@ -9,8 +9,9 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.cfox.camera.utils.IFxReq;
+import com.cfox.camera.utils.FxReq;
 import com.cfox.camera.utils.FxRequest;
+import com.cfox.camera.utils.FxRes;
 import com.cfox.camera.utils.FxResult;
 
 import java.util.concurrent.Semaphore;
@@ -51,7 +52,7 @@ public class FxCameraDevice implements IFxCameraDevice {
         return Observable.create(new ObservableOnSubscribe<FxResult>() {
             @Override
             public void subscribe(final ObservableEmitter<FxResult> emitter) throws Exception {
-                String cameraId = fxRequest.getString(IFxReq.Key.CAMERA_ID);
+                String cameraId = fxRequest.getString(FxReq.Key.CAMERA_ID);
                 Log.d(TAG, "subscribe: cameraId:----->" + cameraId);
                 try {
                     if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
@@ -64,7 +65,8 @@ public class FxCameraDevice implements IFxCameraDevice {
                             mCameraDevice = camera;
                             Log.d(TAG, "onOpened: ");
                             FxResult result = new FxResult();
-                            result.put(IFxReq.Key.CAMERA_DEVICE, camera);
+                            result.put(FxRes.Key.CAMERA_DEVICE, camera);
+                            result.put(FxRes.Key.OPEN_CAMERA_STATUS, FxRes.Value.OPEN_SUCCESS);
                             emitter.onNext(result);
 //                            emitter.onComplete();
                         }
@@ -92,21 +94,24 @@ public class FxCameraDevice implements IFxCameraDevice {
 
     @Override
     public Observable<FxResult> closeCameraDevice(FxRequest request) {
-        final CameraDevice cameraDevice =null;
         return Observable.create(new ObservableOnSubscribe<FxResult>() {
             @Override
             public void subscribe(ObservableEmitter<FxResult> emitter) throws Exception {
-                try {
-                    mCameraOpenCloseLock.acquire();
-                    if (cameraDevice != null) {
-                        cameraDevice.close();
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } finally {
-                    mCameraOpenCloseLock.release();
-                }
+                closeCameraDevice();
             }
         });
+    }
+
+    private void closeCameraDevice() {
+        try {
+            mCameraOpenCloseLock.acquire();
+            if (mCameraDevice != null) {
+                mCameraDevice.close();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            mCameraOpenCloseLock.release();
+        }
     }
 }

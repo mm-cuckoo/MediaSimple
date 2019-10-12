@@ -25,7 +25,7 @@ public abstract class BaseModule implements IModule {
 
     @Override
     public Observable<FxResult> openCamera(FxRequest request) {
-        return null;
+        return mCameraDevice.openCameraDevice(request);
     }
 }
 

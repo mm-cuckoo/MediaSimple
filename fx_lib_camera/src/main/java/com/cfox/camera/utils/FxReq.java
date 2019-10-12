@@ -1,6 +1,6 @@
 package com.cfox.camera.utils;
 
-public interface IFxReq {
+public interface FxReq {
     interface Camera {
         enum ID {
             FONT("0"),
@@ -14,6 +14,6 @@ public interface IFxReq {
 
     interface Key {
         String CAMERA_ID = "camera_id";
-        String CAMERA_DEVICE = "camera_device";
+        String SURFACE_HELPER = "Surface_helper";
     }
 }

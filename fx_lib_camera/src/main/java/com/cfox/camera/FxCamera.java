@@ -1,5 +1,6 @@
 package com.cfox.camera;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 
 import com.cfox.camera.camera.CameraInfoHelper;
@@ -14,7 +15,8 @@ public class FxCamera {
     }
 
     private FxCamera attr(Context context) {
-        mFxCameraManager = new FxCameraManager(context);
+        mContext = context.getApplicationContext();
+        mFxCameraManager = new FxCameraManager(mContext);
         initCamera();
         return this;
     }
@@ -49,6 +51,7 @@ public class FxCamera {
     }
 
     private static class Create {
+        @SuppressLint("StaticFieldLeak")
         static FxCamera sFxCamera = new FxCamera();
     }
 }
