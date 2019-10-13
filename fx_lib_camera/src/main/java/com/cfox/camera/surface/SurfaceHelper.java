@@ -7,6 +7,9 @@ import android.view.TextureView;
 
 import com.cfox.camera.utils.FxRequest;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
@@ -15,47 +18,24 @@ public class SurfaceHelper implements ISurfaceHelper {
     private static final String TAG = "SurfaceHelper";
     private final Object obj = new Object();
     private TextureView mTextureView;
+    private List<Surface> mSurfaces;
 
     public SurfaceHelper(TextureView textureView) {
         this.mTextureView = textureView;
         this.mTextureView.setSurfaceTextureListener(mTextureListener);
+        this.mSurfaces = new ArrayList<>();
     }
 
     public TextureView getTextureView() {
         return mTextureView;
     }
 
-    public void setTextureView(TextureView mTextureView) {
-        this.mTextureView = mTextureView;
-        this.mTextureView.setSurfaceTextureListener(mTextureListener);
+    public Surface getSurface() {
+        return new Surface(mTextureView.getSurfaceTexture());
     }
 
-    public Surface getSurface() throws InterruptedException {
-        if (mTextureView == null || !mTextureView.isAvailable()) {
-            synchronized (obj) {
-                if (mTextureView == null || !mTextureView.isAvailable()) {
-                    obj.wait(3000);
-                }
-            }
-        }
-
-        if (mTextureView == null) {
-            return null;
-        }
-
-        SurfaceTexture texture = mTextureView.getSurfaceTexture();
-        return new Surface(texture);
-    }
-
-    public SurfaceTexture getSurfaceTexture() throws InterruptedException {
-        if (mTextureView == null || !mTextureView.isAvailable()) {
-            synchronized (obj) {
-                if (mTextureView == null || !mTextureView.isAvailable()) {
-                    obj.wait(3000);
-                }
-            }
-        }
-        return mTextureView != null ? mTextureView.getSurfaceTexture() : null;
+    public SurfaceTexture getSurfaceTexture() {
+        return mTextureView.getSurfaceTexture();
     }
 
     public Observable<FxRequest> isAvailable() {
@@ -63,12 +43,36 @@ public class SurfaceHelper implements ISurfaceHelper {
             @Override
             public void subscribe(ObservableEmitter<FxRequest> emitter) throws Exception {
                 Log.d(TAG, "subscribe: ..........");
+                if (!mTextureView.isAvailable()) {
+                    synchronized (obj) {
+                        if (!mTextureView.isAvailable()) {
+                            obj.wait(10 * 1000);
+                        }
+                        if (!mTextureView.isAvailable()) {
+                            throw new RuntimeException("Surface create error wait 10 s");
+                        }
+                    }
+                }
+
+                Log.d(TAG, "SurfaceTexture isAvailable");
+                mSurfaces.add(getSurface());
                 FxRequest request = new FxRequest();
                 emitter.onNext(request);
 //                emitter.onComplete();
-
             }
         });
+    }
+
+    @Override
+    public List<Surface> getSurfaces() {
+        return mSurfaces;
+    }
+
+    @Override
+    public void addSurface(Surface surface) {
+        if (!mSurfaces.contains(surface)) {
+            mSurfaces.add(surface);
+        }
     }
 
     private TextureView.SurfaceTextureListener mTextureListener = new TextureView.SurfaceTextureListener() {

@@ -9,9 +9,8 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.cfox.camera.utils.FxReq;
+import com.cfox.camera.utils.FxRe;
 import com.cfox.camera.utils.FxRequest;
-import com.cfox.camera.utils.FxRes;
 import com.cfox.camera.utils.FxResult;
 
 import java.util.concurrent.Semaphore;
@@ -48,11 +47,11 @@ public class FxCameraDevice implements IFxCameraDevice {
     @SuppressLint("MissingPermission")
     @Override
     public Observable<FxResult> openCameraDevice(final FxRequest fxRequest) {
-
+        closeCameraDevice();
         return Observable.create(new ObservableOnSubscribe<FxResult>() {
             @Override
             public void subscribe(final ObservableEmitter<FxResult> emitter) throws Exception {
-                String cameraId = fxRequest.getString(FxReq.Key.CAMERA_ID);
+                String cameraId = fxRequest.getString(FxRe.Key.CAMERA_ID);
                 Log.d(TAG, "subscribe: cameraId:----->" + cameraId);
                 try {
                     if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
@@ -65,8 +64,8 @@ public class FxCameraDevice implements IFxCameraDevice {
                             mCameraDevice = camera;
                             Log.d(TAG, "onOpened: ");
                             FxResult result = new FxResult();
-                            result.put(FxRes.Key.CAMERA_DEVICE, camera);
-                            result.put(FxRes.Key.OPEN_CAMERA_STATUS, FxRes.Value.OPEN_SUCCESS);
+                            result.put(FxRe.Key.CAMERA_DEVICE, camera);
+                            result.put(FxRe.Key.OPEN_CAMERA_STATUS, FxRe.Value.OPEN_SUCCESS);
                             emitter.onNext(result);
 //                            emitter.onComplete();
                         }
@@ -79,7 +78,12 @@ public class FxCameraDevice implements IFxCameraDevice {
 
                         @Override
                         public void onError(@NonNull CameraDevice camera, int error) {
-                            Log.d(TAG, "onError: ");
+                            Log.d(TAG, "onError: code:" + error);
+                            FxResult result = new FxResult();
+                            result.put(FxRe.Key.CAMERA_DEVICE, camera);
+                            result.put(FxRe.Key.OPEN_CAMERA_STATUS, FxRe.Value.OPEN_FAIL);
+                            result.getInt(FxRe.Key.OPEN_CAMERA_ERROR, error);
+                            emitter.onNext(result);
 
                         }
                     }, null);

@@ -5,7 +5,7 @@ import com.cfox.camera.FxCamera;
 import com.cfox.camera.FxCameraManager;
 import com.cfox.camera.controller.IController;
 import com.cfox.camera.surface.SurfaceHelper;
-import com.cfox.camera.utils.FxReq;
+import com.cfox.camera.utils.FxRe;
 import com.cfox.camera.utils.FxRequest;
 
 public class CameraController {
@@ -15,8 +15,8 @@ public class CameraController {
     public void openPreview(SurfaceHelper helper) {
 
         FxRequest request = new FxRequest();
-        request.put(FxReq.Key.CAMERA_ID, FxReq.Camera.ID.BACK.id);
-        request.put(FxReq.Key.SURFACE_HELPER, helper);
+        request.put(FxRe.Key.CAMERA_ID, FxRe.Camera.ID.BACK.id);
+        request.put(FxRe.Key.SURFACE_HELPER, helper);
 
         mFxCameraManager = FxCamera.getInstance().getCameraManager();
         mFxCameraManager.setSurfaceHelper(helper);

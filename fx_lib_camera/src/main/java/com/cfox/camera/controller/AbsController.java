@@ -6,8 +6,8 @@ import android.util.Log;
 import com.cfox.camera.model.ICameraModule;
 import com.cfox.camera.model.CameraModule;
 import com.cfox.camera.surface.ISurfaceHelper;
+import com.cfox.camera.utils.FxRe;
 import com.cfox.camera.utils.FxRequest;
-import com.cfox.camera.utils.FxRes;
 import com.cfox.camera.utils.FxResult;
 
 import io.reactivex.Observer;
@@ -35,7 +35,7 @@ public abstract class AbsController implements IController {
 
             @Override
             public void onNext(FxResult fxResult) {
-                String status = fxResult.getString(FxRes.Key.OPEN_CAMERA_STATUS);
+                String status = fxResult.getString(FxRe.Key.OPEN_CAMERA_STATUS);
                 Log.d(TAG, "onNext: ,,,,,,,," + status);
 
             }
