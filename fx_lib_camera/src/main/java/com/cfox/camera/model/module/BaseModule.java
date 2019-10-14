@@ -5,6 +5,8 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CaptureRequest;
 import android.util.Log;
 
+import com.cfox.camera.camera.CameraInfo;
+import com.cfox.camera.camera.CameraInfoHelper;
 import com.cfox.camera.camera.IFxCameraDevice;
 import com.cfox.camera.camera.ISessionHelper;
 import com.cfox.camera.surface.SurfaceHelper;
@@ -39,25 +41,19 @@ public abstract class BaseModule implements IModule {
                 new BiFunction<FxRequest, FxResult, FxResult>() {
                     @Override
                     public FxResult apply(FxRequest request, FxResult fxResult) throws Exception {
+                        String cameraId = request.getString(FxRe.Key.CAMERA_ID);
+                        CameraInfo cameraInfo = CameraInfoHelper.getInstance().getCameraInfo(cameraId);
+
+                        Log.d(TAG, "apply: onStartPreview.....");
                         return fxResult;
                     }
                 }).flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
             @Override
             public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
-                String openStatus = fxResult.getString(FxRe.Key.OPEN_CAMERA_STATUS, FxRe.Value.OPEN_FAIL);
-                Log.d(TAG, "apply: open status :" + openStatus);
-                if (openStatus.equals(FxRe.Value.OPEN_SUCCESS)) {
-                    request.put(FxRe.Key.CAMERA_DEVICE, fxResult.getObj(FxRe.Key.CAMERA_DEVICE));
-                    CaptureRequest.Builder builder = mSessionHelper.createRequestBuilder(request);
-                    request.put(FxRe.Key.PREVIEW_BUILDER, builder);
-                    return mSessionHelper.createPreviewSession(request);
-                }
-                return Observable.create(new ObservableOnSubscribe<FxResult>() {
-                    @Override
-                    public void subscribe(ObservableEmitter<FxResult> emitter) throws Exception {
-
-                    }
-                });
+                request.put(FxRe.Key.CAMERA_DEVICE, fxResult.getObj(FxRe.Key.CAMERA_DEVICE));
+                CaptureRequest.Builder builder = mSessionHelper.createRequestBuilder(request);
+                request.put(FxRe.Key.PREVIEW_BUILDER, builder);
+                return mSessionHelper.createPreviewSession(request);
             }
         });
     }

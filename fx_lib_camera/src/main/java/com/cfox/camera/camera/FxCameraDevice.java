@@ -79,11 +79,7 @@ public class FxCameraDevice implements IFxCameraDevice {
                         @Override
                         public void onError(@NonNull CameraDevice camera, int error) {
                             Log.d(TAG, "onError: code:" + error);
-                            FxResult result = new FxResult();
-                            result.put(FxRe.Key.CAMERA_DEVICE, camera);
-                            result.put(FxRe.Key.OPEN_CAMERA_STATUS, FxRe.Value.OPEN_FAIL);
-                            result.getInt(FxRe.Key.OPEN_CAMERA_ERROR, error);
-                            emitter.onNext(result);
+                            emitter.onError(new Throwable("open camera error Code:" + error));
 
                         }
                     }, null);

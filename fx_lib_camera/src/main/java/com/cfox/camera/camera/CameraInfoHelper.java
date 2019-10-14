@@ -50,9 +50,9 @@ public class CameraInfoHelper {
         return mCameraInfoMap.get(String.valueOf(CameraCharacteristics.LENS_FACING_BACK));
     }
 
-    public CameraInfo getCameraInfo(int cameraId) {
+    public CameraInfo getCameraInfo(String cameraId) {
         checkLoadFinish();
-        return mCameraInfoMap.get(String.valueOf(cameraId));
+        return mCameraInfoMap.get(cameraId);
     }
 
     private void checkLoadFinish() {
