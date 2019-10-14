@@ -97,16 +97,8 @@ public class FxCameraDevice implements IFxCameraDevice {
     }
 
     @Override
-    public Observable<FxResult> closeCameraDevice(FxRequest request) {
-        return Observable.create(new ObservableOnSubscribe<FxResult>() {
-            @Override
-            public void subscribe(ObservableEmitter<FxResult> emitter) throws Exception {
-                closeCameraDevice();
-            }
-        });
-    }
-
-    private void closeCameraDevice() {
+    public void closeCameraDevice() {
+        Log.d(TAG, "closeCameraDevice: .......");
         try {
             mCameraOpenCloseLock.acquire();
             if (mCameraDevice != null) {

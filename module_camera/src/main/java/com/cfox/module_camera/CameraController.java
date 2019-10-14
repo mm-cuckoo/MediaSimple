@@ -19,9 +19,13 @@ public class CameraController {
         request.put(FxRe.Key.SURFACE_HELPER, helper);
 
         mFxCameraManager = FxCamera.getInstance().getCameraManager();
-        mFxCameraManager.setSurfaceHelper(helper);
         mCameraController = mFxCameraManager.photo();
         mCameraController.startPreview(request);
 
+    }
+
+
+    public void stopCamera() {
+        mCameraController.stop();
     }
 }

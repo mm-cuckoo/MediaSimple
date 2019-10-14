@@ -6,6 +6,7 @@ import android.view.Surface;
 import android.view.TextureView;
 
 import com.cfox.camera.utils.FxRequest;
+import com.cfox.camera.utils.ThreadHandlerManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +14,8 @@ import java.util.List;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Scheduler;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 
 public class SurfaceHelper implements ISurfaceHelper {
     private static final String TAG = "SurfaceHelper";
@@ -60,7 +63,7 @@ public class SurfaceHelper implements ISurfaceHelper {
                 emitter.onNext(request);
 //                emitter.onComplete();
             }
-        });
+        }).subscribeOn(AndroidSchedulers.from(ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_OTHER).getLooper()));
     }
 
     @Override
@@ -78,22 +81,25 @@ public class SurfaceHelper implements ISurfaceHelper {
     private TextureView.SurfaceTextureListener mTextureListener = new TextureView.SurfaceTextureListener() {
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+            Log.d(TAG, "onSurfaceTextureAvailable: .......");
             sendNotify();
 
         }
 
         @Override
         public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-
+            Log.d(TAG, "onSurfaceTextureSizeChanged: ....");
         }
 
         @Override
         public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+            Log.d(TAG, "onSurfaceTextureDestroyed: ,,,,,,,");
             return false;
         }
 
         @Override
         public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+            Log.d(TAG, "onSurfaceTextureUpdated: ,,,,,,,,");
 
         }
     };

@@ -1,8 +1,5 @@
 package com.cfox.camera.camera;
 
-import android.hardware.camera2.CameraAccessException;
-import android.hardware.camera2.CaptureRequest;
-
 import com.cfox.camera.utils.FxRequest;
 import com.cfox.camera.utils.FxResult;
 
@@ -19,5 +16,10 @@ public abstract class AbsBaseSessionHelper implements ISessionHelper{
     @Override
     public Observable<FxResult> createPreviewSession(FxRequest fxRequest) {
         return mFxCameraSession.createPreviewSession(fxRequest);
+    }
+
+    @Override
+    public void closeSession() {
+        mFxCameraSession.closeSession();
     }
 }

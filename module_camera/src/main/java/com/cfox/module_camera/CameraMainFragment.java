@@ -1,6 +1,7 @@
 package com.cfox.module_camera;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.TextureView;
 import android.view.View;
@@ -50,5 +51,19 @@ public class CameraMainFragment extends BaseFragment {
             }
         });
 
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume: .......");
+        mCameraController.openPreview(mSurfaceHelper);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause: ........");
+        mCameraController.stopCamera();
     }
 }

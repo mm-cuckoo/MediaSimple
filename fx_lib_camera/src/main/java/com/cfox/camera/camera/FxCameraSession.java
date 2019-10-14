@@ -7,6 +7,7 @@ import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
+import android.util.Log;
 import android.view.Surface;
 
 import androidx.annotation.NonNull;
@@ -16,13 +17,12 @@ import com.cfox.camera.utils.FxRe;
 import com.cfox.camera.utils.FxRequest;
 import com.cfox.camera.utils.FxResult;
 
-import java.util.List;
-
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 
 public class FxCameraSession implements IFxCameraSession {
+    private static final String TAG = "FxCameraSession";
     private static FxCameraSession sInstance;
     private CameraDevice mCameraDevice;
     private CameraCaptureSession mCaptureSession;
@@ -108,7 +108,9 @@ public class FxCameraSession implements IFxCameraSession {
         }, null);
     }
 
-    private void closeSession() {
+    @Override
+    public void closeSession() {
+        Log.d(TAG, "closeSession: .......");
         if (mCaptureSession != null) {
             mCaptureSession.close();
             mCaptureSession = null;

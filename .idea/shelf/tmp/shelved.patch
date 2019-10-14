@@ -1,0 +1,672 @@
+Index: fx_lib_camera/src/main/java/com/cfox/camera/FxCameraManager.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera;\n\nimport android.content.Context;\n\nimport com.cfox.camera.controller.IController;\nimport com.cfox.camera.controller.FxPhotoController;\nimport com.cfox.camera.controller.FxVideoController;\nimport com.cfox.camera.surface.ISurfaceHelper;\n\npublic class FxCameraManager implements IFxCameraManager {\n\n    private Context mContext;\n    private ISurfaceHelper mSurfaceHelper;\n\n    public FxCameraManager(Context context) {\n        this.mContext = context;\n    }\n\n    @Override\n    public IController photo() {\n        return new FxPhotoController(mContext, mSurfaceHelper);\n    }\n\n    @Override\n    public IController video() {\n        return new FxVideoController(mContext, mSurfaceHelper);\n    }\n\n    @Override\n    public void setSurfaceHelper(ISurfaceHelper surfaceHelper) {\n        mSurfaceHelper = surfaceHelper;\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/FxCameraManager.java	(revision c3508ea1e906c0416fc6cffc67df8fe7dfb03eea)
++++ fx_lib_camera/src/main/java/com/cfox/camera/FxCameraManager.java	(date 1571023673000)
+@@ -5,12 +5,10 @@
+ import com.cfox.camera.controller.IController;
+ import com.cfox.camera.controller.FxPhotoController;
+ import com.cfox.camera.controller.FxVideoController;
+-import com.cfox.camera.surface.ISurfaceHelper;
+ 
+ public class FxCameraManager implements IFxCameraManager {
+ 
+     private Context mContext;
+-    private ISurfaceHelper mSurfaceHelper;
+ 
+     public FxCameraManager(Context context) {
+         this.mContext = context;
+@@ -18,16 +16,11 @@
+ 
+     @Override
+     public IController photo() {
+-        return new FxPhotoController(mContext, mSurfaceHelper);
++        return new FxPhotoController(mContext);
+     }
+ 
+     @Override
+     public IController video() {
+-        return new FxVideoController(mContext, mSurfaceHelper);
+-    }
+-
+-    @Override
+-    public void setSurfaceHelper(ISurfaceHelper surfaceHelper) {
+-        mSurfaceHelper = surfaceHelper;
++        return new FxVideoController(mContext);
+     }
+ }
+Index: fx_lib_camera/src/main/java/com/cfox/camera/camera/ISessionHelper.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.camera;\n\nimport android.hardware.camera2.CameraAccessException;\nimport android.hardware.camera2.CaptureRequest;\n\nimport com.cfox.camera.utils.FxRequest;\nimport com.cfox.camera.utils.FxResult;\n\nimport io.reactivex.Observable;\n\npublic interface ISessionHelper {\n\n    CaptureRequest.Builder createRequestBuilder(FxRequest fxRequest) throws CameraAccessException;\n    Observable<FxResult> createPreviewSession(FxRequest fxRequest);\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/camera/ISessionHelper.java	(revision c3508ea1e906c0416fc6cffc67df8fe7dfb03eea)
++++ fx_lib_camera/src/main/java/com/cfox/camera/camera/ISessionHelper.java	(date 1571029002000)
+@@ -12,4 +12,6 @@
+ 
+     CaptureRequest.Builder createRequestBuilder(FxRequest fxRequest) throws CameraAccessException;
+     Observable<FxResult> createPreviewSession(FxRequest fxRequest);
++    void closeSession();
++
+ }
+Index: fx_lib_camera/src/main/java/com/cfox/camera/model/ICameraModule.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.model;\n\nimport com.cfox.camera.utils.FxRequest;\nimport com.cfox.camera.utils.FxResult;\n\nimport io.reactivex.Observable;\n\npublic interface ICameraModule {\n\n//    Observable<FxResult> openCamera(FxRequest request);\n    Observable<FxResult> startPreview(FxRequest request);\n\n    void initModule(CameraModule.ModuleFlag moduleFlag);\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/model/ICameraModule.java	(revision c3508ea1e906c0416fc6cffc67df8fe7dfb03eea)
++++ fx_lib_camera/src/main/java/com/cfox/camera/model/ICameraModule.java	(date 1571031523000)
+@@ -7,8 +7,9 @@
+ 
+ public interface ICameraModule {
+ 
+-//    Observable<FxResult> openCamera(FxRequest request);
++//    Observable<FxResult> onOpenCamera(FxRequest request);
+     Observable<FxResult> startPreview(FxRequest request);
+ 
+     void initModule(CameraModule.ModuleFlag moduleFlag);
++    Observable<FxResult> onStop();
+ }
+Index: fx_lib_camera/src/main/java/com/cfox/camera/model/CameraModule.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.model;\n\nimport android.content.Context;\nimport android.util.Log;\n\nimport com.cfox.camera.camera.IFxCameraDevice;\nimport com.cfox.camera.camera.FxCameraDevice;\nimport com.cfox.camera.camera.PhotoSessionHelper;\nimport com.cfox.camera.camera.VideoSessionHelper;\nimport com.cfox.camera.model.module.IModule;\nimport com.cfox.camera.model.module.PhotoModule;\nimport com.cfox.camera.model.module.VideoModule;\nimport com.cfox.camera.surface.SurfaceHelper;\nimport com.cfox.camera.utils.FxRe;\nimport com.cfox.camera.utils.FxRequest;\nimport com.cfox.camera.utils.FxResult;\n\nimport java.util.HashMap;\nimport java.util.Map;\n\nimport io.reactivex.Observable;\nimport io.reactivex.ObservableEmitter;\nimport io.reactivex.ObservableOnSubscribe;\nimport io.reactivex.ObservableSource;\nimport io.reactivex.functions.BiFunction;\nimport io.reactivex.functions.Function;\n\npublic class CameraModule implements ICameraModule {\n    private static final String TAG = \"CameraModule\";\n    private static ICameraModule sCameraModule;\n    private Map<ModuleFlag, IModule> mModuleMap = new HashMap<>(ModuleFlag.values().length);\n    private IModule mCurrentModule;\n\n    public enum ModuleFlag {\n        MODULE_PHOTO,\n        MODULE_VIDEO\n    }\n\n    public static ICameraModule getInstance(Context context) {\n        if (sCameraModule == null) {\n            synchronized (CameraModule.class) {\n                if (sCameraModule == null) {\n                    sCameraModule = new CameraModule(context);\n                }\n            }\n        }\n        return sCameraModule;\n    }\n\n    @Override\n    public Observable<FxResult> startPreview(final FxRequest request) {\n        SurfaceHelper mSurfaceHelper = (SurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);\n        return Observable.combineLatest(mSurfaceHelper.isAvailable(), mCurrentModule.openCamera(request),\n                new BiFunction<FxRequest, FxResult, FxResult>() {\n            @Override\n            public FxResult apply(FxRequest request, FxResult fxResult) throws Exception {\n                return fxResult;\n            }\n        }).flatMap(new Function<FxResult, ObservableSource<FxResult>>() {\n            @Override\n            public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {\n                String openStatus = fxResult.getString(FxRe.Key.OPEN_CAMERA_STATUS, FxRe.Value.OPEN_FAIL);\n                Log.d(TAG, \"apply: open status :\" + openStatus);\n                if (openStatus.equals(FxRe.Value.OPEN_SUCCESS)) {\n                    request.put(FxRe.Key.CAMERA_DEVICE, fxResult.getObj(FxRe.Key.CAMERA_DEVICE));\n                    return mCurrentModule.onStartPreview(request);\n                }\n                return Observable.create(new ObservableOnSubscribe<FxResult>() {\n                    @Override\n                    public void subscribe(ObservableEmitter<FxResult> emitter) throws Exception {\n\n                    }\n                });\n            }\n        });\n    }\n\n    @Override\n    public void initModule(ModuleFlag moduleFlag) {\n        Log.d(TAG, \"initModule: module flag:\" + moduleFlag);\n        mCurrentModule = mModuleMap.get(moduleFlag);\n    }\n\n    private CameraModule(Context context) {\n        IFxCameraDevice cameraDevice = FxCameraDevice.getsInstance(context);\n        mModuleMap.put(ModuleFlag.MODULE_PHOTO, new PhotoModule(cameraDevice, new PhotoSessionHelper()));\n        mModuleMap.put(ModuleFlag.MODULE_VIDEO, new VideoModule(cameraDevice, new VideoSessionHelper()));\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/model/CameraModule.java	(revision c3508ea1e906c0416fc6cffc67df8fe7dfb03eea)
++++ fx_lib_camera/src/main/java/com/cfox/camera/model/CameraModule.java	(date 1571031501000)
+@@ -1,6 +1,7 @@
+ package com.cfox.camera.model;
+ 
+ import android.content.Context;
++import android.hardware.camera2.CameraAccessException;
+ import android.util.Log;
+ 
+ import com.cfox.camera.camera.IFxCameraDevice;
+@@ -49,30 +50,7 @@
+ 
+     @Override
+     public Observable<FxResult> startPreview(final FxRequest request) {
+-        SurfaceHelper mSurfaceHelper = (SurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);
+-        return Observable.combineLatest(mSurfaceHelper.isAvailable(), mCurrentModule.openCamera(request),
+-                new BiFunction<FxRequest, FxResult, FxResult>() {
+-            @Override
+-            public FxResult apply(FxRequest request, FxResult fxResult) throws Exception {
+-                return fxResult;
+-            }
+-        }).flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
+-            @Override
+-            public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
+-                String openStatus = fxResult.getString(FxRe.Key.OPEN_CAMERA_STATUS, FxRe.Value.OPEN_FAIL);
+-                Log.d(TAG, "apply: open status :" + openStatus);
+-                if (openStatus.equals(FxRe.Value.OPEN_SUCCESS)) {
+-                    request.put(FxRe.Key.CAMERA_DEVICE, fxResult.getObj(FxRe.Key.CAMERA_DEVICE));
+-                    return mCurrentModule.onStartPreview(request);
+-                }
+-                return Observable.create(new ObservableOnSubscribe<FxResult>() {
+-                    @Override
+-                    public void subscribe(ObservableEmitter<FxResult> emitter) throws Exception {
+-
+-                    }
+-                });
+-            }
+-        });
++        return  mCurrentModule.onStartPreview(request);
+     }
+ 
+     @Override
+@@ -86,4 +64,9 @@
+         mModuleMap.put(ModuleFlag.MODULE_PHOTO, new PhotoModule(cameraDevice, new PhotoSessionHelper()));
+         mModuleMap.put(ModuleFlag.MODULE_VIDEO, new VideoModule(cameraDevice, new VideoSessionHelper()));
+     }
++
++    @Override
++    public Observable<FxResult> onStop() {
++        return mCurrentModule.onStop();
++    }
+ }
+Index: fx_lib_camera/src/main/java/com/cfox/camera/model/module/BaseModule.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.model.module;\n\n\nimport android.hardware.camera2.CameraAccessException;\nimport android.hardware.camera2.CaptureRequest;\n\nimport com.cfox.camera.camera.IFxCameraDevice;\nimport com.cfox.camera.camera.IFxCameraSession;\nimport com.cfox.camera.camera.ISessionHelper;\nimport com.cfox.camera.utils.FxRe;\nimport com.cfox.camera.utils.FxRequest;\nimport com.cfox.camera.utils.FxResult;\n\nimport io.reactivex.Observable;\nimport io.reactivex.ObservableEmitter;\nimport io.reactivex.ObservableOnSubscribe;\n\npublic abstract class BaseModule implements IModule {\n\n    private IFxCameraDevice mCameraDevice;\n    private ISessionHelper mSessionHelper;\n\n    public BaseModule(IFxCameraDevice cameraDevice, ISessionHelper sessionHelper) {\n        this.mCameraDevice = cameraDevice;\n        this.mSessionHelper = sessionHelper;\n    }\n\n    @Override\n    public Observable<FxResult> onStartPreview(FxRequest request) throws CameraAccessException {\n\n        CaptureRequest.Builder builder = mSessionHelper.createRequestBuilder(request);\n        request.put(FxRe.Key.PREVIEW_BUILDER, builder);\n        return mSessionHelper.createPreviewSession(request);\n    }\n\n    @Override\n    public Observable<FxResult> openCamera(FxRequest request) {\n        return mCameraDevice.openCameraDevice(request);\n    }\n}\n\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/model/module/BaseModule.java	(revision c3508ea1e906c0416fc6cffc67df8fe7dfb03eea)
++++ fx_lib_camera/src/main/java/com/cfox/camera/model/module/BaseModule.java	(date 1571031699000)
+@@ -3,19 +3,26 @@
+ 
+ import android.hardware.camera2.CameraAccessException;
+ import android.hardware.camera2.CaptureRequest;
++import android.util.Log;
+ 
+ import com.cfox.camera.camera.IFxCameraDevice;
+-import com.cfox.camera.camera.IFxCameraSession;
+ import com.cfox.camera.camera.ISessionHelper;
++import com.cfox.camera.surface.SurfaceHelper;
+ import com.cfox.camera.utils.FxRe;
+ import com.cfox.camera.utils.FxRequest;
+ import com.cfox.camera.utils.FxResult;
++import com.cfox.camera.utils.ThreadHandlerManager;
+ 
+ import io.reactivex.Observable;
+ import io.reactivex.ObservableEmitter;
+ import io.reactivex.ObservableOnSubscribe;
++import io.reactivex.ObservableSource;
++import io.reactivex.android.schedulers.AndroidSchedulers;
++import io.reactivex.functions.BiFunction;
++import io.reactivex.functions.Function;
+ 
+ public abstract class BaseModule implements IModule {
++    private static final String TAG = "BaseModule";
+ 
+     private IFxCameraDevice mCameraDevice;
+     private ISessionHelper mSessionHelper;
+@@ -26,16 +33,49 @@
+     }
+ 
+     @Override
+-    public Observable<FxResult> onStartPreview(FxRequest request) throws CameraAccessException {
+-
+-        CaptureRequest.Builder builder = mSessionHelper.createRequestBuilder(request);
+-        request.put(FxRe.Key.PREVIEW_BUILDER, builder);
+-        return mSessionHelper.createPreviewSession(request);
++    public Observable<FxResult> onStartPreview(final FxRequest request) {
++        SurfaceHelper mSurfaceHelper = (SurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);
++        return Observable.combineLatest(mSurfaceHelper.isAvailable(), onOpenCamera(request),
++                new BiFunction<FxRequest, FxResult, FxResult>() {
++                    @Override
++                    public FxResult apply(FxRequest request, FxResult fxResult) throws Exception {
++                        return fxResult;
++                    }
++                }).flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
++            @Override
++            public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
++                String openStatus = fxResult.getString(FxRe.Key.OPEN_CAMERA_STATUS, FxRe.Value.OPEN_FAIL);
++                Log.d(TAG, "apply: open status :" + openStatus);
++                if (openStatus.equals(FxRe.Value.OPEN_SUCCESS)) {
++                    request.put(FxRe.Key.CAMERA_DEVICE, fxResult.getObj(FxRe.Key.CAMERA_DEVICE));
++                    CaptureRequest.Builder builder = mSessionHelper.createRequestBuilder(request);
++                    request.put(FxRe.Key.PREVIEW_BUILDER, builder);
++                    return mSessionHelper.createPreviewSession(request);
++                }
++                return Observable.create(new ObservableOnSubscribe<FxResult>() {
++                    @Override
++                    public void subscribe(ObservableEmitter<FxResult> emitter) throws Exception {
++
++                    }
++                });
++            }
++        });
+     }
+ 
+     @Override
+-    public Observable<FxResult> openCamera(FxRequest request) {
++    public Observable<FxResult> onOpenCamera(FxRequest request) {
+         return mCameraDevice.openCameraDevice(request);
+     }
++
++    @Override
++    public Observable<FxResult> onStop() {
++        return Observable.create(new ObservableOnSubscribe<FxResult>() {
++            @Override
++            public void subscribe(ObservableEmitter<FxResult> emitter) throws Exception {
++                mSessionHelper.closeSession();
++                mCameraDevice.closeCameraDevice();
++            }
++        }).subscribeOn(AndroidSchedulers.from(ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_OTHER).getLooper()));
++    }
+ }
+ 
+Index: fx_lib_camera/src/main/java/com/cfox/camera/IFxCameraManager.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera;\n\n\nimport com.cfox.camera.controller.IController;\nimport com.cfox.camera.surface.ISurfaceHelper;\n\npublic interface IFxCameraManager {\n\n    IController photo();\n    IController video();\n    void setSurfaceHelper(ISurfaceHelper surfaceHelper);\n\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/IFxCameraManager.java	(revision c3508ea1e906c0416fc6cffc67df8fe7dfb03eea)
++++ fx_lib_camera/src/main/java/com/cfox/camera/IFxCameraManager.java	(date 1571023663000)
+@@ -2,12 +2,9 @@
+ 
+ 
+ import com.cfox.camera.controller.IController;
+-import com.cfox.camera.surface.ISurfaceHelper;
+ 
+ public interface IFxCameraManager {
+ 
+     IController photo();
+     IController video();
+-    void setSurfaceHelper(ISurfaceHelper surfaceHelper);
+-
+ }
+Index: fx_lib_camera/src/main/java/com/cfox/camera/model/module/IModule.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.model.module;\n\n\nimport android.hardware.camera2.CameraAccessException;\n\nimport com.cfox.camera.utils.FxRequest;\nimport com.cfox.camera.utils.FxResult;\n\nimport io.reactivex.Observable;\n\npublic interface IModule {\n\n    Observable<FxResult> onStartPreview(FxRequest request) throws CameraAccessException;\n    Observable<FxResult> openCamera(FxRequest request);\n\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/model/module/IModule.java	(revision c3508ea1e906c0416fc6cffc67df8fe7dfb03eea)
++++ fx_lib_camera/src/main/java/com/cfox/camera/model/module/IModule.java	(date 1571031491000)
+@@ -1,8 +1,6 @@
+ package com.cfox.camera.model.module;
+ 
+ 
+-import android.hardware.camera2.CameraAccessException;
+-
+ import com.cfox.camera.utils.FxRequest;
+ import com.cfox.camera.utils.FxResult;
+ 
+@@ -10,7 +8,8 @@
+ 
+ public interface IModule {
+ 
+-    Observable<FxResult> onStartPreview(FxRequest request) throws CameraAccessException;
+-    Observable<FxResult> openCamera(FxRequest request);
++    Observable<FxResult> onStartPreview(FxRequest request);
++    Observable<FxResult> onOpenCamera(FxRequest request);
++    Observable<FxResult> onStop();
+ 
+ }
+Index: fx_lib_camera/src/main/java/com/cfox/camera/surface/SurfaceHelper.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.surface;\n\nimport android.graphics.SurfaceTexture;\nimport android.util.Log;\nimport android.view.Surface;\nimport android.view.TextureView;\n\nimport com.cfox.camera.utils.FxRequest;\n\nimport java.util.ArrayList;\nimport java.util.List;\n\nimport io.reactivex.Observable;\nimport io.reactivex.ObservableEmitter;\nimport io.reactivex.ObservableOnSubscribe;\n\npublic class SurfaceHelper implements ISurfaceHelper {\n    private static final String TAG = \"SurfaceHelper\";\n    private final Object obj = new Object();\n    private TextureView mTextureView;\n    private List<Surface> mSurfaces;\n\n    public SurfaceHelper(TextureView textureView) {\n        this.mTextureView = textureView;\n        this.mTextureView.setSurfaceTextureListener(mTextureListener);\n        this.mSurfaces = new ArrayList<>();\n    }\n\n    public TextureView getTextureView() {\n        return mTextureView;\n    }\n\n    public Surface getSurface() {\n        return new Surface(mTextureView.getSurfaceTexture());\n    }\n\n    public SurfaceTexture getSurfaceTexture() {\n        return mTextureView.getSurfaceTexture();\n    }\n\n    public Observable<FxRequest> isAvailable() {\n        return Observable.create(new ObservableOnSubscribe<FxRequest>() {\n            @Override\n            public void subscribe(ObservableEmitter<FxRequest> emitter) throws Exception {\n                Log.d(TAG, \"subscribe: ..........\");\n                if (!mTextureView.isAvailable()) {\n                    synchronized (obj) {\n                        if (!mTextureView.isAvailable()) {\n                            obj.wait(10 * 1000);\n                        }\n                        if (!mTextureView.isAvailable()) {\n                            throw new RuntimeException(\"Surface create error wait 10 s\");\n                        }\n                    }\n                }\n\n                Log.d(TAG, \"SurfaceTexture isAvailable\");\n                mSurfaces.add(getSurface());\n                FxRequest request = new FxRequest();\n                emitter.onNext(request);\n//                emitter.onComplete();\n            }\n        });\n    }\n\n    @Override\n    public List<Surface> getSurfaces() {\n        return mSurfaces;\n    }\n\n    @Override\n    public void addSurface(Surface surface) {\n        if (!mSurfaces.contains(surface)) {\n            mSurfaces.add(surface);\n        }\n    }\n\n    private TextureView.SurfaceTextureListener mTextureListener = new TextureView.SurfaceTextureListener() {\n        @Override\n        public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {\n            sendNotify();\n\n        }\n\n        @Override\n        public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {\n\n        }\n\n        @Override\n        public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {\n            return false;\n        }\n\n        @Override\n        public void onSurfaceTextureUpdated(SurfaceTexture surface) {\n\n        }\n    };\n\n    private void sendNotify() {\n        synchronized (obj) {\n            obj.notifyAll();\n        }\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/surface/SurfaceHelper.java	(revision c3508ea1e906c0416fc6cffc67df8fe7dfb03eea)
++++ fx_lib_camera/src/main/java/com/cfox/camera/surface/SurfaceHelper.java	(date 1571029791000)
+@@ -6,6 +6,7 @@
+ import android.view.TextureView;
+ 
+ import com.cfox.camera.utils.FxRequest;
++import com.cfox.camera.utils.ThreadHandlerManager;
+ 
+ import java.util.ArrayList;
+ import java.util.List;
+@@ -13,6 +14,8 @@
+ import io.reactivex.Observable;
+ import io.reactivex.ObservableEmitter;
+ import io.reactivex.ObservableOnSubscribe;
++import io.reactivex.Scheduler;
++import io.reactivex.android.schedulers.AndroidSchedulers;
+ 
+ public class SurfaceHelper implements ISurfaceHelper {
+     private static final String TAG = "SurfaceHelper";
+@@ -60,7 +63,7 @@
+                 emitter.onNext(request);
+ //                emitter.onComplete();
+             }
+-        });
++        }).subscribeOn(AndroidSchedulers.from(ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_OTHER).getLooper()));
+     }
+ 
+     @Override
+@@ -78,22 +81,25 @@
+     private TextureView.SurfaceTextureListener mTextureListener = new TextureView.SurfaceTextureListener() {
+         @Override
+         public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
++            Log.d(TAG, "onSurfaceTextureAvailable: .......");
+             sendNotify();
+ 
+         }
+ 
+         @Override
+         public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+-
++            Log.d(TAG, "onSurfaceTextureSizeChanged: ....");
+         }
+ 
+         @Override
+         public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
++            Log.d(TAG, "onSurfaceTextureDestroyed: ,,,,,,,");
+             return false;
+         }
+ 
+         @Override
+         public void onSurfaceTextureUpdated(SurfaceTexture surface) {
++            Log.d(TAG, "onSurfaceTextureUpdated: ,,,,,,,,");
+ 
+         }
+     };
+Index: fx_lib_camera/src/main/java/com/cfox/camera/controller/AbsController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.controller;\n\nimport android.content.Context;\nimport android.util.Log;\n\nimport com.cfox.camera.model.ICameraModule;\nimport com.cfox.camera.model.CameraModule;\nimport com.cfox.camera.surface.ISurfaceHelper;\nimport com.cfox.camera.utils.FxRe;\nimport com.cfox.camera.utils.FxRequest;\nimport com.cfox.camera.utils.FxResult;\n\nimport io.reactivex.Observer;\nimport io.reactivex.disposables.Disposable;\n\npublic abstract class AbsController implements IController {\n    private static final String TAG = \"AbsController\";\n\n    private ICameraModule mCameraModule;\n    private ISurfaceHelper mSurfaceHelper;\n\n    AbsController(Context context, ISurfaceHelper surfaceHelper, CameraModule.ModuleFlag moduleFlag) {\n        mCameraModule = CameraModule.getInstance(context);\n        mCameraModule.initModule(moduleFlag);\n        mSurfaceHelper = surfaceHelper;\n    }\n\n    @Override\n    public void startPreview(FxRequest request) {\n        mCameraModule.startPreview(request).subscribe(new Observer<FxResult>() {\n            @Override\n            public void onSubscribe(Disposable d) {\n                Log.d(TAG, \"onSubscribe: ......\");\n            }\n\n            @Override\n            public void onNext(FxResult fxResult) {\n                String status = fxResult.getString(FxRe.Key.OPEN_CAMERA_STATUS);\n                Log.d(TAG, \"onNext: ,,,,,,,,\" + status);\n\n            }\n\n            @Override\n            public void onError(Throwable e) {\n                Log.d(TAG, \"onError: .........\" + e);\n            }\n\n            @Override\n            public void onComplete() {\n                Log.d(TAG, \"onComplete: .......\");\n            }\n        });\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/controller/AbsController.java	(revision c3508ea1e906c0416fc6cffc67df8fe7dfb03eea)
++++ fx_lib_camera/src/main/java/com/cfox/camera/controller/AbsController.java	(date 1571030025000)
+@@ -17,12 +17,10 @@
+     private static final String TAG = "AbsController";
+ 
+     private ICameraModule mCameraModule;
+-    private ISurfaceHelper mSurfaceHelper;
+ 
+-    AbsController(Context context, ISurfaceHelper surfaceHelper, CameraModule.ModuleFlag moduleFlag) {
++    AbsController(Context context, CameraModule.ModuleFlag moduleFlag) {
+         mCameraModule = CameraModule.getInstance(context);
+         mCameraModule.initModule(moduleFlag);
+-        mSurfaceHelper = surfaceHelper;
+     }
+ 
+     @Override
+@@ -51,4 +49,33 @@
+             }
+         });
+     }
++
++    @Override
++    public void stop() {
++        mCameraModule.onStop().subscribe(new Observer<FxResult>() {
++            @Override
++            public void onSubscribe(Disposable d) {
++                Log.d(TAG, "onSubscribe: stop   ");
++
++            }
++
++            @Override
++            public void onNext(FxResult fxResult) {
++                Log.d(TAG, "onNext: stop");
++
++            }
++
++            @Override
++            public void onError(Throwable e) {
++                Log.d(TAG, "onError: ,,,,, stop");
++
++            }
++
++            @Override
++            public void onComplete() {
++                Log.d(TAG, "onComplete: ,,,,,, stop");
++
++            }
++        });
++    }
+ }
+Index: fx_lib_camera/src/main/java/com/cfox/camera/utils/ThreadHandlerManager.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.utils;\n\nimport android.os.Handler;\nimport android.os.HandlerThread;\nimport android.os.Looper;\n\nimport java.util.HashMap;\nimport java.util.Map;\n\npublic class ThreadHandlerManager {\n    public enum Tag {\n        T_TYPE_LOAD(\"load\");\n        protected final String tag;\n        Tag(String tag) {\n            this.tag = tag;\n        }\n    }\n\n    private Map<Tag, MyHandlerThread> mHandlerThreadMap;\n    private ThreadHandlerManager() {\n        mHandlerThreadMap = new HashMap<>(Tag.values().length);\n        for (Tag tag : Tag.values()) {\n            mHandlerThreadMap.put(tag, new MyHandlerThread(tag));\n        }\n    }\n\n    public MyHandlerThread obtain(Tag tag) {\n        if (mHandlerThreadMap.containsKey(tag)) {\n            return mHandlerThreadMap.get(tag);\n        }\n\n        return null;\n    }\n\n    public void release() {\n        for (MyHandlerThread handlerThread : mHandlerThreadMap.values()) {\n            handlerThread.stop();\n        }\n    }\n\n    public static ThreadHandlerManager getInstance() {\n        return Create.threadHandlerManager;\n    }\n\n    private static class Create {\n        static ThreadHandlerManager threadHandlerManager = new ThreadHandlerManager();\n    }\n\n    public class MyHandlerThread {\n        HandlerThread mHandlerThread;\n        Handler mHandler;\n\n        MyHandlerThread(Tag tag) {\n            mHandlerThread = new HandlerThread(tag.tag);\n            mHandlerThread.start();\n            mHandler = new Handler(mHandlerThread.getLooper());\n        }\n\n        public Looper getLooper() {\n            return mHandler.getLooper();\n        }\n\n        public Thread getThread() {\n            return mHandler.getLooper().getThread();\n        }\n\n        public Handler getHandler() { return mHandler; }\n\n        private void stop() {\n            mHandlerThread.quitSafely();\n\n            try {\n                mHandlerThread.join();\n                mHandlerThread = null;\n                mHandler = null;\n            } catch (InterruptedException e) {\n                e.printStackTrace();\n            }\n        }\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/utils/ThreadHandlerManager.java	(revision c3508ea1e906c0416fc6cffc67df8fe7dfb03eea)
++++ fx_lib_camera/src/main/java/com/cfox/camera/utils/ThreadHandlerManager.java	(date 1571029646000)
+@@ -9,7 +9,8 @@
+ 
+ public class ThreadHandlerManager {
+     public enum Tag {
+-        T_TYPE_LOAD("load");
++        T_TYPE_LOAD("load"),
++        T_TYPE_OTHER("other");
+         protected final String tag;
+         Tag(String tag) {
+             this.tag = tag;
+Index: fx_lib_camera/src/main/java/com/cfox/camera/controller/FxPhotoController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.controller;\n\n\nimport android.content.Context;\n\nimport com.cfox.camera.model.CameraModule;\nimport com.cfox.camera.surface.ISurfaceHelper;\n\npublic class FxPhotoController extends AbsController {\n\n\n    public FxPhotoController(Context context, ISurfaceHelper surfaceHelper) {\n        super(context, surfaceHelper, CameraModule.ModuleFlag.MODULE_PHOTO);\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/controller/FxPhotoController.java	(revision c3508ea1e906c0416fc6cffc67df8fe7dfb03eea)
++++ fx_lib_camera/src/main/java/com/cfox/camera/controller/FxPhotoController.java	(date 1571023595000)
+@@ -4,12 +4,11 @@
+ import android.content.Context;
+ 
+ import com.cfox.camera.model.CameraModule;
+-import com.cfox.camera.surface.ISurfaceHelper;
+ 
+ public class FxPhotoController extends AbsController {
+ 
+ 
+-    public FxPhotoController(Context context, ISurfaceHelper surfaceHelper) {
+-        super(context, surfaceHelper, CameraModule.ModuleFlag.MODULE_PHOTO);
++    public FxPhotoController(Context context) {
++        super(context, CameraModule.ModuleFlag.MODULE_PHOTO);
+     }
+ }
+Index: fx_lib_camera/src/main/java/com/cfox/camera/camera/AbsBaseSessionHelper.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.camera;\n\nimport android.hardware.camera2.CameraAccessException;\nimport android.hardware.camera2.CaptureRequest;\n\nimport com.cfox.camera.utils.FxRequest;\nimport com.cfox.camera.utils.FxResult;\n\nimport io.reactivex.Observable;\n\npublic abstract class AbsBaseSessionHelper implements ISessionHelper{\n    private IFxCameraSession mFxCameraSession;\n\n\n    public AbsBaseSessionHelper() {\n        this.mFxCameraSession = FxCameraSession.getsInstance();\n    }\n\n    @Override\n    public Observable<FxResult> createPreviewSession(FxRequest fxRequest) {\n        return mFxCameraSession.createPreviewSession(fxRequest);\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/camera/AbsBaseSessionHelper.java	(revision c3508ea1e906c0416fc6cffc67df8fe7dfb03eea)
++++ fx_lib_camera/src/main/java/com/cfox/camera/camera/AbsBaseSessionHelper.java	(date 1571029014000)
+@@ -1,8 +1,5 @@
+ package com.cfox.camera.camera;
+ 
+-import android.hardware.camera2.CameraAccessException;
+-import android.hardware.camera2.CaptureRequest;
+-
+ import com.cfox.camera.utils.FxRequest;
+ import com.cfox.camera.utils.FxResult;
+ 
+@@ -20,4 +17,9 @@
+     public Observable<FxResult> createPreviewSession(FxRequest fxRequest) {
+         return mFxCameraSession.createPreviewSession(fxRequest);
+     }
++
++    @Override
++    public void closeSession() {
++        mFxCameraSession.closeSession();
++    }
+ }
+Index: fx_lib_camera/src/main/java/com/cfox/camera/camera/IFxCameraDevice.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.camera;\n\nimport com.cfox.camera.utils.FxRequest;\nimport com.cfox.camera.utils.FxResult;\n\nimport io.reactivex.Observable;\n\npublic interface IFxCameraDevice {\n\n    Observable<FxResult> openCameraDevice(FxRequest fxRequest);\n    Observable<FxResult> closeCameraDevice(FxRequest request);\n\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/camera/IFxCameraDevice.java	(revision c3508ea1e906c0416fc6cffc67df8fe7dfb03eea)
++++ fx_lib_camera/src/main/java/com/cfox/camera/camera/IFxCameraDevice.java	(date 1571029188000)
+@@ -8,6 +8,6 @@
+ public interface IFxCameraDevice {
+ 
+     Observable<FxResult> openCameraDevice(FxRequest fxRequest);
+-    Observable<FxResult> closeCameraDevice(FxRequest request);
++    void closeCameraDevice();
+ 
+ }
+Index: module_camera/src/main/java/com/cfox/module_camera/CameraMainFragment.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.module_camera;\n\nimport android.os.Bundle;\nimport android.view.LayoutInflater;\nimport android.view.TextureView;\nimport android.view.View;\nimport android.view.ViewGroup;\nimport android.widget.Button;\n\nimport androidx.annotation.NonNull;\nimport androidx.annotation.Nullable;\n\nimport com.alibaba.android.arouter.facade.annotation.Route;\nimport com.cfox.camera.surface.SurfaceHelper;\nimport com.cfox.lib_common.arouter.RouterPath;\nimport com.cfox.lib_common.base.BaseFragment;\n\n\n@Route(path = RouterPath.MAIN_CAMERA_FG)\npublic class CameraMainFragment extends BaseFragment {\n    private static final String TAG = \"CameraMainFragment\";\n    private TextureView mPreviewView;\n    private Button mBtnOpenDevice;\n    private SurfaceHelper mSurfaceHelper;\n    private CameraController mCameraController;\n\n    @Override\n    public void onCreate(@Nullable Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        mCameraController = new CameraController();\n    }\n\n    @Nullable\n    @Override\n    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {\n        return inflater.inflate(R.layout.fragment_camera_main, container, false);\n    }\n\n    @Override\n    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {\n        super.onViewCreated(view, savedInstanceState);\n\n        mPreviewView = view.findViewById(R.id.preview_view);\n        mSurfaceHelper = new SurfaceHelper(mPreviewView);\n        mBtnOpenDevice = view.findViewById(R.id.btn_open_device);\n        mBtnOpenDevice.setOnClickListener(new View.OnClickListener() {\n            @Override\n            public void onClick(View v) {\n                mCameraController.openPreview(mSurfaceHelper);\n            }\n        });\n\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- module_camera/src/main/java/com/cfox/module_camera/CameraMainFragment.java	(revision c3508ea1e906c0416fc6cffc67df8fe7dfb03eea)
++++ module_camera/src/main/java/com/cfox/module_camera/CameraMainFragment.java	(date 1571029330000)
+@@ -1,6 +1,7 @@
+ package com.cfox.module_camera;
+ 
+ import android.os.Bundle;
++import android.util.Log;
+ import android.view.LayoutInflater;
+ import android.view.TextureView;
+ import android.view.View;
+@@ -49,6 +50,20 @@
+                 mCameraController.openPreview(mSurfaceHelper);
+             }
+         });
++
++    }
++
++    @Override
++    public void onResume() {
++        super.onResume();
++        Log.d(TAG, "onResume: .......");
++        mCameraController.openPreview(mSurfaceHelper);
++    }
+ 
++    @Override
++    public void onPause() {
++        super.onPause();
++        Log.d(TAG, "onPause: ........");
++        mCameraController.stopCamera();
+     }
+ }
+Index: fx_lib_camera/src/main/java/com/cfox/camera/camera/FxCameraDevice.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.camera;\n\nimport android.annotation.SuppressLint;\nimport android.content.Context;\nimport android.hardware.camera2.CameraAccessException;\nimport android.hardware.camera2.CameraDevice;\nimport android.hardware.camera2.CameraManager;\nimport android.util.Log;\n\nimport androidx.annotation.NonNull;\n\nimport com.cfox.camera.utils.FxRe;\nimport com.cfox.camera.utils.FxRequest;\nimport com.cfox.camera.utils.FxResult;\n\nimport java.util.concurrent.Semaphore;\nimport java.util.concurrent.TimeUnit;\n\nimport io.reactivex.Observable;\nimport io.reactivex.ObservableEmitter;\nimport io.reactivex.ObservableOnSubscribe;\n\npublic class FxCameraDevice implements IFxCameraDevice {\n\n    private static final String TAG = \"FxCameraDeviceImpl\";\n    private static IFxCameraDevice sInstance;\n    private Semaphore mCameraOpenCloseLock = new Semaphore(1);\n    private CameraManager mCameraManager;\n    private CameraDevice mCameraDevice;\n\n    private FxCameraDevice(Context context) {\n        mCameraManager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);\n    }\n\n\n    public static IFxCameraDevice getsInstance(Context context) {\n        if (sInstance == null) {\n            synchronized (FxCameraDevice.class) {\n                if (sInstance == null) {\n                    sInstance = new FxCameraDevice(context);\n                }\n            }\n        }\n        return sInstance;\n    }\n\n    @SuppressLint(\"MissingPermission\")\n    @Override\n    public Observable<FxResult> openCameraDevice(final FxRequest fxRequest) {\n        closeCameraDevice();\n        return Observable.create(new ObservableOnSubscribe<FxResult>() {\n            @Override\n            public void subscribe(final ObservableEmitter<FxResult> emitter) throws Exception {\n                String cameraId = fxRequest.getString(FxRe.Key.CAMERA_ID);\n                Log.d(TAG, \"subscribe: cameraId:----->\" + cameraId);\n                try {\n                    if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {\n                        throw new RuntimeException(\"Time out waiting to lock camera opening.\");\n                    }\n\n                    mCameraManager.openCamera(cameraId, new CameraDevice.StateCallback() {\n                        @Override\n                        public void onOpened(@NonNull CameraDevice camera) {\n                            mCameraDevice = camera;\n                            Log.d(TAG, \"onOpened: \");\n                            FxResult result = new FxResult();\n                            result.put(FxRe.Key.CAMERA_DEVICE, camera);\n                            result.put(FxRe.Key.OPEN_CAMERA_STATUS, FxRe.Value.OPEN_SUCCESS);\n                            emitter.onNext(result);\n//                            emitter.onComplete();\n                        }\n\n                        @Override\n                        public void onDisconnected(@NonNull CameraDevice camera) {\n                            Log.d(TAG, \"onDisconnected: \");\n\n                        }\n\n                        @Override\n                        public void onError(@NonNull CameraDevice camera, int error) {\n                            Log.d(TAG, \"onError: code:\" + error);\n                            FxResult result = new FxResult();\n                            result.put(FxRe.Key.CAMERA_DEVICE, camera);\n                            result.put(FxRe.Key.OPEN_CAMERA_STATUS, FxRe.Value.OPEN_FAIL);\n                            result.getInt(FxRe.Key.OPEN_CAMERA_ERROR, error);\n                            emitter.onNext(result);\n\n                        }\n                    }, null);\n                } catch (CameraAccessException | InterruptedException e) {\n                    e.printStackTrace();\n                } finally {\n                    mCameraOpenCloseLock.release();\n                }\n            }\n        });\n    }\n\n    @Override\n    public Observable<FxResult> closeCameraDevice(FxRequest request) {\n        return Observable.create(new ObservableOnSubscribe<FxResult>() {\n            @Override\n            public void subscribe(ObservableEmitter<FxResult> emitter) throws Exception {\n                closeCameraDevice();\n            }\n        });\n    }\n\n    private void closeCameraDevice() {\n        try {\n            mCameraOpenCloseLock.acquire();\n            if (mCameraDevice != null) {\n                mCameraDevice.close();\n            }\n        } catch (InterruptedException e) {\n            e.printStackTrace();\n        } finally {\n            mCameraOpenCloseLock.release();\n        }\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/camera/FxCameraDevice.java	(revision c3508ea1e906c0416fc6cffc67df8fe7dfb03eea)
++++ fx_lib_camera/src/main/java/com/cfox/camera/camera/FxCameraDevice.java	(date 1571029828000)
+@@ -97,16 +97,8 @@
+     }
+ 
+     @Override
+-    public Observable<FxResult> closeCameraDevice(FxRequest request) {
+-        return Observable.create(new ObservableOnSubscribe<FxResult>() {
+-            @Override
+-            public void subscribe(ObservableEmitter<FxResult> emitter) throws Exception {
+-                closeCameraDevice();
+-            }
+-        });
+-    }
+-
+-    private void closeCameraDevice() {
++    public void closeCameraDevice() {
++        Log.d(TAG, "closeCameraDevice: .......");
+         try {
+             mCameraOpenCloseLock.acquire();
+             if (mCameraDevice != null) {
+Index: fx_lib_camera/src/main/java/com/cfox/camera/camera/IFxCameraSession.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.camera;\n\nimport com.cfox.camera.utils.FxRequest;\nimport com.cfox.camera.utils.FxResult;\n\nimport io.reactivex.Observable;\n\npublic interface IFxCameraSession {\n\n    Observable<FxResult> createPreviewSession(FxRequest fxRequest);\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/camera/IFxCameraSession.java	(revision c3508ea1e906c0416fc6cffc67df8fe7dfb03eea)
++++ fx_lib_camera/src/main/java/com/cfox/camera/camera/IFxCameraSession.java	(date 1571024169000)
+@@ -8,4 +8,5 @@
+ public interface IFxCameraSession {
+ 
+     Observable<FxResult> createPreviewSession(FxRequest fxRequest);
++    void closeSession();
+ }
+Index: module_camera/src/main/java/com/cfox/module_camera/CameraController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.module_camera;\n\n\nimport com.cfox.camera.FxCamera;\nimport com.cfox.camera.FxCameraManager;\nimport com.cfox.camera.controller.IController;\nimport com.cfox.camera.surface.SurfaceHelper;\nimport com.cfox.camera.utils.FxRe;\nimport com.cfox.camera.utils.FxRequest;\n\npublic class CameraController {\n    private FxCameraManager mFxCameraManager;\n    private IController mCameraController;\n\n    public void openPreview(SurfaceHelper helper) {\n\n        FxRequest request = new FxRequest();\n        request.put(FxRe.Key.CAMERA_ID, FxRe.Camera.ID.BACK.id);\n        request.put(FxRe.Key.SURFACE_HELPER, helper);\n\n        mFxCameraManager = FxCamera.getInstance().getCameraManager();\n        mFxCameraManager.setSurfaceHelper(helper);\n        mCameraController = mFxCameraManager.photo();\n        mCameraController.startPreview(request);\n\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- module_camera/src/main/java/com/cfox/module_camera/CameraController.java	(revision c3508ea1e906c0416fc6cffc67df8fe7dfb03eea)
++++ module_camera/src/main/java/com/cfox/module_camera/CameraController.java	(date 1571029237000)
+@@ -19,9 +19,13 @@
+         request.put(FxRe.Key.SURFACE_HELPER, helper);
+ 
+         mFxCameraManager = FxCamera.getInstance().getCameraManager();
+-        mFxCameraManager.setSurfaceHelper(helper);
+         mCameraController = mFxCameraManager.photo();
+         mCameraController.startPreview(request);
+ 
++    }
++
++
++    public void stopCamera() {
++        mCameraController.stop();
+     }
+ }
+Index: fx_lib_camera/src/main/java/com/cfox/camera/camera/FxCameraSession.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.camera;\n\nimport android.hardware.camera2.CameraAccessException;\nimport android.hardware.camera2.CameraCaptureSession;\nimport android.hardware.camera2.CameraDevice;\nimport android.hardware.camera2.CaptureFailure;\nimport android.hardware.camera2.CaptureRequest;\nimport android.hardware.camera2.CaptureResult;\nimport android.hardware.camera2.TotalCaptureResult;\nimport android.view.Surface;\n\nimport androidx.annotation.NonNull;\n\nimport com.cfox.camera.surface.ISurfaceHelper;\nimport com.cfox.camera.utils.FxRe;\nimport com.cfox.camera.utils.FxRequest;\nimport com.cfox.camera.utils.FxResult;\n\nimport java.util.List;\n\nimport io.reactivex.Observable;\nimport io.reactivex.ObservableEmitter;\nimport io.reactivex.ObservableOnSubscribe;\n\npublic class FxCameraSession implements IFxCameraSession {\n    private static FxCameraSession sInstance;\n    private CameraDevice mCameraDevice;\n    private CameraCaptureSession mCaptureSession;\n    private CaptureRequest.Builder mRequestBuilder;\n\n    public static FxCameraSession getsInstance() {\n        if (sInstance == null) {\n            synchronized (FxCameraSession.class) {\n                if (sInstance == null) {\n                    sInstance = new FxCameraSession();\n                }\n            }\n        }\n        return sInstance;\n    }\n\n    @Override\n    public Observable<FxResult> createPreviewSession(FxRequest fxRequest) {\n        final ISurfaceHelper surfaceHelper = (ISurfaceHelper) fxRequest.getObj(FxRe.Key.SURFACE_HELPER);\n        mCameraDevice = (CameraDevice) fxRequest.getObj(FxRe.Key.CAMERA_DEVICE);\n        mRequestBuilder = (CaptureRequest.Builder) fxRequest.getObj(FxRe.Key.PREVIEW_BUILDER);\n        closeSession();\n        checkDeviceUNLL();\n        return Observable.create(new ObservableOnSubscribe<FxResult>() {\n            @Override\n            public void subscribe(final ObservableEmitter<FxResult> emitter) throws Exception {\n                mCameraDevice.createCaptureSession(surfaceHelper.getSurfaces(), new CameraCaptureSession.StateCallback() {\n                    @Override\n                    public void onConfigured(@NonNull CameraCaptureSession session) {\n                        mCaptureSession = session;\n                        try {\n                            sendRepeatingRequest(emitter);\n                        } catch (CameraAccessException e) {\n                            e.printStackTrace();\n                        }\n                    }\n\n                    @Override\n                    public void onConfigureFailed(@NonNull CameraCaptureSession session) {\n\n                    }\n                }, null);\n            }\n        });\n    }\n\n    private void sendRepeatingRequest(ObservableEmitter<FxResult> emitter) throws CameraAccessException {\n        mCaptureSession.setRepeatingRequest(mRequestBuilder.build(), new CameraCaptureSession.CaptureCallback() {\n            @Override\n            public void onCaptureStarted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, long timestamp, long frameNumber) {\n                super.onCaptureStarted(session, request, timestamp, frameNumber);\n            }\n\n            @Override\n            public void onCaptureProgressed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureResult partialResult) {\n                super.onCaptureProgressed(session, request, partialResult);\n            }\n\n            @Override\n            public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {\n                super.onCaptureCompleted(session, request, result);\n            }\n\n            @Override\n            public void onCaptureFailed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureFailure failure) {\n                super.onCaptureFailed(session, request, failure);\n            }\n\n            @Override\n            public void onCaptureSequenceCompleted(@NonNull CameraCaptureSession session, int sequenceId, long frameNumber) {\n                super.onCaptureSequenceCompleted(session, sequenceId, frameNumber);\n            }\n\n            @Override\n            public void onCaptureSequenceAborted(@NonNull CameraCaptureSession session, int sequenceId) {\n                super.onCaptureSequenceAborted(session, sequenceId);\n            }\n\n            @Override\n            public void onCaptureBufferLost(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull Surface target, long frameNumber) {\n                super.onCaptureBufferLost(session, request, target, frameNumber);\n            }\n        }, null);\n    }\n\n    private void closeSession() {\n        if (mCaptureSession != null) {\n            mCaptureSession.close();\n            mCaptureSession = null;\n        }\n    }\n\n    private void checkDeviceUNLL() {\n        if (mCameraDevice == null) {\n            throw new RuntimeException(\"FxCameraSessionImpl CameraDevice is null , \" +\n                    \"place use FxCameraSession setCameraDevice(CameraDevice cameraDevice) method set CameraDevice !!!!!!!\");\n        }\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/camera/FxCameraSession.java	(revision c3508ea1e906c0416fc6cffc67df8fe7dfb03eea)
++++ fx_lib_camera/src/main/java/com/cfox/camera/camera/FxCameraSession.java	(date 1571029815000)
+@@ -7,6 +7,7 @@
+ import android.hardware.camera2.CaptureRequest;
+ import android.hardware.camera2.CaptureResult;
+ import android.hardware.camera2.TotalCaptureResult;
++import android.util.Log;
+ import android.view.Surface;
+ 
+ import androidx.annotation.NonNull;
+@@ -16,13 +17,12 @@
+ import com.cfox.camera.utils.FxRequest;
+ import com.cfox.camera.utils.FxResult;
+ 
+-import java.util.List;
+-
+ import io.reactivex.Observable;
+ import io.reactivex.ObservableEmitter;
+ import io.reactivex.ObservableOnSubscribe;
+ 
+ public class FxCameraSession implements IFxCameraSession {
++    private static final String TAG = "FxCameraSession";
+     private static FxCameraSession sInstance;
+     private CameraDevice mCameraDevice;
+     private CameraCaptureSession mCaptureSession;
+@@ -108,7 +108,9 @@
+         }, null);
+     }
+ 
+-    private void closeSession() {
++    @Override
++    public void closeSession() {
++        Log.d(TAG, "closeSession: .......");
+         if (mCaptureSession != null) {
+             mCaptureSession.close();
+             mCaptureSession = null;
+Index: fx_lib_camera/src/main/java/com/cfox/camera/controller/IController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.controller;\n\nimport com.cfox.camera.utils.FxRequest;\n\n\npublic interface IController {\n    void startPreview(FxRequest request);\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/controller/IController.java	(revision c3508ea1e906c0416fc6cffc67df8fe7dfb03eea)
++++ fx_lib_camera/src/main/java/com/cfox/camera/controller/IController.java	(date 1571023863000)
+@@ -5,4 +5,5 @@
+ 
+ public interface IController {
+     void startPreview(FxRequest request);
++    void stop();
+ }
+Index: fx_lib_camera/src/main/java/com/cfox/camera/controller/FxVideoController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.controller;\n\nimport android.content.Context;\n\nimport com.cfox.camera.model.CameraModule;\nimport com.cfox.camera.surface.ISurfaceHelper;\n\npublic class FxVideoController extends AbsController {\n    public FxVideoController(Context context, ISurfaceHelper surfaceHelper) {\n        super(context, surfaceHelper, CameraModule.ModuleFlag.MODULE_VIDEO);\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/controller/FxVideoController.java	(revision c3508ea1e906c0416fc6cffc67df8fe7dfb03eea)
++++ fx_lib_camera/src/main/java/com/cfox/camera/controller/FxVideoController.java	(date 1571023499000)
+@@ -3,10 +3,9 @@
+ import android.content.Context;
+ 
+ import com.cfox.camera.model.CameraModule;
+-import com.cfox.camera.surface.ISurfaceHelper;
+ 
+ public class FxVideoController extends AbsController {
+-    public FxVideoController(Context context, ISurfaceHelper surfaceHelper) {
+-        super(context, surfaceHelper, CameraModule.ModuleFlag.MODULE_VIDEO);
++    public FxVideoController(Context context) {
++        super(context, CameraModule.ModuleFlag.MODULE_VIDEO);
+     }
+ }

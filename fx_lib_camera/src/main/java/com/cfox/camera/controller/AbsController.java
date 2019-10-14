@@ -17,12 +17,10 @@ public abstract class AbsController implements IController {
     private static final String TAG = "AbsController";
 
     private ICameraModule mCameraModule;
-    private ISurfaceHelper mSurfaceHelper;
 
-    AbsController(Context context, ISurfaceHelper surfaceHelper, CameraModule.ModuleFlag moduleFlag) {
+    AbsController(Context context, CameraModule.ModuleFlag moduleFlag) {
         mCameraModule = CameraModule.getInstance(context);
         mCameraModule.initModule(moduleFlag);
-        mSurfaceHelper = surfaceHelper;
     }
 
     @Override
@@ -48,6 +46,35 @@ public abstract class AbsController implements IController {
             @Override
             public void onComplete() {
                 Log.d(TAG, "onComplete: .......");
+            }
+        });
+    }
+
+    @Override
+    public void stop() {
+        mCameraModule.onStop().subscribe(new Observer<FxResult>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                Log.d(TAG, "onSubscribe: stop   ");
+
+            }
+
+            @Override
+            public void onNext(FxResult fxResult) {
+                Log.d(TAG, "onNext: stop");
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.d(TAG, "onError: ,,,,, stop");
+
+            }
+
+            @Override
+            public void onComplete() {
+                Log.d(TAG, "onComplete: ,,,,,, stop");
+
             }
         });
     }

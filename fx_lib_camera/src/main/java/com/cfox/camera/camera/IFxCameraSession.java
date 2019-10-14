@@ -8,4 +8,5 @@ import io.reactivex.Observable;
 public interface IFxCameraSession {
 
     Observable<FxResult> createPreviewSession(FxRequest fxRequest);
+    void closeSession();
 }

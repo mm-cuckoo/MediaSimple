@@ -1,6 +1,7 @@
 package com.cfox.camera.model;
 
 import android.content.Context;
+import android.hardware.camera2.CameraAccessException;
 import android.util.Log;
 
 import com.cfox.camera.camera.IFxCameraDevice;
@@ -49,30 +50,7 @@ public class CameraModule implements ICameraModule {
 
     @Override
     public Observable<FxResult> startPreview(final FxRequest request) {
-        SurfaceHelper mSurfaceHelper = (SurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);
-        return Observable.combineLatest(mSurfaceHelper.isAvailable(), mCurrentModule.openCamera(request),
-                new BiFunction<FxRequest, FxResult, FxResult>() {
-            @Override
-            public FxResult apply(FxRequest request, FxResult fxResult) throws Exception {
-                return fxResult;
-            }
-        }).flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
-            @Override
-            public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
-                String openStatus = fxResult.getString(FxRe.Key.OPEN_CAMERA_STATUS, FxRe.Value.OPEN_FAIL);
-                Log.d(TAG, "apply: open status :" + openStatus);
-                if (openStatus.equals(FxRe.Value.OPEN_SUCCESS)) {
-                    request.put(FxRe.Key.CAMERA_DEVICE, fxResult.getObj(FxRe.Key.CAMERA_DEVICE));
-                    return mCurrentModule.onStartPreview(request);
-                }
-                return Observable.create(new ObservableOnSubscribe<FxResult>() {
-                    @Override
-                    public void subscribe(ObservableEmitter<FxResult> emitter) throws Exception {
-
-                    }
-                });
-            }
-        });
+        return  mCurrentModule.onStartPreview(request);
     }
 
     @Override
@@ -85,5 +63,10 @@ public class CameraModule implements ICameraModule {
         IFxCameraDevice cameraDevice = FxCameraDevice.getsInstance(context);
         mModuleMap.put(ModuleFlag.MODULE_PHOTO, new PhotoModule(cameraDevice, new PhotoSessionHelper()));
         mModuleMap.put(ModuleFlag.MODULE_VIDEO, new VideoModule(cameraDevice, new VideoSessionHelper()));
+    }
+
+    @Override
+    public Observable<FxResult> onStop() {
+        return mCurrentModule.onStop();
     }
 }
