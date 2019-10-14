@@ -28,7 +28,7 @@ public class FxCameraSession implements IFxCameraSession {
     private CameraCaptureSession mCaptureSession;
     private CaptureRequest.Builder mRequestBuilder;
 
-    public static FxCameraSession getsInstance() {
+    static FxCameraSession getsInstance() {
         if (sInstance == null) {
             synchronized (FxCameraSession.class) {
                 if (sInstance == null) {

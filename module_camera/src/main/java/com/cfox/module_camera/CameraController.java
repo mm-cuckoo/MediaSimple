@@ -8,11 +8,11 @@ import com.cfox.camera.surface.SurfaceHelper;
 import com.cfox.camera.utils.FxRe;
 import com.cfox.camera.utils.FxRequest;
 
-public class CameraController {
+class CameraController {
     private FxCameraManager mFxCameraManager;
     private IController mCameraController;
 
-    public void openPreview(SurfaceHelper helper) {
+    void openPreview(SurfaceHelper helper) {
 
         FxRequest request = new FxRequest();
         request.put(FxRe.Key.CAMERA_ID, FxRe.Camera.ID.BACK.id);
@@ -24,8 +24,17 @@ public class CameraController {
 
     }
 
+    void switchCamera(SurfaceHelper helper) {
+        FxRequest request = new FxRequest();
+        request.put(FxRe.Key.CAMERA_ID, FxRe.Camera.ID.FONT.id);
+        request.put(FxRe.Key.SURFACE_HELPER, helper);
 
-    public void stopCamera() {
+        mFxCameraManager = FxCamera.getInstance().getCameraManager();
+        mCameraController.startPreview(request);
+    }
+
+
+    void stopCamera() {
         mCameraController.stop();
     }
 }

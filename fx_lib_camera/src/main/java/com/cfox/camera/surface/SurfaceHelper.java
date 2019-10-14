@@ -14,7 +14,6 @@ import java.util.List;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 
 public class SurfaceHelper implements ISurfaceHelper {
@@ -57,7 +56,7 @@ public class SurfaceHelper implements ISurfaceHelper {
                     }
                 }
 
-                Log.d(TAG, "SurfaceTexture isAvailable");
+                Log.d(TAG, "SurfaceTexture isAvailable width:" + mTextureView.getWidth()  + "  height:" + mTextureView.getHeight());
                 mSurfaces.add(getSurface());
                 FxRequest request = new FxRequest();
                 emitter.onNext(request);
@@ -99,7 +98,7 @@ public class SurfaceHelper implements ISurfaceHelper {
 
         @Override
         public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-            Log.d(TAG, "onSurfaceTextureUpdated: ,,,,,,,,");
+//            Log.d(TAG, "onSurfaceTextureUpdated: ,,,,,,,,");
 
         }
     };

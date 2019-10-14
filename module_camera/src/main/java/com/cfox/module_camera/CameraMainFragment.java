@@ -42,12 +42,12 @@ public class CameraMainFragment extends BaseFragment {
         super.onViewCreated(view, savedInstanceState);
 
         mPreviewView = view.findViewById(R.id.preview_view);
-        mSurfaceHelper = new SurfaceHelper(mPreviewView);
         mBtnOpenDevice = view.findViewById(R.id.btn_open_device);
         mBtnOpenDevice.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mCameraController.openPreview(mSurfaceHelper);
+                mSurfaceHelper = new SurfaceHelper(mPreviewView);
+                mCameraController.switchCamera(mSurfaceHelper);
             }
         });
 
@@ -56,6 +56,7 @@ public class CameraMainFragment extends BaseFragment {
     @Override
     public void onResume() {
         super.onResume();
+        mSurfaceHelper = new SurfaceHelper(mPreviewView);
         Log.d(TAG, "onResume: .......");
         mCameraController.openPreview(mSurfaceHelper);
     }
