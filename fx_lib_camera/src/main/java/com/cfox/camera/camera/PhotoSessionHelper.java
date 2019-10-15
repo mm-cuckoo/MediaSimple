@@ -1,6 +1,5 @@
 package com.cfox.camera.camera;
 
-import android.graphics.ImageFormat;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
@@ -31,11 +30,7 @@ public class PhotoSessionHelper extends AbsBaseSessionHelper {
     }
     private void createImageReaderSurfaces(FxRequest request) {
         ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);
-        int picWidth = request.getInt(FxRe.Key.PIC_WIDTH);
-        int picHeight = request.getInt(FxRe.Key.PIC_HEIGHT);
-        int imageFormat = request.getInt(FxRe.Key.IMAGE_FORMAT,ImageFormat.JPEG);
-        Log.d(TAG, "createImageReaderSurfaces: pic width:" + picWidth + "  pic height:" + picHeight  + "   format:" + imageFormat);
-        ImageReader imageReader = mImageReaderHelper.createImageReader(picWidth, picHeight, imageFormat, 2);
+        ImageReader imageReader = mImageReaderHelper.createImageReader(request);
         surfaceHelper.addSurface(imageReader.getSurface());
     }
 

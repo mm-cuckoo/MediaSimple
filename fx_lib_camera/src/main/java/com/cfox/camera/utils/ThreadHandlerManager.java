@@ -10,7 +10,8 @@ import java.util.Map;
 public class ThreadHandlerManager {
     public enum Tag {
         T_TYPE_LOAD("load"),
-        T_TYPE_OTHER("other");
+        T_TYPE_OTHER("other"),
+        T_TYPE_IMAGE_READER("image_reader");
         protected final String tag;
         Tag(String tag) {
             this.tag = tag;
