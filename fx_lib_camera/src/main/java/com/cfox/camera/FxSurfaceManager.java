@@ -18,13 +18,13 @@ public class FxSurfaceManager implements IFxSurfaceManager {
 
     @Override
     public IFxSurfaceManager addTextureView(TextureView textureView) {
-        mSurfaceHelper.put(String.valueOf(mSurfaceHelper.size()), new SurfaceHelper(textureView));
+//        mSurfaceHelper.put(String.valueOf(mSurfaceHelper.size()), new SurfaceHelper(textureView));
         return this;
     }
 
     @Override
     public IFxSurfaceManager addTextureView(TextureView textureView, String tag) {
-        mSurfaceHelper.put(tag, new SurfaceHelper(textureView));
+//        mSurfaceHelper.put(tag, new SurfaceHelper(textureView));
         return this;
     }
 

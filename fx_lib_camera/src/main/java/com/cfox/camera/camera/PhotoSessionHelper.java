@@ -21,16 +21,21 @@ public class PhotoSessionHelper extends AbsBaseSessionHelper {
     }
 
     @Override
-    public CaptureRequest.Builder createRequestBuilder(FxRequest fxRequest) throws CameraAccessException {
-        CameraDevice cameraDevice = (CameraDevice) fxRequest.getObj(FxRe.Key.CAMERA_DEVICE);
-        ISurfaceHelper surfaceHelper = (ISurfaceHelper) fxRequest.getObj(FxRe.Key.SURFACE_HELPER);
+    public CaptureRequest.Builder createRequestBuilder(FxRequest request) throws CameraAccessException {
+        CameraDevice cameraDevice = (CameraDevice) request.getObj(FxRe.Key.CAMERA_DEVICE);
+        ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);
         CaptureRequest.Builder builder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
         builder.addTarget(surfaceHelper.getSurface());
-        createImageReaderSurfaces(surfaceHelper);
+        createImageReaderSurfaces(request);
         return builder;
     }
-    private void createImageReaderSurfaces(ISurfaceHelper surfaceHelper) {
-        ImageReader imageReader = mImageReaderHelper.createImageReader(1080, 1920, ImageFormat.JPEG, 2);
+    private void createImageReaderSurfaces(FxRequest request) {
+        ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);
+        int picWidth = request.getInt(FxRe.Key.PIC_WIDTH);
+        int picHeight = request.getInt(FxRe.Key.PIC_HEIGHT);
+        int imageFormat = request.getInt(FxRe.Key.IMAGE_FORMAT,ImageFormat.JPEG);
+        Log.d(TAG, "createImageReaderSurfaces: pic width:" + picWidth + "  pic height:" + picHeight  + "   format:" + imageFormat);
+        ImageReader imageReader = mImageReaderHelper.createImageReader(picWidth, picHeight, imageFormat, 2);
         surfaceHelper.addSurface(imageReader.getSurface());
     }
 

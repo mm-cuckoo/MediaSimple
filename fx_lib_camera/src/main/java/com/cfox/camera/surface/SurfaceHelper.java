@@ -2,9 +2,11 @@ package com.cfox.camera.surface;
 
 import android.graphics.SurfaceTexture;
 import android.util.Log;
+import android.util.Size;
 import android.view.Surface;
 import android.view.TextureView;
 
+import com.cfox.camera.AutoFitTextureView;
 import com.cfox.camera.utils.FxRequest;
 import com.cfox.camera.utils.ThreadHandlerManager;
 
@@ -19,10 +21,11 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 public class SurfaceHelper implements ISurfaceHelper {
     private static final String TAG = "SurfaceHelper";
     private final Object obj = new Object();
-    private TextureView mTextureView;
+    private AutoFitTextureView mTextureView;
     private List<Surface> mSurfaces;
+    private Size mPreviewSize;
 
-    public SurfaceHelper(TextureView textureView) {
+    public SurfaceHelper(AutoFitTextureView textureView) {
         this.mTextureView = textureView;
         this.mTextureView.setSurfaceTextureListener(mTextureListener);
         this.mSurfaces = new ArrayList<>();
@@ -77,10 +80,23 @@ public class SurfaceHelper implements ISurfaceHelper {
         }
     }
 
+    @Override
+    public Class getSurfaceClass() {
+        return SurfaceTexture.class;
+    }
+
+    @Override
+    public void setAspectRatio(Size size) {
+        Log.d(TAG, "setAspectRatio: size width:" + size.getWidth() + "  height:" + size.getHeight());
+        mPreviewSize = size;
+        mTextureView.setAspectRatio(size.getHeight(), size.getWidth());
+    }
+
     private TextureView.SurfaceTextureListener mTextureListener = new TextureView.SurfaceTextureListener() {
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-            Log.d(TAG, "onSurfaceTextureAvailable: .......");
+            Log.d(TAG, "onSurfaceTextureAvailable: .......width:" + width  + "   height:" + height);
+            mTextureView.getSurfaceTexture().setDefaultBufferSize(mPreviewSize.getWidth(), mPreviewSize.getHeight());
             sendNotify();
 
         }

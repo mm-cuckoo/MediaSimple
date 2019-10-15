@@ -4,11 +4,13 @@ package com.cfox.camera.model.module;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CaptureRequest;
 import android.util.Log;
+import android.util.Size;
 
 import com.cfox.camera.camera.CameraInfo;
 import com.cfox.camera.camera.CameraInfoHelper;
 import com.cfox.camera.camera.IFxCameraDevice;
 import com.cfox.camera.camera.ISessionHelper;
+import com.cfox.camera.surface.ISurfaceHelper;
 import com.cfox.camera.surface.SurfaceHelper;
 import com.cfox.camera.utils.FxRe;
 import com.cfox.camera.utils.FxRequest;
@@ -36,15 +38,18 @@ public abstract class BaseModule implements IModule {
 
     @Override
     public Observable<FxResult> onStartPreview(final FxRequest request) {
-        SurfaceHelper mSurfaceHelper = (SurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);
-        return Observable.combineLatest(mSurfaceHelper.isAvailable(), onOpenCamera(request),
+        ISurfaceHelper surfaceHelper = (SurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);
+        String cameraId = request.getString(FxRe.Key.CAMERA_ID);
+        int previewWidth = request.getInt(FxRe.Key.PREVIEW_WIDTH);
+        int previewHeight = request.getInt(FxRe.Key.PREVIEW_HEIGHT);
+        CameraInfo cameraInfo = CameraInfoHelper.getInstance().getCameraInfo(cameraId);
+        Size previewSize = cameraInfo.getPreviewSize(previewWidth, previewHeight, surfaceHelper.getSurfaceClass());
+        Log.d(TAG, "onStartPreview: preview width:" + previewWidth  + "   preview height:" + previewHeight  + "   preview size:" + previewSize);
+        surfaceHelper.setAspectRatio(previewSize);
+        return Observable.combineLatest(surfaceHelper.isAvailable(), onOpenCamera(request),
                 new BiFunction<FxRequest, FxResult, FxResult>() {
                     @Override
                     public FxResult apply(FxRequest request, FxResult fxResult) throws Exception {
-                        String cameraId = request.getString(FxRe.Key.CAMERA_ID);
-                        CameraInfo cameraInfo = CameraInfoHelper.getInstance().getCameraInfo(cameraId);
-
-                        Log.d(TAG, "apply: onStartPreview.....");
                         return fxResult;
                     }
                 }).flatMap(new Function<FxResult, ObservableSource<FxResult>>() {

@@ -6,22 +6,18 @@ import android.media.MediaRecorder;
 import android.util.Log;
 import android.util.Size;
 
-import java.util.Collections;
-import java.util.Comparator;
-
 public class CameraInfo {
     private static final String TAG = "CameraInfo";
 
     private String mCameraId;
     private CameraCharacteristics mCharacteristics;
-    private Size mDefaultSize = new Size(1080, 1920);
+    private Size mDefaultSize = new Size(1920, 1080);
 
 
     public CameraInfo(String cameraId, CameraCharacteristics characteristics) {
         this.mCameraId = cameraId;
         this.mCharacteristics = characteristics;
-        printf();
-
+//        printf();
     }
 
     public String getCameraId() {
@@ -44,7 +40,21 @@ public class CameraInfo {
     }
 
     private Size chooseSize(int width, int height, Size[] sizes) {
-        return null;
+        Log.d(TAG, "chooseSize: width:" + width + "  height:" + height);
+        chooseVideoSize(sizes);
+        int heightTmp = height;
+        for (Size size : sizes) {
+            if (width == size.getHeight()) {
+                if (height > size.getWidth()) {
+                    heightTmp = size.getWidth();
+                } else if (height == size.getWidth()){
+                    heightTmp = size.getWidth();
+                    break;
+                }
+            }
+        }
+        Log.d(TAG, "chooseSize: result : width:" + width + "   height:" + heightTmp);
+        return new Size(heightTmp, width);
     }
 
 
@@ -56,12 +66,6 @@ public class CameraInfo {
             size = chooseSize(width, height, map.getOutputSizes(klass));
         }
         return size;
-    }
-
-    public void printf() {
-        StreamConfigurationMap map = mCharacteristics
-                .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
-        chooseVideoSize(map.getOutputSizes(MediaRecorder.class));
     }
 
     private void chooseVideoSize(Size[] choices) {

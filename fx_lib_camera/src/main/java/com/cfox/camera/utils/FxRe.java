@@ -15,11 +15,17 @@ public interface FxRe {
     interface Key {
         String CAMERA_ID = "camera_id";
         String SURFACE_HELPER = "Surface_helper";
-
         String CAMERA_DEVICE = "camera_device";
         String OPEN_CAMERA_STATUS = "open_camera_status";
         String OPEN_CAMERA_ERROR = "open_camera_error";
         String PREVIEW_BUILDER = "preview_builder";
+
+        String PIC_WIDTH = "pic_width";
+        String PIC_HEIGHT = "pic_height";
+        String IMAGE_FORMAT = "Image_format";
+
+        String PREVIEW_WIDTH = "preview_width";
+        String PREVIEW_HEIGHT = "preview_height";
     }
 
     interface Value {

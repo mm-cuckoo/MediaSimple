@@ -1,5 +1,6 @@
 package com.cfox.camera.surface;
 
+import android.util.Size;
 import android.view.Surface;
 
 import com.cfox.camera.utils.FxRequest;
@@ -13,4 +14,6 @@ public interface ISurfaceHelper {
     Observable<FxRequest> isAvailable();
     List<Surface> getSurfaces();
     void addSurface(Surface surface);
+    Class getSurfaceClass();
+    void setAspectRatio(Size size);
 }
