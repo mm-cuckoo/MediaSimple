@@ -12,6 +12,7 @@ public interface ISessionHelper {
 
     CaptureRequest.Builder createRequestBuilder(FxRequest request) throws CameraAccessException;
     Observable<FxResult> createPreviewSession(FxRequest request);
+    Observable<FxResult> sendRepeatingRequest(FxRequest request);
     void closeSession();
 
 }

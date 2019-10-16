@@ -19,6 +19,11 @@ public abstract class AbsBaseSessionHelper implements ISessionHelper{
     }
 
     @Override
+    public Observable<FxResult> sendRepeatingRequest(FxRequest request) {
+        return mFxCameraSession.sendRepeatingRequest(request);
+    }
+
+    @Override
     public void closeSession() {
         mFxCameraSession.closeSession();
     }

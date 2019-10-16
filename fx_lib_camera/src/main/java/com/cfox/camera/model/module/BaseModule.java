@@ -53,12 +53,19 @@ public abstract class BaseModule implements IModule {
                         return fxResult;
                     }
                 }).flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
+                    @Override
+                    public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
+                        Log.d(TAG, "apply: create  session .....");
+                        request.put(FxRe.Key.CAMERA_DEVICE, fxResult.getObj(FxRe.Key.CAMERA_DEVICE));
+                        return mSessionHelper.createPreviewSession(request);
+                    }
+        }).flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
             @Override
             public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
-                request.put(FxRe.Key.CAMERA_DEVICE, fxResult.getObj(FxRe.Key.CAMERA_DEVICE));
+                Log.d(TAG, "apply: sendRepeatingRequest......");
                 CaptureRequest.Builder builder = mSessionHelper.createRequestBuilder(request);
-                request.put(FxRe.Key.PREVIEW_BUILDER, builder);
-                return mSessionHelper.createPreviewSession(request);
+                request.put(FxRe.Key.CAPTURE_REQUEST_BUILDER, builder);
+                return mSessionHelper.sendRepeatingRequest(request);
             }
         });
     }

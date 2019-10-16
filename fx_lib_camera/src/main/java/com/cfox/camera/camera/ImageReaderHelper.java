@@ -21,10 +21,10 @@ public class ImageReaderHelper implements IReaderHelper {
     private static final String TAG = "ImageReaderHelper";
 
     private List<ImageReader> mImageReaders;
-    private Handler mImageRaderHandelr;
+    private Handler mImageReaderHandler;
     ImageReaderHelper() {
         mImageReaders = new ArrayList<>();
-        mImageRaderHandelr = ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_IMAGE_READER).getHandler();
+        mImageReaderHandler = ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_IMAGE_READER).getHandler();
     }
 
     @Override
@@ -33,15 +33,16 @@ public class ImageReaderHelper implements IReaderHelper {
         int picHeight = request.getInt(FxRe.Key.PIC_HEIGHT);
         int imageFormat = request.getInt(FxRe.Key.IMAGE_FORMAT, ImageFormat.JPEG);
         final String filePath = request.getString(FxRe.Key.PIC_FILE_PATH);
-        Log.d(TAG, "createImageReaderSurfaces: pic width:" + picWidth + "  pic height:" + picHeight  + "   format:" + imageFormat);
+        Log.d(TAG, "createImageReader: pic width:" + picWidth + "  pic height:" + picHeight  + "   format:" + imageFormat);
+        Log.d(TAG, "createImageReader: pic file path:" + filePath);
         ImageReader imageReader = ImageReader.newInstance(picWidth, picHeight, imageFormat, 2);
         mImageReaders.add(imageReader);
         imageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
             @Override
             public void onImageAvailable(ImageReader reader) {
-                mImageRaderHandelr.post(new ImageSaver(reader.acquireNextImage(), new File(filePath)));
+                mImageReaderHandler.post(new ImageSaver(reader.acquireNextImage(), new File(filePath)));
             }
-        }, mImageRaderHandelr);
+        }, mImageReaderHandler);
         return imageReader;
     }
 

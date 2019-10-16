@@ -17,7 +17,7 @@ public interface FxRe {
         String SURFACE_HELPER = "Surface_helper";
         String CAMERA_DEVICE = "camera_device";
         String OPEN_CAMERA_STATUS = "open_camera_status";
-        String PREVIEW_BUILDER = "preview_builder";
+        String CAPTURE_REQUEST_BUILDER = "capture_request_builder";
 
         String PIC_WIDTH = "pic_width";
         String PIC_HEIGHT = "pic_height";

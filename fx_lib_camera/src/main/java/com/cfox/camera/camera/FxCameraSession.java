@@ -26,7 +26,6 @@ public class FxCameraSession implements IFxCameraSession {
     private static FxCameraSession sInstance;
     private CameraDevice mCameraDevice;
     private CameraCaptureSession mCaptureSession;
-    private CaptureRequest.Builder mRequestBuilder;
 
     static FxCameraSession getsInstance() {
         if (sInstance == null) {
@@ -40,10 +39,9 @@ public class FxCameraSession implements IFxCameraSession {
     }
 
     @Override
-    public Observable<FxResult> createPreviewSession(FxRequest fxRequest) {
-        final ISurfaceHelper surfaceHelper = (ISurfaceHelper) fxRequest.getObj(FxRe.Key.SURFACE_HELPER);
-        mCameraDevice = (CameraDevice) fxRequest.getObj(FxRe.Key.CAMERA_DEVICE);
-        mRequestBuilder = (CaptureRequest.Builder) fxRequest.getObj(FxRe.Key.PREVIEW_BUILDER);
+    public Observable<FxResult> createPreviewSession(FxRequest request) {
+        final ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);
+        mCameraDevice = (CameraDevice) request.getObj(FxRe.Key.CAMERA_DEVICE);
         closeSession();
         checkDeviceUNLL();
         return Observable.create(new ObservableOnSubscribe<FxResult>() {
@@ -52,12 +50,9 @@ public class FxCameraSession implements IFxCameraSession {
                 mCameraDevice.createCaptureSession(surfaceHelper.getSurfaces(), new CameraCaptureSession.StateCallback() {
                     @Override
                     public void onConfigured(@NonNull CameraCaptureSession session) {
+                        Log.d(TAG, "onConfigured: create session success .....");
                         mCaptureSession = session;
-                        try {
-                            sendRepeatingRequest(emitter);
-                        } catch (CameraAccessException e) {
-                            e.printStackTrace();
-                        }
+                        emitter.onNext(new FxResult());
                     }
 
                     @Override
@@ -69,43 +64,50 @@ public class FxCameraSession implements IFxCameraSession {
         });
     }
 
-    private void sendRepeatingRequest(ObservableEmitter<FxResult> emitter) throws CameraAccessException {
-        mCaptureSession.setRepeatingRequest(mRequestBuilder.build(), new CameraCaptureSession.CaptureCallback() {
+    public Observable<FxResult> sendRepeatingRequest(FxRequest request) {
+        final CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(FxRe.Key.CAPTURE_REQUEST_BUILDER);
+        return Observable.create(new ObservableOnSubscribe<FxResult>() {
             @Override
-            public void onCaptureStarted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, long timestamp, long frameNumber) {
-                super.onCaptureStarted(session, request, timestamp, frameNumber);
-            }
+            public void subscribe(ObservableEmitter<FxResult> emitter) throws Exception {
+                mCaptureSession.setRepeatingRequest(requestBuilder.build(), new CameraCaptureSession.CaptureCallback() {
+                    @Override
+                    public void onCaptureStarted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, long timestamp, long frameNumber) {
+                        super.onCaptureStarted(session, request, timestamp, frameNumber);
+                    }
 
-            @Override
-            public void onCaptureProgressed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureResult partialResult) {
-                super.onCaptureProgressed(session, request, partialResult);
-            }
+                    @Override
+                    public void onCaptureProgressed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureResult partialResult) {
+                        super.onCaptureProgressed(session, request, partialResult);
+                    }
 
-            @Override
-            public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
-                super.onCaptureCompleted(session, request, result);
-            }
+                    @Override
+                    public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
+                        super.onCaptureCompleted(session, request, result);
+                    }
 
-            @Override
-            public void onCaptureFailed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureFailure failure) {
-                super.onCaptureFailed(session, request, failure);
-            }
+                    @Override
+                    public void onCaptureFailed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureFailure failure) {
+                        super.onCaptureFailed(session, request, failure);
+                    }
 
-            @Override
-            public void onCaptureSequenceCompleted(@NonNull CameraCaptureSession session, int sequenceId, long frameNumber) {
-                super.onCaptureSequenceCompleted(session, sequenceId, frameNumber);
-            }
+                    @Override
+                    public void onCaptureSequenceCompleted(@NonNull CameraCaptureSession session, int sequenceId, long frameNumber) {
+                        super.onCaptureSequenceCompleted(session, sequenceId, frameNumber);
+                    }
 
-            @Override
-            public void onCaptureSequenceAborted(@NonNull CameraCaptureSession session, int sequenceId) {
-                super.onCaptureSequenceAborted(session, sequenceId);
-            }
+                    @Override
+                    public void onCaptureSequenceAborted(@NonNull CameraCaptureSession session, int sequenceId) {
+                        super.onCaptureSequenceAborted(session, sequenceId);
+                    }
 
-            @Override
-            public void onCaptureBufferLost(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull Surface target, long frameNumber) {
-                super.onCaptureBufferLost(session, request, target, frameNumber);
+                    @Override
+                    public void onCaptureBufferLost(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull Surface target, long frameNumber) {
+                        super.onCaptureBufferLost(session, request, target, frameNumber);
+                    }
+                }, null);
             }
-        }, null);
+        });
+
     }
 
     @Override
