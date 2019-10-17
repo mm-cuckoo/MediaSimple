@@ -1,4 +1,4 @@
-package com.cfox.camera.camera;
+package com.cfox.camera.camera.session;
 
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CaptureRequest;

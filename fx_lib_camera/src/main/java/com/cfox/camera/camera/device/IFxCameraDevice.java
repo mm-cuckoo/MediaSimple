@@ -1,4 +1,4 @@
-package com.cfox.camera.camera;
+package com.cfox.camera.camera.device;
 
 import com.cfox.camera.utils.FxRequest;
 import com.cfox.camera.utils.FxResult;

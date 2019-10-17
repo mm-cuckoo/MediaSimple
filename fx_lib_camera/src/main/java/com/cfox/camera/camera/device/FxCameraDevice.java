@@ -1,4 +1,4 @@
-package com.cfox.camera.camera;
+package com.cfox.camera.camera.device;
 
 import android.annotation.SuppressLint;
 import android.content.Context;

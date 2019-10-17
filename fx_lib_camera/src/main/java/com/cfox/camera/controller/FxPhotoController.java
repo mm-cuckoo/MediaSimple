@@ -1,14 +1,33 @@
 package com.cfox.camera.controller;
 
 
-import android.content.Context;
+import com.cfox.camera.utils.FxRequest;
 
-import com.cfox.camera.model.CameraModule;
+public class FxPhotoController implements IPhotoController {
 
-public class FxPhotoController extends AbsController {
+    private ICameraController mCameraController;
 
+    public FxPhotoController(ICameraController cameraController) {
+        mCameraController = cameraController;
+    }
 
-    public FxPhotoController(Context context) {
-        super(context, CameraModule.ModuleFlag.MODULE_PHOTO);
+    @Override
+    public void onStartPreview(FxRequest request) {
+        mCameraController.startPreview(request);
+    }
+
+    @Override
+    public void onCameraConfig(FxRequest request) {
+        mCameraController.cameraConfig(request);
+    }
+
+    @Override
+    public void onStop() {
+        mCameraController.stop();
+    }
+
+    @Override
+    public void onCapture(FxRequest request) {
+        mCameraController.capture(request);
     }
 }

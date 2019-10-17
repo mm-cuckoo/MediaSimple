@@ -1,10 +1,11 @@
 package com.cfox.camera;
 
 
-import com.cfox.camera.controller.IController;
+import com.cfox.camera.controller.IPhotoController;
+import com.cfox.camera.controller.IVideoController;
 
 public interface IFxCameraManager {
 
-    IController photo();
-    IController video();
+    IPhotoController photo();
+    IVideoController video();
 }

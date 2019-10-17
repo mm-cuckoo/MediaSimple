@@ -7,9 +7,10 @@ import io.reactivex.Observable;
 
 public interface ICameraModule {
 
-//    Observable<FxResult> onOpenCamera(FxRequest request);
     Observable<FxResult> startPreview(FxRequest request);
 
     void initModule(CameraModule.ModuleFlag moduleFlag);
-    Observable<FxResult> onStop();
+    Observable<FxResult> sendCameraConfig(FxRequest request);
+    Observable<FxResult> capture(FxRequest request);
+    Observable<FxResult> stop();
 }

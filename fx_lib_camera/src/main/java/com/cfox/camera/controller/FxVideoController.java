@@ -1,11 +1,26 @@
 package com.cfox.camera.controller;
 
-import android.content.Context;
+import com.cfox.camera.utils.FxRequest;
 
-import com.cfox.camera.model.CameraModule;
+public class FxVideoController implements IVideoController {
+    private ICameraController mCameraController;
 
-public class FxVideoController extends AbsController {
-    public FxVideoController(Context context) {
-        super(context, CameraModule.ModuleFlag.MODULE_VIDEO);
+    public FxVideoController(ICameraController cameraController) {
+        mCameraController = cameraController;
+    }
+
+    @Override
+    public void onStartPreview(FxRequest request) {
+        mCameraController.startPreview(request);
+    }
+
+    @Override
+    public void onCameraConfig(FxRequest request) {
+        mCameraController.cameraConfig(request);
+    }
+
+    @Override
+    public void onStop() {
+        mCameraController.stop();
     }
 }

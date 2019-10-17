@@ -1,17 +1,20 @@
 package com.cfox.module_camera;
 
 
+import android.hardware.camera2.CaptureRequest;
+import android.os.Environment;
+
+import com.cfox.camera.CameraConfig;
 import com.cfox.camera.FxCamera;
 import com.cfox.camera.FxCameraManager;
-import com.cfox.camera.controller.IController;
+import com.cfox.camera.controller.IPhotoController;
 import com.cfox.camera.surface.SurfaceHelper;
 import com.cfox.camera.utils.FxRe;
 import com.cfox.camera.utils.FxRequest;
-import com.cfox.camera.utils.FxResult;
 
 class CameraController {
     private FxCameraManager mFxCameraManager;
-    private IController mCameraController;
+    private IPhotoController mCameraController;
 
     public CameraController() {
         mFxCameraManager = FxCamera.getInstance().getCameraManager();
@@ -23,30 +26,47 @@ class CameraController {
         request.put(FxRe.Key.CAMERA_ID, FxRe.Camera.ID.BACK.id);
         request.put(FxRe.Key.SURFACE_HELPER, helper);
         mCameraController = mFxCameraManager.photo();
-        mCameraController.startPreview(request);
-
+        mCameraController.onStartPreview(request);
     }
 
     void fontCamera(SurfaceHelper helper) {
         FxRequest request = getRequest();
         request.put(FxRe.Key.CAMERA_ID, FxRe.Camera.ID.FONT.id);
         request.put(FxRe.Key.SURFACE_HELPER, helper);
-        mCameraController.startPreview(request);
+        mCameraController.onStartPreview(request);
     }
 
 
     void stopCamera() {
-        mCameraController.stop();
+        mCameraController.onStop();
     }
 
 
-    public FxRequest getRequest() {
+    private FxRequest getRequest() {
         FxRequest request = new FxRequest();
         request.put(FxRe.Key.CAMERA_ID, FxRe.Camera.ID.BACK.id);
         request.put(FxRe.Key.PREVIEW_WIDTH, 1080);
         request.put(FxRe.Key.PREVIEW_HEIGHT, 1920);
         request.put(FxRe.Key.PIC_WIDTH, 1080);
         request.put(FxRe.Key.PIC_HEIGHT, 1920);
+        request.put(FxRe.Key.PIC_FILE_PATH, Environment.getExternalStorageDirectory().getAbsoluteFile().getPath());
         return request;
+    }
+
+    void openFlash() {
+        CameraConfig cameraConfig = CameraConfig.getInstance();
+        cameraConfig.push(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
+        FxRequest request = new FxRequest();
+        request.put(FxRe.Key.CAMERA_CONFIG, cameraConfig);
+        mCameraController.onCameraConfig(request);
+    }
+
+
+    void closeFlash() {
+        CameraConfig cameraConfig = CameraConfig.getInstance();
+        cameraConfig.push(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
+        FxRequest request = new FxRequest();
+        request.put(FxRe.Key.CAMERA_CONFIG, cameraConfig);
+        mCameraController.onCameraConfig(request);
     }
 }

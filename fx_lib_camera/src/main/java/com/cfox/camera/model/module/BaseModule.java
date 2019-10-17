@@ -1,15 +1,14 @@
 package com.cfox.camera.model.module;
 
 
-import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CaptureRequest;
 import android.util.Log;
 import android.util.Size;
 
 import com.cfox.camera.camera.CameraInfo;
 import com.cfox.camera.camera.CameraInfoHelper;
-import com.cfox.camera.camera.IFxCameraDevice;
-import com.cfox.camera.camera.ISessionHelper;
+import com.cfox.camera.camera.device.IFxCameraDevice;
+import com.cfox.camera.camera.session.ISessionHelper;
 import com.cfox.camera.surface.ISurfaceHelper;
 import com.cfox.camera.surface.SurfaceHelper;
 import com.cfox.camera.utils.FxRe;
@@ -31,7 +30,7 @@ public abstract class BaseModule implements IModule {
     private IFxCameraDevice mCameraDevice;
     private ISessionHelper mSessionHelper;
 
-    public BaseModule(IFxCameraDevice cameraDevice, ISessionHelper sessionHelper) {
+    BaseModule(IFxCameraDevice cameraDevice, ISessionHelper sessionHelper) {
         this.mCameraDevice = cameraDevice;
         this.mSessionHelper = sessionHelper;
     }
@@ -71,8 +70,18 @@ public abstract class BaseModule implements IModule {
     }
 
     @Override
+    public Observable<FxResult> onCameraConfig(FxRequest request) {
+        return mSessionHelper.sendRepeatingRequest(request);
+    }
+
+    @Override
     public Observable<FxResult> onOpenCamera(FxRequest request) {
         return mCameraDevice.openCameraDevice(request);
+    }
+
+    @Override
+    public Observable<FxResult> onCapture(FxRequest request) {
+        return null;
     }
 
     @Override

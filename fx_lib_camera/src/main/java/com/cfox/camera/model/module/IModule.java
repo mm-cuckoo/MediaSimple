@@ -11,5 +11,7 @@ public interface IModule {
     Observable<FxResult> onStartPreview(FxRequest request);
     Observable<FxResult> onOpenCamera(FxRequest request);
     Observable<FxResult> onStop();
+    Observable<FxResult> onCameraConfig(FxRequest request);
+    Observable<FxResult> onCapture(FxRequest request);
 
 }

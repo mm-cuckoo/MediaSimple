@@ -14,15 +14,18 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class ImageReaderHelper implements IReaderHelper {
     private static final String TAG = "ImageReaderHelper";
 
     private List<ImageReader> mImageReaders;
     private Handler mImageReaderHandler;
-    ImageReaderHelper() {
+    public ImageReaderHelper() {
         mImageReaders = new ArrayList<>();
         mImageReaderHandler = ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_IMAGE_READER).getHandler();
     }
@@ -34,13 +37,15 @@ public class ImageReaderHelper implements IReaderHelper {
         int imageFormat = request.getInt(FxRe.Key.IMAGE_FORMAT, ImageFormat.JPEG);
         final String filePath = request.getString(FxRe.Key.PIC_FILE_PATH);
         Log.d(TAG, "createImageReader: pic width:" + picWidth + "  pic height:" + picHeight  + "   format:" + imageFormat);
-        Log.d(TAG, "createImageReader: pic file path:" + filePath);
         ImageReader imageReader = ImageReader.newInstance(picWidth, picHeight, imageFormat, 2);
         mImageReaders.add(imageReader);
         imageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
             @Override
             public void onImageAvailable(ImageReader reader) {
-                mImageReaderHandler.post(new ImageSaver(reader.acquireNextImage(), new File(filePath)));
+                SimpleDateFormat format = new SimpleDateFormat("'/PIC'_yyyyMMdd_HHmmss'.jpeg'", Locale.getDefault());
+                String fileName = format.format(new Date());
+                Log.d(TAG, "createImageReader: pic file path:" + (filePath + fileName));
+                mImageReaderHandler.post(new ImageSaver(reader.acquireNextImage(), new File(filePath + fileName)));
             }
         }, mImageReaderHandler);
         return imageReader;

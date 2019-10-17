@@ -1,16 +1,16 @@
-package com.cfox.camera.camera;
+package com.cfox.camera.camera.session;
 
 import com.cfox.camera.utils.FxRequest;
 import com.cfox.camera.utils.FxResult;
 
 import io.reactivex.Observable;
 
-public abstract class AbsBaseSessionHelper implements ISessionHelper{
+public abstract class AbsBaseSessionHelper implements ISessionHelper {
     private IFxCameraSession mFxCameraSession;
 
 
-    public AbsBaseSessionHelper() {
-        this.mFxCameraSession = FxCameraSession.getsInstance();
+    AbsBaseSessionHelper(IFxCameraSession cameraSession) {
+        this.mFxCameraSession = cameraSession;
     }
 
     @Override

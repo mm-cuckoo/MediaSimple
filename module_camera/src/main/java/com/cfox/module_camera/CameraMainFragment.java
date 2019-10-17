@@ -41,6 +41,21 @@ public class CameraMainFragment extends BaseFragment {
         super.onViewCreated(view, savedInstanceState);
 
         mPreviewView = view.findViewById(R.id.preview_view);
+
+        view.findViewById(R.id.btn_open_flash).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mCameraController.openFlash();
+            }
+        });
+
+        view.findViewById(R.id.btn_close_flash).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mCameraController.closeFlash();
+            }
+        });
+
         view.findViewById(R.id.btn_open_back).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

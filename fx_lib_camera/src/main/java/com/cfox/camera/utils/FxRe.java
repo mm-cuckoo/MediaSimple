@@ -26,6 +26,8 @@ public interface FxRe {
 
         String PREVIEW_WIDTH = "preview_width";
         String PREVIEW_HEIGHT = "preview_height";
+
+        String CAMERA_CONFIG = "camera_config";
     }
 
     interface Value {
