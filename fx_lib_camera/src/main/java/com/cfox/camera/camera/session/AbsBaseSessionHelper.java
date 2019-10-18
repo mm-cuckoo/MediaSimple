@@ -24,7 +24,16 @@ public abstract class AbsBaseSessionHelper implements ISessionHelper {
     }
 
     @Override
+    public Observable<FxResult> capture(FxRequest request) {
+        return mFxCameraSession.capture(request);
+    }
+
+    @Override
     public void closeSession() {
         mFxCameraSession.closeSession();
+    }
+
+    Observable<FxResult> captureStillPicture(FxRequest request){
+        return mFxCameraSession.captureStillPicture(request);
     }
 }

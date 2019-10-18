@@ -11,7 +11,7 @@ import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 
 public class CameraController implements ICameraController {
-    private static final String TAG = "AbsController";
+    private static final String TAG = "CameraController";
 
     private ICameraModule mCameraModule;
 
@@ -78,7 +78,31 @@ public class CameraController implements ICameraController {
 
     @Override
     public void capture(FxRequest request) {
+        mCameraModule.capture(request).subscribe(new Observer<FxResult>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                Log.d(TAG, "onSubscribe: .....");
 
+            }
+
+            @Override
+            public void onNext(FxResult fxResult) {
+                Log.d(TAG, "onNext: .......");
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.d(TAG, "onError: ....." + e);
+
+            }
+
+            @Override
+            public void onComplete() {
+                Log.d(TAG, "onComplete: .......");
+
+            }
+        });
     }
 
     @Override

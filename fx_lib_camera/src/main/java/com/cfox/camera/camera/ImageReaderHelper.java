@@ -37,7 +37,7 @@ public class ImageReaderHelper implements IReaderHelper {
         int imageFormat = request.getInt(FxRe.Key.IMAGE_FORMAT, ImageFormat.JPEG);
         final String filePath = request.getString(FxRe.Key.PIC_FILE_PATH);
         Log.d(TAG, "createImageReader: pic width:" + picWidth + "  pic height:" + picHeight  + "   format:" + imageFormat);
-        ImageReader imageReader = ImageReader.newInstance(picWidth, picHeight, imageFormat, 2);
+        ImageReader imageReader = ImageReader.newInstance(picHeight, picWidth, ImageFormat.JPEG, 2);
         mImageReaders.add(imageReader);
         imageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
             @Override

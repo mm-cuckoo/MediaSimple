@@ -3,6 +3,7 @@ package com.cfox.module_camera;
 
 import android.hardware.camera2.CaptureRequest;
 import android.os.Environment;
+import android.util.Log;
 
 import com.cfox.camera.CameraConfig;
 import com.cfox.camera.FxCamera;
@@ -68,5 +69,10 @@ class CameraController {
         FxRequest request = new FxRequest();
         request.put(FxRe.Key.CAMERA_CONFIG, cameraConfig);
         mCameraController.onCameraConfig(request);
+    }
+
+    void capture() {
+        FxRequest request = new FxRequest();
+        mCameraController.onCapture(request);
     }
 }

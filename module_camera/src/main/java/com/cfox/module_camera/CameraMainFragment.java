@@ -45,7 +45,8 @@ public class CameraMainFragment extends BaseFragment {
         view.findViewById(R.id.btn_open_flash).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mCameraController.openFlash();
+//                mCameraController.openFlash();
+                mCameraController.capture();
             }
         });
 
