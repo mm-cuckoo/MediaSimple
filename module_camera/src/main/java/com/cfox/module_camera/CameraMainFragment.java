@@ -45,8 +45,8 @@ public class CameraMainFragment extends BaseFragment {
         view.findViewById(R.id.btn_open_flash).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                mCameraController.openFlash();
-                mCameraController.capture();
+                mCameraController.openFlash();
+//                mCameraController.capture();
             }
         });
 
@@ -69,6 +69,13 @@ public class CameraMainFragment extends BaseFragment {
             public void onClick(View v) {
                 mSurfaceHelper = new SurfaceHelper(mPreviewView);
                 mCameraController.fontCamera(mSurfaceHelper);
+            }
+        });
+
+        view.findViewById(R.id.btn_capture).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mCameraController.capture();
             }
         });
 

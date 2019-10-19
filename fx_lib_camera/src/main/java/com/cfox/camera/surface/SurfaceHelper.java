@@ -75,7 +75,9 @@ public class SurfaceHelper implements ISurfaceHelper {
 
     @Override
     public void addSurface(Surface surface) {
+        Log.d(TAG, "addSurface: "  + (!mSurfaces.contains(surface)));
         if (!mSurfaces.contains(surface)) {
+            Log.d(TAG, "addSurface: .......");
             mSurfaces.add(surface);
         }
     }

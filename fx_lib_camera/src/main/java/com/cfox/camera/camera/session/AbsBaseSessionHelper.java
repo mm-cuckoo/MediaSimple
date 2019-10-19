@@ -14,8 +14,8 @@ public abstract class AbsBaseSessionHelper implements ISessionHelper {
     }
 
     @Override
-    public Observable<FxResult> createPreviewSession(FxRequest fxRequest) {
-        return mFxCameraSession.createPreviewSession(fxRequest);
+    public Observable<FxResult> createPreviewSession(FxRequest request) {
+        return mFxCameraSession.createPreviewSession(request);
     }
 
     @Override

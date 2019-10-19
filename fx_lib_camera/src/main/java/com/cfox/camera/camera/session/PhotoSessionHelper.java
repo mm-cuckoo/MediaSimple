@@ -39,14 +39,19 @@ public class PhotoSessionHelper extends AbsBaseSessionHelper {
     }
 
     @Override
-    public CaptureRequest.Builder createRequestBuilder(FxRequest request) throws CameraAccessException {
+    public Observable<FxResult> createPreviewSession(FxRequest request) {
         mImageReaders.clear();
+        createImageReaderSurfaces(request);
+        return super.createPreviewSession(request);
+}
+
+    @Override
+    public CaptureRequest.Builder createRequestBuilder(FxRequest request) throws CameraAccessException {
         mCameraDevice = (CameraDevice) request.getObj(FxRe.Key.CAMERA_DEVICE);
         ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);
         mBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
         initCameraConfig();
         mBuilder.addTarget(surfaceHelper.getSurface());
-        createImageReaderSurfaces(request);
         return mBuilder;
     }
 
@@ -56,6 +61,7 @@ public class PhotoSessionHelper extends AbsBaseSessionHelper {
     }
 
     private void createImageReaderSurfaces(FxRequest request) {
+        Log.d(TAG, "createImageReaderSurfaces: .......");
         ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);
         ImageReader imageReader = mImageReaderHelper.createImageReader(request);
         mImageReaders.add(imageReader);
@@ -76,19 +82,38 @@ public class PhotoSessionHelper extends AbsBaseSessionHelper {
         return super.capture(request).flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
             @Override
             public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
-                Log.d(TAG, "apply: .....222..111......");
+                Log.d(TAG, "apply: .....222..111......"  + mImageReaders.size());
                 FxRequest stRequest = new FxRequest();
                 CaptureRequest.Builder captureBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
-                Log.d(TAG, "apply:   builder ..." + captureBuilder.hashCode());
-                captureBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-                captureBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
-                captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, 0);
                 for (ImageReader reader : mImageReaders) {
                     Log.d(TAG, "apply: ........add target...."  + reader.getWidth()  + "   " + reader.getHeight()  + "   " + reader.getImageFormat());
                     captureBuilder.addTarget(reader.getSurface());
                 }
+                captureBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+                captureBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+                captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, 0);
+
                 stRequest.put(FxRe.Key.CAPTURE_REQUEST_BUILDER, captureBuilder);
                 return captureStillPicture(stRequest);
+            }
+        }).flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
+            @Override
+            public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
+                Log.d(TAG, "apply: reset preview 11111......");
+                mBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
+                mBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+                FxRequest previewRequest = new FxRequest();
+                previewRequest.put(FxRe.Key.CAPTURE_REQUEST_BUILDER, mBuilder);
+                previewRequest.put(FxRe.Key.PREVIEW_CAPTURE, true);
+                return PhotoSessionHelper.super.capture(previewRequest);
+            }
+        }).flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
+            @Override
+            public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
+                Log.d(TAG, "apply:  reset preview 222222......");
+                FxRequest previewRequest = new FxRequest();
+                previewRequest.put(FxRe.Key.CAPTURE_REQUEST_BUILDER, mBuilder);
+                return PhotoSessionHelper.super.sendRepeatingRequest(previewRequest);
             }
         });
     }

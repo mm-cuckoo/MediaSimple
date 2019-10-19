@@ -42,6 +42,7 @@ public class FxCameraSession implements IFxCameraSession {
     public Observable<FxResult> createPreviewSession(FxRequest request) {
         final ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);
         final CameraDevice cameraDevice = (CameraDevice) request.getObj(FxRe.Key.CAMERA_DEVICE);
+        Log.d(TAG, "createPreviewSession: ---->" + surfaceHelper.getSurfaces().size()  + "   hsc:" + surfaceHelper.hashCode());
         closeSession();
         return Observable.create(new ObservableOnSubscribe<FxResult>() {
             @Override
@@ -98,11 +99,23 @@ public class FxCameraSession implements IFxCameraSession {
     public Observable<FxResult> capture(final FxRequest request) {
         Log.d(TAG, "capture: ......3333...");
         final CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(FxRe.Key.CAPTURE_REQUEST_BUILDER);
-        Log.d(TAG, "apply:   builder ..1111." + requestBuilder.hashCode());
         return Observable.create(new ObservableOnSubscribe<FxResult>() {
             @Override
             public void subscribe(final ObservableEmitter<FxResult> emitter) throws Exception {
-                Log.d(TAG, "apply:   builder ..2222." + requestBuilder.hashCode());
+                boolean previewCapture = request.getBoolean(FxRe.Key.PREVIEW_CAPTURE, false);
+                Log.d(TAG, "subscribe: capture: ......3333...");
+
+                if (previewCapture) {
+                    mCaptureSession.capture(requestBuilder.build(), new CameraCaptureSession.CaptureCallback() {
+                        @Override
+                        public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
+                            super.onCaptureCompleted(session, request, result);
+                        }
+                    }, null);
+
+                    emitter.onNext(new FxResult());
+                    return;
+                }
                 mCaptureSession.capture(requestBuilder.build(), new CameraCaptureSession.CaptureCallback() {
 
                     void onCapture(CaptureResult result) {
@@ -148,6 +161,7 @@ public class FxCameraSession implements IFxCameraSession {
 
     @Override
     public Observable<FxResult> captureStillPicture(FxRequest request) {
+        Log.d(TAG, "captureStillPicture: .......");
         final CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(FxRe.Key.CAPTURE_REQUEST_BUILDER);
         return Observable.create(new ObservableOnSubscribe<FxResult>() {
             @Override
@@ -164,10 +178,15 @@ public class FxCameraSession implements IFxCameraSession {
                         emitter.onNext(new FxResult());
                         Log.d(TAG, "onCaptureCompleted: pic success .....");
                     }
+
+                    @Override
+                    public void onCaptureFailed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureFailure failure) {
+                        Log.d(TAG, "onCaptureFailed: ........." +failure);
+                    }
                 };
 
                 mCaptureSession.stopRepeating();
-                mCaptureSession.abortCaptures();
+//                mCaptureSession.abortCaptures();
                 mCaptureSession.capture(requestBuilder.build(), CaptureCallback, null);
             }
         });

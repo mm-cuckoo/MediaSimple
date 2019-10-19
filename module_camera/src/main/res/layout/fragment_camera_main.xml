@@ -40,6 +40,11 @@
             android:text="font camera"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
+        <Button
+            android:id="@+id/btn_capture"
+            android:text="do capture"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
     </LinearLayout>
 
 </FrameLayout>

@@ -19,18 +19,20 @@ public class FxRequest {
         mMapObject.put(key, value);
     }
 
+    public void  put(String key ,boolean value) {
+        mMapObject.put(key, value);
+    }
+
     public Object getObj(String key) {
-        if (mMapObject.containsKey(key)) {
-            return mMapObject.get(key);
-        }
-        return null;
+        return getObj(key, null);
+    }
+
+    public Object getObj(String key, Object def) {
+        return getValue(key, def);
     }
 
     public String getString(String key, String def) {
-        if (mMapObject.containsKey(key)) {
-            return (String) mMapObject.get(key);
-        }
-        return def;
+        return (String) getValue(key, def);
     }
 
     public String getString(String key) {
@@ -38,10 +40,7 @@ public class FxRequest {
     }
 
     public int getInt(String key, int def) {
-        if (mMapObject.containsKey(key)) {
-            return (int) mMapObject.get(key);
-        }
-        return def;
+        return (int) getValue(key,def);
     }
 
     public int getInt(String key) {
@@ -49,13 +48,25 @@ public class FxRequest {
     }
 
     public float getFloat(String key, float def) {
-        if (mMapObject.containsKey(key)) {
-            return (float) mMapObject.get(key);
-        }
-        return def;
+        return (float) getValue(key, def);
     }
 
     public float getFloat(String key) {
         return getInt(key, 0);
+    }
+
+    public boolean getBoolean(String key) {
+        return getBoolean(key, false);
+    }
+
+    public boolean getBoolean(String key, boolean def) {
+        return (boolean) getValue(key, def);
+    }
+
+    private Object getValue(String key, Object def) {
+        if (mMapObject.containsKey(key)) {
+            return mMapObject.get(key);
+        }
+        return def;
     }
 }
