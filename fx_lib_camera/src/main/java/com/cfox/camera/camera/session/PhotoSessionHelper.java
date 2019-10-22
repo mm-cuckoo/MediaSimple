@@ -47,11 +47,11 @@ public class PhotoSessionHelper extends AbsSessionHelper implements IPhotoSessio
 
     @Override
     public CaptureRequest.Builder createRequestBuilder(FxRequest request) throws CameraAccessException {
-        mCameraDevice = (CameraDevice) request.getObj(FxRe.Key.CAMERA_DEVICE);
         ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);
+        mCameraDevice = (CameraDevice) request.getObj(FxRe.Key.CAMERA_DEVICE);
         mBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-        initCameraConfig();
         mBuilder.addTarget(surfaceHelper.getSurface());
+        initCameraConfig();
         return mBuilder;
     }
 
@@ -91,7 +91,7 @@ public class PhotoSessionHelper extends AbsSessionHelper implements IPhotoSessio
                 }
                 captureBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
                 captureBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
-                captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, 0);
+                captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, 90);
 
                 stRequest.put(FxRe.Key.CAPTURE_REQUEST_BUILDER, captureBuilder);
                 return mPhotoSession.onCaptureStillPicture(stRequest);

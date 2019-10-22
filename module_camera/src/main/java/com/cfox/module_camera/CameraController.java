@@ -48,8 +48,8 @@ class CameraController {
         request.put(FxRe.Key.CAMERA_ID, FxRe.Camera.ID.BACK.id);
         request.put(FxRe.Key.PREVIEW_WIDTH, 1080);
         request.put(FxRe.Key.PREVIEW_HEIGHT, 1920);
-        request.put(FxRe.Key.PIC_WIDTH, 1080);
-        request.put(FxRe.Key.PIC_HEIGHT, 1920);
+        request.put(FxRe.Key.PIC_WIDTH, 1920);
+        request.put(FxRe.Key.PIC_HEIGHT, 1080);
         request.put(FxRe.Key.PIC_FILE_PATH, Environment.getExternalStorageDirectory().getAbsoluteFile().getPath());
         return request;
     }
