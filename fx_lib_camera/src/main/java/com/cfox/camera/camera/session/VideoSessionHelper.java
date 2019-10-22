@@ -1,18 +1,28 @@
 package com.cfox.camera.camera.session;
 
+import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CaptureRequest;
 
 import com.cfox.camera.utils.FxRequest;
+import com.cfox.camera.utils.FxResult;
 
-public class VideoSessionHelper extends AbsBaseSessionHelper {
+import io.reactivex.Observable;
 
-    public VideoSessionHelper(IFxCameraSession cameraSession) {
-        super(cameraSession);
+public class VideoSessionHelper extends AbsSessionHelper {
+
+
+    public VideoSessionHelper(IVideoSession videoSession) {
+        super(videoSession);
 
     }
 
     @Override
-    public CaptureRequest.Builder createRequestBuilder(FxRequest fxRequest){
+    public CaptureRequest.Builder createRequestBuilder(FxRequest request) throws CameraAccessException {
+        return null;
+    }
+
+    @Override
+    public Observable<FxResult> sendRepeatingRequest(FxRequest request) {
         return null;
     }
 }

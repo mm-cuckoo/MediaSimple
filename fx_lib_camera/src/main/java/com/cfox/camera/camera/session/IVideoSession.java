@@ -1,4 +1,4 @@
 package com.cfox.camera.camera.session;
 
-public interface IVideoSession {
+public interface IVideoSession extends ICameraSession {
 }

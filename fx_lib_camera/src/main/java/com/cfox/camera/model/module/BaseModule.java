@@ -37,7 +37,7 @@ public abstract class BaseModule implements IModule {
 
     @Override
     public Observable<FxResult> onStartPreview(final FxRequest request) {
-        ISurfaceHelper surfaceHelper = (SurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);
+        ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);
         String cameraId = request.getString(FxRe.Key.CAMERA_ID);
         int previewWidth = request.getInt(FxRe.Key.PREVIEW_WIDTH);
         int previewHeight = request.getInt(FxRe.Key.PREVIEW_HEIGHT);
@@ -81,8 +81,7 @@ public abstract class BaseModule implements IModule {
 
     @Override
     public Observable<FxResult> onCapture(FxRequest request) {
-        Log.d(TAG, "onCapture: ......");
-        return mSessionHelper.capture(request);
+        return null;
     }
 
     @Override

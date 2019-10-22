@@ -3,11 +3,14 @@ package com.cfox.camera.model;
 import android.content.Context;
 import android.util.Log;
 
-import com.cfox.camera.camera.session.FxCameraSession;
+import com.cfox.camera.camera.session.CameraSession;
 import com.cfox.camera.camera.device.IFxCameraDevice;
 import com.cfox.camera.camera.device.FxCameraDevice;
-import com.cfox.camera.camera.session.IFxCameraSession;
+import com.cfox.camera.camera.session.ICameraSession;
+import com.cfox.camera.camera.session.IPhotoSession;
+import com.cfox.camera.camera.session.PhotoSession;
 import com.cfox.camera.camera.session.PhotoSessionHelper;
+import com.cfox.camera.camera.session.VideoSession;
 import com.cfox.camera.camera.session.VideoSessionHelper;
 import com.cfox.camera.model.module.IModule;
 import com.cfox.camera.model.module.PhotoModule;
@@ -65,9 +68,8 @@ public class CameraModule implements ICameraModule {
 
     private CameraModule(Context context) {
         IFxCameraDevice cameraDevice = FxCameraDevice.getsInstance(context);
-        IFxCameraSession cameraSession = FxCameraSession.getsInstance();
-        mModuleMap.put(ModuleFlag.MODULE_PHOTO, new PhotoModule(cameraDevice, new PhotoSessionHelper(cameraSession)));
-        mModuleMap.put(ModuleFlag.MODULE_VIDEO, new VideoModule(cameraDevice, new VideoSessionHelper(cameraSession)));
+        mModuleMap.put(ModuleFlag.MODULE_PHOTO, new PhotoModule(cameraDevice, new PhotoSessionHelper(new PhotoSession())));
+        mModuleMap.put(ModuleFlag.MODULE_VIDEO, new VideoModule(cameraDevice, new VideoSessionHelper(new VideoSession())));
     }
 
     @Override

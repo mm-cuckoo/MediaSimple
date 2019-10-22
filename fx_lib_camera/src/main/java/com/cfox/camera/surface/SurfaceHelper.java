@@ -97,7 +97,7 @@ public class SurfaceHelper implements ISurfaceHelper {
     private TextureView.SurfaceTextureListener mTextureListener = new TextureView.SurfaceTextureListener() {
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-            Log.d(TAG, "onSurfaceTextureAvailable: .......width:" + width  + "   height:" + height);
+            Log.d(TAG, "onSurfaceTextureAvailable: .......width:" + width  + "   height:" + height  + "     mPreviewSize:" + mPreviewSize);
             mTextureView.getSurfaceTexture().setDefaultBufferSize(mPreviewSize.getWidth(), mPreviewSize.getHeight());
             sendNotify();
 

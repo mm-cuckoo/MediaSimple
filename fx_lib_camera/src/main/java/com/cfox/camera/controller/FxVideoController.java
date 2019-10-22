@@ -1,26 +1,27 @@
 package com.cfox.camera.controller;
 
+import com.cfox.camera.model.ICameraModule;
 import com.cfox.camera.utils.FxRequest;
 
 public class FxVideoController implements IVideoController {
-    private ICameraController mCameraController;
+    private ICameraModule mCameraModule;
 
-    public FxVideoController(ICameraController cameraController) {
-        mCameraController = cameraController;
+    public FxVideoController(ICameraModule cameraModule) {
+        mCameraModule = cameraModule;
     }
 
     @Override
     public void onStartPreview(FxRequest request) {
-        mCameraController.startPreview(request);
+        mCameraModule.startPreview(request);
     }
 
     @Override
     public void onCameraConfig(FxRequest request) {
-        mCameraController.cameraConfig(request);
+        mCameraModule.sendCameraConfig(request);
     }
 
     @Override
     public void onStop() {
-        mCameraController.stop();
+        mCameraModule.stop();
     }
 }

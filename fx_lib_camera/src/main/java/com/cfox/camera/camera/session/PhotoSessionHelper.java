@@ -20,21 +20,21 @@ import java.util.List;
 import java.util.Map;
 
 import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.ObservableSource;
 import io.reactivex.functions.Function;
 
-public class PhotoSessionHelper extends AbsBaseSessionHelper {
+public class PhotoSessionHelper extends AbsSessionHelper implements IPhotoSessionHelper{
     private static final String TAG = "PhotoSessionHelper";
 
     private IReaderHelper mImageReaderHelper;
     private CaptureRequest.Builder mBuilder;
     private CameraDevice mCameraDevice;
     private List<ImageReader> mImageReaders = new ArrayList<>();
+    private IPhotoSession mPhotoSession;
 
-    public PhotoSessionHelper(IFxCameraSession cameraSession) {
-        super(cameraSession);
+    public PhotoSessionHelper(IPhotoSession photoSession) {
+        super(photoSession);
+        mPhotoSession = photoSession;
         mImageReaderHelper = new ImageReaderHelper();
     }
 
@@ -71,7 +71,7 @@ public class PhotoSessionHelper extends AbsBaseSessionHelper {
     @Override
     public Observable<FxResult> sendRepeatingRequest(FxRequest request) {
         configToBuilder(request);
-        return super.sendRepeatingRequest(request);
+        return mPhotoSession.onSendRepeatingRequest(request);
     }
 
     @Override
@@ -79,7 +79,7 @@ public class PhotoSessionHelper extends AbsBaseSessionHelper {
         Log.d(TAG, "capture: ....111.....");
         mBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
         request.put(FxRe.Key.CAPTURE_REQUEST_BUILDER, mBuilder);
-        return super.capture(request).flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
+        return mPhotoSession.onCapture(request).flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
             @Override
             public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
                 Log.d(TAG, "apply: .....222..111......"  + mImageReaders.size());
@@ -94,7 +94,7 @@ public class PhotoSessionHelper extends AbsBaseSessionHelper {
                 captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, 0);
 
                 stRequest.put(FxRe.Key.CAPTURE_REQUEST_BUILDER, captureBuilder);
-                return captureStillPicture(stRequest);
+                return mPhotoSession.onCaptureStillPicture(stRequest);
             }
         }).flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
             @Override
@@ -105,7 +105,7 @@ public class PhotoSessionHelper extends AbsBaseSessionHelper {
                 FxRequest previewRequest = new FxRequest();
                 previewRequest.put(FxRe.Key.CAPTURE_REQUEST_BUILDER, mBuilder);
                 previewRequest.put(FxRe.Key.PREVIEW_CAPTURE, true);
-                return PhotoSessionHelper.super.capture(previewRequest);
+                return mPhotoSession.onCapture(previewRequest);
             }
         }).flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
             @Override
@@ -113,7 +113,7 @@ public class PhotoSessionHelper extends AbsBaseSessionHelper {
                 Log.d(TAG, "apply:  reset preview 222222......");
                 FxRequest previewRequest = new FxRequest();
                 previewRequest.put(FxRe.Key.CAPTURE_REQUEST_BUILDER, mBuilder);
-                return PhotoSessionHelper.super.sendRepeatingRequest(previewRequest);
+                return mPhotoSession.onSendRepeatingRequest(previewRequest);
             }
         });
     }
