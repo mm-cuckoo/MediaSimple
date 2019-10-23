@@ -3,7 +3,7 @@ package com.cfox.camera.model.module;
 import android.util.Log;
 
 import com.cfox.camera.camera.device.IFxCameraDevice;
-import com.cfox.camera.camera.session.IPhotoSessionHelper;
+import com.cfox.camera.camera.session.helper.IPhotoSessionHelper;
 import com.cfox.camera.utils.FxRequest;
 import com.cfox.camera.utils.FxResult;
 

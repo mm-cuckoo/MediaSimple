@@ -1,14 +1,15 @@
-package com.cfox.camera.camera.session;
+package com.cfox.camera.camera.session.helper;
 
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CaptureRequest;
 
+import com.cfox.camera.camera.session.IVideoSession;
 import com.cfox.camera.utils.FxRequest;
 import com.cfox.camera.utils.FxResult;
 
 import io.reactivex.Observable;
 
-public class VideoSessionHelper extends AbsSessionHelper {
+public class VideoSessionHelper extends AbsSessionHelper implements IVideoSessionHelper{
 
 
     public VideoSessionHelper(IVideoSession videoSession) {

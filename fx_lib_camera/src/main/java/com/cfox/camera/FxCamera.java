@@ -11,7 +11,6 @@ public class FxCamera {
     private FxCameraManager mFxCameraManager;
 
     private FxCamera() {
-//        mFxCameraEngine = FxCameraEngineImpl.getInstance();
     }
 
     private FxCamera attr(Context context) {
@@ -23,7 +22,7 @@ public class FxCamera {
 
     private void initCamera() {
         CameraInfoHelper.getInstance().load(mContext,
-                ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_LOAD).getHandler());
+                ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_OTHER).getHandler());
     }
 
     public static FxCamera init(Context context) {

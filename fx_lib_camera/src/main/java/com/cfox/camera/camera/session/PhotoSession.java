@@ -22,31 +22,25 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
 
     @Override
     public Observable<FxResult> onSendRepeatingRequest(FxRequest request) {
-        final CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(FxRe.Key.CAPTURE_REQUEST_BUILDER);
+        Log.d(TAG, "onSendRepeatingRequest: .....");
+        final CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(FxRe.Key.REQUEST_BUILDER);
         return Observable.create(new ObservableOnSubscribe<FxResult>() {
             @Override
             public void subscribe(ObservableEmitter<FxResult> emitter) throws Exception {
                 mCaptureSession.setRepeatingRequest(requestBuilder.build(), new CameraCaptureSession.CaptureCallback() {
                     @Override
-                    public void onCaptureStarted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, long timestamp, long frameNumber) {
-                        super.onCaptureStarted(session, request, timestamp, frameNumber);
-                    }
-
-                    @Override
-                    public void onCaptureProgressed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureResult partialResult) {
-                        super.onCaptureProgressed(session, request, partialResult);
-                    }
-
-                    @Override
                     public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
                         super.onCaptureCompleted(session, request, result);
+                        Log.d(TAG, "onCaptureCompleted: .....");
                     }
 
                     @Override
                     public void onCaptureFailed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureFailure failure) {
                         super.onCaptureFailed(session, request, failure);
+                        Log.d(TAG, "onCaptureFailed: ....");
                     }
                 }, null);
+                emitter.onNext(new FxResult());
             }
         });
     }
@@ -54,7 +48,7 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
     @Override
     public Observable<FxResult> onCapture(final FxRequest request) {
         Log.d(TAG, "capture: ......3333...");
-        final CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(FxRe.Key.CAPTURE_REQUEST_BUILDER);
+        final CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(FxRe.Key.REQUEST_BUILDER);
         return Observable.create(new ObservableOnSubscribe<FxResult>() {
             @Override
             public void subscribe(final ObservableEmitter<FxResult> emitter) throws Exception {
@@ -65,7 +59,7 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
                     mCaptureSession.capture(requestBuilder.build(), new CameraCaptureSession.CaptureCallback() {
                         @Override
                         public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
-                            super.onCaptureCompleted(session, request, result);
+
                         }
                     }, null);
 
@@ -92,16 +86,6 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
                     }
 
                     @Override
-                    public void onCaptureStarted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, long timestamp, long frameNumber) {
-
-                    }
-
-                    @Override
-                    public void onCaptureProgressed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureResult partialResult) {
-                        onCapture(partialResult);
-                    }
-
-                    @Override
                     public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
                         onCapture(result);
                     }
@@ -118,7 +102,7 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
     @Override
     public Observable<FxResult> onCaptureStillPicture(FxRequest request) {
         Log.d(TAG, "captureStillPicture: .......");
-        final CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(FxRe.Key.CAPTURE_REQUEST_BUILDER);
+        final CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(FxRe.Key.REQUEST_BUILDER);
         return Observable.create(new ObservableOnSubscribe<FxResult>() {
             @Override
             public void subscribe(final ObservableEmitter<FxResult> emitter) throws Exception {

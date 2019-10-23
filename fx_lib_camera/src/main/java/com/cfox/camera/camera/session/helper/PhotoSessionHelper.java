@@ -1,4 +1,4 @@
-package com.cfox.camera.camera.session;
+package com.cfox.camera.camera.session.helper;
 
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraDevice;
@@ -10,6 +10,7 @@ import android.util.Log;
 import com.cfox.camera.CameraConfig;
 import com.cfox.camera.camera.IReaderHelper;
 import com.cfox.camera.camera.ImageReaderHelper;
+import com.cfox.camera.camera.session.IPhotoSession;
 import com.cfox.camera.surface.ISurfaceHelper;
 import com.cfox.camera.utils.FxRe;
 import com.cfox.camera.utils.FxRequest;
@@ -78,7 +79,7 @@ public class PhotoSessionHelper extends AbsSessionHelper implements IPhotoSessio
     public Observable<FxResult> capture(final FxRequest request) {
         Log.d(TAG, "capture: ....111.....");
         mBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
-        request.put(FxRe.Key.CAPTURE_REQUEST_BUILDER, mBuilder);
+        request.put(FxRe.Key.REQUEST_BUILDER, mBuilder);
         return mPhotoSession.onCapture(request).flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
             @Override
             public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
@@ -93,7 +94,7 @@ public class PhotoSessionHelper extends AbsSessionHelper implements IPhotoSessio
                 captureBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
                 captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, 90);
 
-                stRequest.put(FxRe.Key.CAPTURE_REQUEST_BUILDER, captureBuilder);
+                stRequest.put(FxRe.Key.REQUEST_BUILDER, captureBuilder);
                 return mPhotoSession.onCaptureStillPicture(stRequest);
             }
         }).flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
@@ -103,7 +104,7 @@ public class PhotoSessionHelper extends AbsSessionHelper implements IPhotoSessio
                 mBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
                 mBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
                 FxRequest previewRequest = new FxRequest();
-                previewRequest.put(FxRe.Key.CAPTURE_REQUEST_BUILDER, mBuilder);
+                previewRequest.put(FxRe.Key.REQUEST_BUILDER, mBuilder);
                 previewRequest.put(FxRe.Key.PREVIEW_CAPTURE, true);
                 return mPhotoSession.onCapture(previewRequest);
             }
@@ -112,7 +113,7 @@ public class PhotoSessionHelper extends AbsSessionHelper implements IPhotoSessio
             public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
                 Log.d(TAG, "apply:  reset preview 222222......");
                 FxRequest previewRequest = new FxRequest();
-                previewRequest.put(FxRe.Key.CAPTURE_REQUEST_BUILDER, mBuilder);
+                previewRequest.put(FxRe.Key.REQUEST_BUILDER, mBuilder);
                 return mPhotoSession.onSendRepeatingRequest(previewRequest);
             }
         });
@@ -120,7 +121,7 @@ public class PhotoSessionHelper extends AbsSessionHelper implements IPhotoSessio
 
     private void configToBuilder(FxRequest request) {
         CameraConfig cameraConfig = (CameraConfig) request.getObj(FxRe.Key.CAMERA_CONFIG);
-        request.put(FxRe.Key.CAPTURE_REQUEST_BUILDER, mBuilder);
+        request.put(FxRe.Key.REQUEST_BUILDER, mBuilder);
         if (cameraConfig == null) return;
         for (Map.Entry<CaptureRequest.Key<Integer>, Integer> value : cameraConfig.getValue()) {
             Log.d(TAG, "CaptureRequest: key:" + value.getKey()  + "   value:" + value.getValue());

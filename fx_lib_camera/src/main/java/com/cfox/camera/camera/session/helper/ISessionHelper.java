@@ -1,4 +1,4 @@
-package com.cfox.camera.camera.session;
+package com.cfox.camera.camera.session.helper;
 
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CaptureRequest;
@@ -12,6 +12,7 @@ public interface ISessionHelper {
     Observable<FxResult> createPreviewSession(FxRequest request);
     CaptureRequest.Builder createRequestBuilder(FxRequest request) throws CameraAccessException;
     Observable<FxResult> sendRepeatingRequest(FxRequest request);
+    Observable<FxResult> sendPreviewRepeatingRequest(FxRequest request);
 
     void closeSession();
 

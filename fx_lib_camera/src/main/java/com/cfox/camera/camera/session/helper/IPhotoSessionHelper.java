@@ -1,4 +1,4 @@
-package com.cfox.camera.camera.session;
+package com.cfox.camera.camera.session.helper;
 
 
 import com.cfox.camera.utils.FxRequest;

@@ -3,15 +3,12 @@ package com.cfox.camera.model;
 import android.content.Context;
 import android.util.Log;
 
-import com.cfox.camera.camera.session.CameraSession;
 import com.cfox.camera.camera.device.IFxCameraDevice;
 import com.cfox.camera.camera.device.FxCameraDevice;
-import com.cfox.camera.camera.session.ICameraSession;
-import com.cfox.camera.camera.session.IPhotoSession;
 import com.cfox.camera.camera.session.PhotoSession;
-import com.cfox.camera.camera.session.PhotoSessionHelper;
+import com.cfox.camera.camera.session.helper.PhotoSessionHelper;
 import com.cfox.camera.camera.session.VideoSession;
-import com.cfox.camera.camera.session.VideoSessionHelper;
+import com.cfox.camera.camera.session.helper.VideoSessionHelper;
 import com.cfox.camera.model.module.IModule;
 import com.cfox.camera.model.module.PhotoModule;
 import com.cfox.camera.model.module.VideoModule;

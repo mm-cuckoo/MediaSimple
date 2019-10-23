@@ -8,9 +8,8 @@ import android.util.Size;
 import com.cfox.camera.camera.CameraInfo;
 import com.cfox.camera.camera.CameraInfoHelper;
 import com.cfox.camera.camera.device.IFxCameraDevice;
-import com.cfox.camera.camera.session.ISessionHelper;
+import com.cfox.camera.camera.session.helper.ISessionHelper;
 import com.cfox.camera.surface.ISurfaceHelper;
-import com.cfox.camera.surface.SurfaceHelper;
 import com.cfox.camera.utils.FxRe;
 import com.cfox.camera.utils.FxRequest;
 import com.cfox.camera.utils.FxResult;
@@ -63,10 +62,10 @@ public abstract class BaseModule implements IModule {
                     public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
                         Log.d(TAG, "apply: sendRepeatingRequest......");
                         CaptureRequest.Builder builder = mSessionHelper.createRequestBuilder(request);
-                        request.put(FxRe.Key.CAPTURE_REQUEST_BUILDER, builder);
-                        return mSessionHelper.sendRepeatingRequest(request);
+                        request.put(FxRe.Key.REQUEST_BUILDER, builder);
+                        return mSessionHelper.sendPreviewRepeatingRequest(request);
                     }
-                });
+                }).subscribeOn(AndroidSchedulers.from(ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_CAMERA).getLooper()));
     }
 
     @Override

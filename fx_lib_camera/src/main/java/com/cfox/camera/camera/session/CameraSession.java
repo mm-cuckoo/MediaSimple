@@ -2,11 +2,16 @@ package com.cfox.camera.camera.session;
 
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
+import android.hardware.camera2.CaptureFailure;
+import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.TotalCaptureResult;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.cfox.camera.FxException;
 import com.cfox.camera.surface.ISurfaceHelper;
+import com.cfox.camera.utils.FxError;
 import com.cfox.camera.utils.FxRe;
 import com.cfox.camera.utils.FxRequest;
 import com.cfox.camera.utils.FxResult;
@@ -18,6 +23,7 @@ import io.reactivex.ObservableOnSubscribe;
 public class CameraSession implements ICameraSession {
     private static final String TAG = "FxCameraSession";
     CameraCaptureSession mCaptureSession;
+    private boolean mFirstFrameCompleted = false;
 
     public Observable<FxResult> onCreatePreviewSession(FxRequest request) {
         final ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);
@@ -37,9 +43,38 @@ public class CameraSession implements ICameraSession {
 
                     @Override
                     public void onConfigureFailed(@NonNull CameraCaptureSession session) {
-
+                        emitter.onError(new FxException("Create Preview Session failed  ",FxError.ERROR_CODE_CREATE_PREVIEW_SESSION));
                     }
                 }, null);
+            }
+        });
+    }
+
+    @Override
+    public Observable<FxResult> onPreviewRepeatingRequest(FxRequest request) {
+        mFirstFrameCompleted = false;
+        final CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(FxRe.Key.REQUEST_BUILDER);
+        return Observable.create(new ObservableOnSubscribe<FxResult>() {
+            @Override
+            public void subscribe(final ObservableEmitter<FxResult> emitter) throws Exception {
+                mCaptureSession.setRepeatingRequest(requestBuilder.build(), new CameraCaptureSession.CaptureCallback() {
+                    @Override
+                    public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
+                        super.onCaptureCompleted(session, request, result);
+                        if (!mFirstFrameCompleted) {
+                            mFirstFrameCompleted = true;
+                            emitter.onNext(new FxResult());
+                        }
+                        Log.d(TAG, "onCaptureCompleted: .....");
+                    }
+
+                    @Override
+                    public void onCaptureFailed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureFailure failure) {
+                        super.onCaptureFailed(session, request, failure);
+                        Log.d(TAG, "onCaptureFailed: ....");
+                    }
+                }, null);
+
             }
         });
     }
