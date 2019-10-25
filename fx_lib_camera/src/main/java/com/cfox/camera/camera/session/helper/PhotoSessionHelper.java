@@ -80,10 +80,11 @@ public class PhotoSessionHelper extends AbsSessionHelper implements IPhotoSessio
         Log.d(TAG, "capture: ....111.....");
         mBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
         request.put(FxRe.Key.REQUEST_BUILDER, mBuilder);
+        final int picOrientation = request.getInt(FxRe.Key.PIC_ORIENTATION);
         return mPhotoSession.onCapture(request).flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
             @Override
             public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
-                Log.d(TAG, "apply: .....222..111......"  + mImageReaders.size());
+                Log.d(TAG, "apply: .....222..111......"  + mImageReaders.size()  +  "   picOrientation:" + picOrientation );
                 FxRequest stRequest = new FxRequest();
                 CaptureRequest.Builder captureBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
                 for (ImageReader reader : mImageReaders) {
@@ -92,7 +93,7 @@ public class PhotoSessionHelper extends AbsSessionHelper implements IPhotoSessio
                 }
                 captureBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
                 captureBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
-                captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, 90);
+                captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, picOrientation);
 
                 stRequest.put(FxRe.Key.REQUEST_BUILDER, captureBuilder);
                 return mPhotoSession.onCaptureStillPicture(stRequest);

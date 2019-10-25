@@ -8,14 +8,14 @@ import com.cfox.camera.utils.ThreadHandlerManager;
 
 public class FxCamera {
     private Context mContext;
-    private FxCameraManager mFxCameraManager;
+    private FxCameraManager mCameraManager;
 
     private FxCamera() {
     }
 
     private FxCamera attr(Context context) {
         mContext = context.getApplicationContext();
-        mFxCameraManager = new FxCameraManager(mContext);
+        mCameraManager = new FxCameraManager(mContext);
         initCamera();
         return this;
     }
@@ -35,7 +35,12 @@ public class FxCamera {
     }
 
     public FxCameraManager getCameraManager() {
-        return mFxCameraManager;
+        return mCameraManager;
+    }
+
+    public void setConfig(IConfig config) {
+        checkContextUNLL();
+        mCameraManager.setConfig(config);
     }
 
     public void release() {

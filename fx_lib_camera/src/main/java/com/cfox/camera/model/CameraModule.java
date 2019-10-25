@@ -3,6 +3,7 @@ package com.cfox.camera.model;
 import android.content.Context;
 import android.util.Log;
 
+import com.cfox.camera.IConfig;
 import com.cfox.camera.camera.device.IFxCameraDevice;
 import com.cfox.camera.camera.device.FxCameraDevice;
 import com.cfox.camera.camera.session.PhotoSession;
@@ -48,9 +49,11 @@ public class CameraModule implements ICameraModule {
     }
 
     @Override
-    public void initModule(ModuleFlag moduleFlag) {
+    public void initModule(ModuleFlag moduleFlag, IConfig config) {
         Log.d(TAG, "initModule: module flag:" + moduleFlag);
         mCurrentModule = mModuleMap.get(moduleFlag);
+        assert mCurrentModule != null;
+        mCurrentModule.setConfig(config);
     }
 
     @Override

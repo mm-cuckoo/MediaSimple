@@ -5,6 +5,7 @@ import android.hardware.camera2.CaptureRequest;
 import android.util.Log;
 import android.util.Size;
 
+import com.cfox.camera.IConfig;
 import com.cfox.camera.camera.CameraInfo;
 import com.cfox.camera.camera.CameraInfoHelper;
 import com.cfox.camera.camera.device.IFxCameraDevice;
@@ -28,6 +29,7 @@ public abstract class BaseModule implements IModule {
 
     private IFxCameraDevice mCameraDevice;
     private ISessionHelper mSessionHelper;
+    IConfig mConfig;
 
     BaseModule(IFxCameraDevice cameraDevice, ISessionHelper sessionHelper) {
         this.mCameraDevice = cameraDevice;
@@ -35,15 +37,12 @@ public abstract class BaseModule implements IModule {
     }
 
     @Override
-    public Observable<FxResult> onStartPreview(final FxRequest request) {
+    public void setConfig(IConfig config) {
+        mConfig = config;
+    }
+
+    Observable<FxResult> startPreview(final FxRequest request) {
         ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);
-        String cameraId = request.getString(FxRe.Key.CAMERA_ID);
-        int previewWidth = request.getInt(FxRe.Key.PREVIEW_WIDTH);
-        int previewHeight = request.getInt(FxRe.Key.PREVIEW_HEIGHT);
-        CameraInfo cameraInfo = CameraInfoHelper.getInstance().getCameraInfo(cameraId);
-        Size previewSize = cameraInfo.getPreviewSize(previewWidth, previewHeight, surfaceHelper.getSurfaceClass());
-        Log.d(TAG, "onStartPreview: preview width:" + previewWidth  + "   preview height:" + previewHeight  + "   preview size:" + previewSize);
-        surfaceHelper.setAspectRatio(previewSize);
         return Observable.combineLatest(surfaceHelper.isAvailable(), onOpenCamera(request),
                 new BiFunction<FxRequest, FxResult, FxResult>() {
                     @Override
@@ -51,21 +50,21 @@ public abstract class BaseModule implements IModule {
                         return fxResult;
                     }
                 }).flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
-                    @Override
-                    public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
-                        Log.d(TAG, "apply: create  session .....");
-                        request.put(FxRe.Key.CAMERA_DEVICE, fxResult.getObj(FxRe.Key.CAMERA_DEVICE));
-                        return mSessionHelper.createPreviewSession(request);
-                    }
-                }).flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
-                    @Override
-                    public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
-                        Log.d(TAG, "apply: sendRepeatingRequest......");
-                        CaptureRequest.Builder builder = mSessionHelper.createRequestBuilder(request);
-                        request.put(FxRe.Key.REQUEST_BUILDER, builder);
-                        return mSessionHelper.sendPreviewRepeatingRequest(request);
-                    }
-                }).subscribeOn(AndroidSchedulers.from(ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_CAMERA).getLooper()));
+            @Override
+            public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
+                Log.d(TAG, "apply: create  session .....");
+                request.put(FxRe.Key.CAMERA_DEVICE, fxResult.getObj(FxRe.Key.CAMERA_DEVICE));
+                return mSessionHelper.createPreviewSession(request);
+            }
+        }).flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
+            @Override
+            public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
+                Log.d(TAG, "apply: sendRepeatingRequest......");
+                CaptureRequest.Builder builder = mSessionHelper.createRequestBuilder(request);
+                request.put(FxRe.Key.REQUEST_BUILDER, builder);
+                return mSessionHelper.sendPreviewRepeatingRequest(request);
+            }
+        }).subscribeOn(AndroidSchedulers.from(ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_CAMERA).getLooper()));
     }
 
     @Override

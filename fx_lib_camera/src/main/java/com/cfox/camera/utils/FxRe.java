@@ -19,13 +19,12 @@ public interface FxRe {
         String OPEN_CAMERA_STATUS = "open_camera_status";
         String REQUEST_BUILDER = "request_builder";
 
-        String PIC_WIDTH = "pic_width";
-        String PIC_HEIGHT = "pic_height";
-        String IMAGE_FORMAT = "Image_format";
+        String PIC_SIZE = "pic_size";
+        String PIC_ORIENTATION = "pic_orientation";
         String PIC_FILE_PATH = "pic_file_path";
+        String IMAGE_FORMAT = "Image_format";
 
-        String PREVIEW_WIDTH = "preview_width";
-        String PREVIEW_HEIGHT = "preview_height";
+        String PREVIEW_SIZE = "preview_size";
 
         String CAMERA_CONFIG = "camera_config";
         String PREVIEW_CAPTURE = "preview_capture";

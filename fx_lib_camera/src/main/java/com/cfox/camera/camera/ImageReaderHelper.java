@@ -5,6 +5,7 @@ import android.media.Image;
 import android.media.ImageReader;
 import android.os.Handler;
 import android.util.Log;
+import android.util.Size;
 
 import com.cfox.camera.utils.FxRe;
 import com.cfox.camera.utils.FxRequest;
@@ -32,12 +33,11 @@ public class ImageReaderHelper implements IReaderHelper {
 
     @Override
     public ImageReader createImageReader(FxRequest request) {
-        int picWidth = request.getInt(FxRe.Key.PIC_WIDTH);
-        int picHeight = request.getInt(FxRe.Key.PIC_HEIGHT);
+        Size picSize = (Size) request.getObj(FxRe.Key.PIC_SIZE);
         int imageFormat = request.getInt(FxRe.Key.IMAGE_FORMAT, ImageFormat.JPEG);
         final String filePath = request.getString(FxRe.Key.PIC_FILE_PATH);
-        Log.d(TAG, "createImageReader: pic width:" + picWidth + "  pic height:" + picHeight  + "   format:" + imageFormat);
-        ImageReader imageReader = ImageReader.newInstance(picWidth, picHeight, imageFormat, 2);
+        Log.d(TAG, "createImageReader: pic width:" + picSize.getWidth() + "  pic height:" + picSize.getHeight()  + "   format:" + imageFormat);
+        ImageReader imageReader = ImageReader.newInstance(picSize.getWidth(), picSize.getHeight(), imageFormat, 2);
         mImageReaders.add(imageReader);
         imageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
             @Override

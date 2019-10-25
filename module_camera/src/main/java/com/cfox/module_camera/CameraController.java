@@ -4,10 +4,12 @@ package com.cfox.module_camera;
 import android.hardware.camera2.CaptureRequest;
 import android.os.Environment;
 import android.util.Log;
+import android.util.Size;
 
 import com.cfox.camera.CameraConfig;
 import com.cfox.camera.FxCamera;
 import com.cfox.camera.FxCameraManager;
+import com.cfox.camera.IFxCameraManager;
 import com.cfox.camera.controller.IPhotoController;
 import com.cfox.camera.surface.SurfaceHelper;
 import com.cfox.camera.utils.FxRe;
@@ -46,10 +48,10 @@ class CameraController {
     private FxRequest getRequest() {
         FxRequest request = new FxRequest();
         request.put(FxRe.Key.CAMERA_ID, FxRe.Camera.ID.BACK.id);
-        request.put(FxRe.Key.PREVIEW_WIDTH, 1080);
-        request.put(FxRe.Key.PREVIEW_HEIGHT, 1920);
-        request.put(FxRe.Key.PIC_WIDTH, 1920);
-        request.put(FxRe.Key.PIC_HEIGHT, 1080);
+        Size previewSize = new Size(1920, 1080);
+        request.put(FxRe.Key.PREVIEW_SIZE, previewSize);
+        Size picSize = new Size(1920, 1080);
+        request.put(FxRe.Key.PIC_SIZE, picSize);
         request.put(FxRe.Key.PIC_FILE_PATH, Environment.getExternalStorageDirectory().getAbsoluteFile().getPath());
         return request;
     }

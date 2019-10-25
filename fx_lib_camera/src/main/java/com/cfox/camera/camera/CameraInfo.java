@@ -2,22 +2,15 @@ package com.cfox.camera.camera;
 
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.params.StreamConfigurationMap;
-import android.media.MediaRecorder;
-import android.util.Log;
 import android.util.Size;
 
 public class CameraInfo {
-    private static final String TAG = "CameraInfo";
-
     private String mCameraId;
     private CameraCharacteristics mCharacteristics;
-    private Size mDefaultSize = new Size(1920, 1080);
-
 
     public CameraInfo(String cameraId, CameraCharacteristics characteristics) {
         this.mCameraId = cameraId;
         this.mCharacteristics = characteristics;
-//        printf();
     }
 
     public String getCameraId() {
@@ -29,48 +22,28 @@ public class CameraInfo {
         return mCharacteristics;
     }
 
-    public Size getPicSize(int width, int height, int format) {
-        Size size = mDefaultSize;
+    public Size[] getPictureSize(int format) {
+        Size[] sizes = null;
         StreamConfigurationMap map = mCharacteristics
                 .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
         if (map != null) {
-            size = chooseSize(width, height, map.getOutputSizes(format));
+            sizes =  map.getOutputSizes(format);
         }
-        return size;
+        return sizes;
     }
 
-    private Size chooseSize(int width, int height, Size[] sizes) {
-        Log.d(TAG, "chooseSize: width:" + width + "  height:" + height);
-        chooseVideoSize(sizes);
-        int heightTmp = height;
-        for (Size size : sizes) {
-            if (width == size.getHeight()) {
-                if (height > size.getWidth()) {
-                    heightTmp = size.getWidth();
-                } else if (height == size.getWidth()){
-                    heightTmp = size.getWidth();
-                    break;
-                }
-            }
-        }
-        Log.d(TAG, "chooseSize: result : width:" + width + "   height:" + heightTmp);
-        return new Size(heightTmp, width);
-    }
-
-
-    public Size getPreviewSize(int width, int height, Class klass) {
-        Size size = mDefaultSize;
+    public Size[] getPreviewSize(Class klass) {
+        Size[] sizes = null;
         StreamConfigurationMap map = mCharacteristics
                 .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
         if (map != null) {
-            size = chooseSize(width, height, map.getOutputSizes(klass));
+            sizes = map.getOutputSizes(klass);
         }
-        return size;
+        return sizes;
     }
 
-    private void chooseVideoSize(Size[] choices) {
-        for (Size size : choices) {
-            Log.e(TAG, " id:" + getCameraId() + " size:width:" + size.getWidth() + "   height:" + size.getHeight());
-        }
+    public int getSensorOrientation() {
+        Integer orientation = mCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
+        return orientation == null ? 0 : orientation;
     }
 }
