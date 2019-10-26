@@ -3,11 +3,8 @@ package com.cfox.camera.model.module;
 
 import android.hardware.camera2.CaptureRequest;
 import android.util.Log;
-import android.util.Size;
 
 import com.cfox.camera.IConfig;
-import com.cfox.camera.camera.CameraInfo;
-import com.cfox.camera.camera.CameraInfoHelper;
 import com.cfox.camera.camera.device.IFxCameraDevice;
 import com.cfox.camera.camera.session.helper.ISessionHelper;
 import com.cfox.camera.surface.ISurfaceHelper;
@@ -21,7 +18,9 @@ import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.ObservableSource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.BiFunction;
+import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 
 public abstract class BaseModule implements IModule {
@@ -44,27 +43,28 @@ public abstract class BaseModule implements IModule {
     Observable<FxResult> startPreview(final FxRequest request) {
         ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);
         return Observable.combineLatest(surfaceHelper.isAvailable(), onOpenCamera(request),
-                new BiFunction<FxRequest, FxResult, FxResult>() {
+                new BiFunction<FxResult, FxResult, FxRequest>() {
                     @Override
-                    public FxResult apply(FxRequest request, FxResult fxResult) throws Exception {
-                        return fxResult;
+                    public FxRequest apply(FxResult result1, FxResult result2) throws Exception {
+                        Log.d(TAG, "apply: open camera device success .....");
+                        request.put(FxRe.Key.CAMERA_DEVICE, result2.getObj(FxRe.Key.CAMERA_DEVICE));
+                        return request;
+                    }
+                }).flatMap(new Function<FxRequest, ObservableSource<FxResult>>() {
+                    @Override
+                    public ObservableSource<FxResult> apply(FxRequest fxRequest) throws Exception {
+                        Log.d(TAG, "apply: create  session ....." + request);
+                        CaptureRequest.Builder builder = mSessionHelper.createPreviewRepeatingBuilder(request);
+                        request.put(FxRe.Key.REQUEST_BUILDER, builder);
+                        return mSessionHelper.createPreviewSession(request);
                     }
                 }).flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
-            @Override
-            public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
-                Log.d(TAG, "apply: create  session .....");
-                request.put(FxRe.Key.CAMERA_DEVICE, fxResult.getObj(FxRe.Key.CAMERA_DEVICE));
-                return mSessionHelper.createPreviewSession(request);
-            }
-        }).flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
-            @Override
-            public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
-                Log.d(TAG, "apply: sendRepeatingRequest......");
-                CaptureRequest.Builder builder = mSessionHelper.createRequestBuilder(request);
-                request.put(FxRe.Key.REQUEST_BUILDER, builder);
-                return mSessionHelper.sendPreviewRepeatingRequest(request);
-            }
-        }).subscribeOn(AndroidSchedulers.from(ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_CAMERA).getLooper()));
+                    @Override
+                    public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
+                        Log.d(TAG, "apply: sendRepeatingRequest......");
+                        return mSessionHelper.sendPreviewRepeatingRequest(request);
+                    }
+                }).subscribeOn(AndroidSchedulers.from(ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_CAMERA).getLooper()));
     }
 
     @Override

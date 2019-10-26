@@ -69,4 +69,11 @@ public class FxRequest {
         }
         return def;
     }
+
+    @Override
+    public String toString() {
+        return "FxRequest{" +
+                "mMapObject=" + mMapObject +
+                '}';
+    }
 }

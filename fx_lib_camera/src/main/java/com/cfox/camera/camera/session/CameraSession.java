@@ -15,20 +15,21 @@ import com.cfox.camera.utils.FxError;
 import com.cfox.camera.utils.FxRe;
 import com.cfox.camera.utils.FxRequest;
 import com.cfox.camera.utils.FxResult;
+import com.cfox.camera.utils.ThreadHandlerManager;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 
 public class CameraSession implements ICameraSession {
-    private static final String TAG = "FxCameraSession";
+    private static final String TAG = "CameraSession";
     CameraCaptureSession mCaptureSession;
     private boolean mFirstFrameCompleted = false;
 
     public Observable<FxResult> onCreatePreviewSession(FxRequest request) {
         final ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);
         final CameraDevice cameraDevice = (CameraDevice) request.getObj(FxRe.Key.CAMERA_DEVICE);
-        Log.d(TAG, "createPreviewSession: ---->" + surfaceHelper.getSurfaces().size()  + "   hsc:" + surfaceHelper.hashCode());
+        Log.d(TAG, "createPreviewSession: ---->" + surfaceHelper.getSurfaces().size());
         closeSession();
         return Observable.create(new ObservableOnSubscribe<FxResult>() {
             @Override
@@ -45,7 +46,7 @@ public class CameraSession implements ICameraSession {
                     public void onConfigureFailed(@NonNull CameraCaptureSession session) {
                         emitter.onError(new FxException("Create Preview Session failed  ",FxError.ERROR_CODE_CREATE_PREVIEW_SESSION));
                     }
-                }, null);
+                }, ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_CAMERA).getHandler());
             }
         });
     }
@@ -73,7 +74,7 @@ public class CameraSession implements ICameraSession {
                         super.onCaptureFailed(session, request, failure);
                         Log.d(TAG, "onCaptureFailed: ....");
                     }
-                }, null);
+                }, ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_CAMERA).getHandler());
 
             }
         });

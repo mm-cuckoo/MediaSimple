@@ -10,7 +10,7 @@ import io.reactivex.Observable;
 
 public interface ISessionHelper {
     Observable<FxResult> createPreviewSession(FxRequest request);
-    CaptureRequest.Builder createRequestBuilder(FxRequest request) throws CameraAccessException;
+    CaptureRequest.Builder createPreviewRepeatingBuilder(FxRequest request) throws CameraAccessException;
     Observable<FxResult> sendRepeatingRequest(FxRequest request);
     Observable<FxResult> sendPreviewRepeatingRequest(FxRequest request);
 

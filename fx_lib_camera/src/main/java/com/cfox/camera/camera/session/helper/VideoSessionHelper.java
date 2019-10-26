@@ -18,7 +18,7 @@ public class VideoSessionHelper extends AbsSessionHelper implements IVideoSessio
     }
 
     @Override
-    public CaptureRequest.Builder createRequestBuilder(FxRequest request) throws CameraAccessException {
+    public CaptureRequest.Builder createPreviewRepeatingBuilder(FxRequest request) throws CameraAccessException {
         return null;
     }
 

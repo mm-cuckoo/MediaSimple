@@ -8,6 +8,7 @@ import android.view.TextureView;
 
 import com.cfox.camera.AutoFitTextureView;
 import com.cfox.camera.utils.FxRequest;
+import com.cfox.camera.utils.FxResult;
 import com.cfox.camera.utils.ThreadHandlerManager;
 
 import java.util.ArrayList;
@@ -43,10 +44,10 @@ public class SurfaceHelper implements ISurfaceHelper {
         return mTextureView.getSurfaceTexture();
     }
 
-    public Observable<FxRequest> isAvailable() {
-        return Observable.create(new ObservableOnSubscribe<FxRequest>() {
+    public Observable<FxResult> isAvailable() {
+        return Observable.create(new ObservableOnSubscribe<FxResult>() {
             @Override
-            public void subscribe(ObservableEmitter<FxRequest> emitter) throws Exception {
+            public void subscribe(ObservableEmitter<FxResult> emitter) throws Exception {
                 Log.d(TAG, "subscribe: ..........");
                 if (!mTextureView.isAvailable()) {
                     synchronized (obj) {
@@ -61,9 +62,7 @@ public class SurfaceHelper implements ISurfaceHelper {
 
                 Log.d(TAG, "SurfaceTexture isAvailable width:" + mTextureView.getWidth()  + "  height:" + mTextureView.getHeight());
                 mSurfaces.add(getSurface());
-                FxRequest request = new FxRequest();
-                emitter.onNext(request);
-//                emitter.onComplete();
+                emitter.onNext(new FxResult());
             }
         }).subscribeOn(AndroidSchedulers.from(ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_OTHER).getLooper()));
     }

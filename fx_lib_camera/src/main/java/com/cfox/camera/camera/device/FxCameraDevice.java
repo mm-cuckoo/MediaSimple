@@ -46,13 +46,13 @@ public class FxCameraDevice implements IFxCameraDevice {
 
     @SuppressLint("MissingPermission")
     @Override
-    public Observable<FxResult> openCameraDevice(final FxRequest fxRequest) {
+    public Observable<FxResult> openCameraDevice(final FxRequest request) {
+        final String cameraId = request.getString(FxRe.Key.CAMERA_ID);
+        Log.d(TAG, "open camera start .....camera id:" + cameraId);
         closeCameraDevice();
         return Observable.create(new ObservableOnSubscribe<FxResult>() {
             @Override
             public void subscribe(final ObservableEmitter<FxResult> emitter) throws Exception {
-                String cameraId = fxRequest.getString(FxRe.Key.CAMERA_ID);
-                Log.d(TAG, "subscribe: cameraId:----->" + cameraId);
                 try {
                     if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
                         throw new RuntimeException("Time out waiting to lock camera opening.");
@@ -62,7 +62,7 @@ public class FxCameraDevice implements IFxCameraDevice {
                         @Override
                         public void onOpened(@NonNull CameraDevice camera) {
                             mCameraDevice = camera;
-                            Log.d(TAG, "onOpened: ");
+                            Log.d(TAG, "camera device opened....: ");
                             FxResult result = new FxResult();
                             result.put(FxRe.Key.CAMERA_DEVICE, camera);
                             result.put(FxRe.Key.OPEN_CAMERA_STATUS, FxRe.Value.OPEN_SUCCESS);
@@ -73,12 +73,14 @@ public class FxCameraDevice implements IFxCameraDevice {
                         @Override
                         public void onDisconnected(@NonNull CameraDevice camera) {
                             Log.d(TAG, "onDisconnected: ");
+                            camera.close();
 
                         }
 
                         @Override
                         public void onError(@NonNull CameraDevice camera, int error) {
                             Log.d(TAG, "onError: code:" + error);
+                            camera.close();
                             emitter.onError(new Throwable("open camera error Code:" + error));
 
                         }
@@ -94,7 +96,7 @@ public class FxCameraDevice implements IFxCameraDevice {
 
     @Override
     public void closeCameraDevice() {
-        Log.d(TAG, "closeCameraDevice: .......");
+        Log.d(TAG, "close  Camera   Device: .......");
         try {
             mCameraOpenCloseLock.acquire();
             if (mCameraDevice != null) {

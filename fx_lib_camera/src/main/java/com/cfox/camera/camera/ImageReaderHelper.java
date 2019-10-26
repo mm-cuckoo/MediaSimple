@@ -52,6 +52,25 @@ public class ImageReaderHelper implements IReaderHelper {
     }
 
     @Override
+    public ImageReader createPreviewImageReader(FxRequest request) {
+        Size picSize = (Size) request.getObj(FxRe.Key.PREVIEW_SIZE);
+        int imageFormat = request.getInt(FxRe.Key.IMAGE_FORMAT, ImageFormat.JPEG);
+        Log.d(TAG, "createImageReader: pic width:" + picSize.getWidth() + "  pic height:" + picSize.getHeight()  + "   format:" + imageFormat);
+        ImageReader imageReader = ImageReader.newInstance(picSize.getWidth(), picSize.getHeight(), ImageFormat.YUV_420_888, 2);
+        mImageReaders.add(imageReader);
+        imageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
+            @Override
+            public void onImageAvailable(ImageReader reader) {
+                Log.d(TAG, "onImageAvailable: preview frame ....");
+                Image image = reader.acquireNextImage();
+                if (image == null) return;
+                image.close();
+            }
+        }, mImageReaderHandler);
+        return imageReader;
+    }
+
+    @Override
     public void closeImageReaders() {
         for (ImageReader imageReader : mImageReaders) {
             imageReader.close();

@@ -37,7 +37,7 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
                     @Override
                     public void onCaptureFailed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureFailure failure) {
                         super.onCaptureFailed(session, request, failure);
-                        Log.d(TAG, "onCaptureFailed: ....");
+                        Log.d(TAG, "onCaptureFailed: ...." + failure.toString());
                     }
                 }, null);
                 emitter.onNext(new FxResult());
