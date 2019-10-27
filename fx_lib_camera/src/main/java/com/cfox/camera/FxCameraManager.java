@@ -12,32 +12,30 @@ import com.cfox.camera.model.ICameraModule;
 public class FxCameraManager implements IFxCameraManager {
 
     private ICameraModule mCameraModule;
-    private IConfig mConfig;
+    private ConfigWrapper mConfigWrapper;
 
     FxCameraManager(Context context) {
-        mCameraModule = CameraModule.getInstance(context);
+        mConfigWrapper = new ConfigWrapper();
+        mCameraModule = CameraModule.getInstance(context, mConfigWrapper);
     }
 
     @Override
     public IPhotoController photo() {
-        mCameraModule.initModule(CameraModule.ModuleFlag.MODULE_PHOTO, getConfig());
+        mCameraModule.initModule(CameraModule.ModuleFlag.MODULE_PHOTO);
         return new FxPhotoController(mCameraModule);
     }
 
     @Override
     public IVideoController video() {
-        mCameraModule.initModule(CameraModule.ModuleFlag.MODULE_VIDEO, getConfig());
+        mCameraModule.initModule(CameraModule.ModuleFlag.MODULE_VIDEO);
         return new FxVideoController(mCameraModule);
     }
 
     void setConfig(IConfig config) {
-        mConfig = config;
+        mConfigWrapper.setConfig(config);
     }
 
-    IConfig getConfig() {
-        if (mConfig == null) {
-            mConfig = new DefaultConfig();
-        }
-        return mConfig;
+    ConfigWrapper getConfigWrapper() {
+        return mConfigWrapper;
     }
 }

@@ -4,9 +4,9 @@ package com.cfox.camera.model.module;
 import android.hardware.camera2.CaptureRequest;
 import android.util.Log;
 
-import com.cfox.camera.IConfig;
 import com.cfox.camera.camera.device.IFxCameraDevice;
 import com.cfox.camera.camera.session.helper.ISessionHelper;
+import com.cfox.camera.model.module.business.IBusiness;
 import com.cfox.camera.surface.ISurfaceHelper;
 import com.cfox.camera.utils.FxRe;
 import com.cfox.camera.utils.FxRequest;
@@ -18,9 +18,7 @@ import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.ObservableSource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.BiFunction;
-import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 
 public abstract class BaseModule implements IModule {
@@ -28,16 +26,16 @@ public abstract class BaseModule implements IModule {
 
     private IFxCameraDevice mCameraDevice;
     private ISessionHelper mSessionHelper;
-    IConfig mConfig;
+    private IBusiness mBusiness;
 
-    BaseModule(IFxCameraDevice cameraDevice, ISessionHelper sessionHelper) {
+    BaseModule(IFxCameraDevice cameraDevice, ISessionHelper sessionHelper, IBusiness business) {
         this.mCameraDevice = cameraDevice;
         this.mSessionHelper = sessionHelper;
+        this.mBusiness = business;
     }
 
-    @Override
-    public void setConfig(IConfig config) {
-        mConfig = config;
+    IBusiness getBusiness() {
+        return mBusiness;
     }
 
     Observable<FxResult> startPreview(final FxRequest request) {

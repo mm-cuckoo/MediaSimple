@@ -7,7 +7,6 @@ import android.view.Surface;
 import android.view.TextureView;
 
 import com.cfox.camera.AutoFitTextureView;
-import com.cfox.camera.utils.FxRequest;
 import com.cfox.camera.utils.FxResult;
 import com.cfox.camera.utils.ThreadHandlerManager;
 

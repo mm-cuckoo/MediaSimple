@@ -3,15 +3,20 @@ package com.cfox.camera.model;
 import android.content.Context;
 import android.util.Log;
 
-import com.cfox.camera.IConfig;
+import com.cfox.camera.IConfigWrapper;
 import com.cfox.camera.camera.device.IFxCameraDevice;
 import com.cfox.camera.camera.device.FxCameraDevice;
 import com.cfox.camera.camera.session.PhotoSession;
+import com.cfox.camera.camera.session.helper.IPhotoSessionHelper;
+import com.cfox.camera.camera.session.helper.IVideoSessionHelper;
 import com.cfox.camera.camera.session.helper.PhotoSessionHelper;
 import com.cfox.camera.camera.session.VideoSession;
 import com.cfox.camera.camera.session.helper.VideoSessionHelper;
+import com.cfox.camera.model.module.business.IBusiness;
 import com.cfox.camera.model.module.IModule;
+import com.cfox.camera.model.module.business.PhotoBusiness;
 import com.cfox.camera.model.module.PhotoModule;
+import com.cfox.camera.model.module.business.VideoBusiness;
 import com.cfox.camera.model.module.VideoModule;
 import com.cfox.camera.utils.FxRequest;
 import com.cfox.camera.utils.FxResult;
@@ -32,11 +37,11 @@ public class CameraModule implements ICameraModule {
         MODULE_VIDEO
     }
 
-    public static ICameraModule getInstance(Context context) {
+    public static ICameraModule getInstance(Context context, IConfigWrapper configWrapper) {
         if (sCameraModule == null) {
             synchronized (CameraModule.class) {
                 if (sCameraModule == null) {
-                    sCameraModule = new CameraModule(context);
+                    sCameraModule = new CameraModule(context, configWrapper);
                 }
             }
         }
@@ -49,11 +54,10 @@ public class CameraModule implements ICameraModule {
     }
 
     @Override
-    public void initModule(ModuleFlag moduleFlag, IConfig config) {
+    public void initModule(ModuleFlag moduleFlag) {
         Log.d(TAG, "initModule: module flag:" + moduleFlag);
         mCurrentModule = mModuleMap.get(moduleFlag);
         assert mCurrentModule != null;
-        mCurrentModule.setConfig(config);
     }
 
     @Override
@@ -66,10 +70,17 @@ public class CameraModule implements ICameraModule {
         return mCurrentModule.onCapture(request);
     }
 
-    private CameraModule(Context context) {
+    private CameraModule(Context context, IConfigWrapper configWrapper) {
+        IBusiness business;
         IFxCameraDevice cameraDevice = FxCameraDevice.getsInstance(context);
-        mModuleMap.put(ModuleFlag.MODULE_PHOTO, new PhotoModule(cameraDevice, new PhotoSessionHelper(new PhotoSession())));
-        mModuleMap.put(ModuleFlag.MODULE_VIDEO, new VideoModule(cameraDevice, new VideoSessionHelper(new VideoSession())));
+
+        IPhotoSessionHelper photoSessionHelper = new PhotoSessionHelper(new PhotoSession());
+        business = new PhotoBusiness(configWrapper);
+        mModuleMap.put(ModuleFlag.MODULE_PHOTO, new PhotoModule(cameraDevice, photoSessionHelper, business));
+
+        IVideoSessionHelper videoSessionHelper = new VideoSessionHelper(new VideoSession());
+        business = new VideoBusiness(configWrapper);
+        mModuleMap.put(ModuleFlag.MODULE_VIDEO, new VideoModule(cameraDevice, videoSessionHelper, business));
     }
 
     @Override

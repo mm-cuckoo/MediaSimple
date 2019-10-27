@@ -3,7 +3,6 @@ package com.cfox.camera.surface;
 import android.util.Size;
 import android.view.Surface;
 
-import com.cfox.camera.utils.FxRequest;
 import com.cfox.camera.utils.FxResult;
 
 import java.util.List;

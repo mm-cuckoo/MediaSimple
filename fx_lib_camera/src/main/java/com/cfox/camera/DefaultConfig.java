@@ -8,8 +8,14 @@ import java.util.Arrays;
 public class DefaultConfig implements IConfig {
     private static final String TAG = "DefaultConfig";
     @Override
-    public Size getPreviewSize(Size size, Size[] supportSizes) {
-        Log.d(TAG, "getPreviewSize: size:" + size  + "   supportSize:" + Arrays.toString(supportSizes));
+    public Size getPhotoPreviewSize(Size size, Size[] supportSizes) {
+        Log.d(TAG, "getPhotoPreviewSize: size:" + size  + "   supportSize:" + Arrays.toString(supportSizes));
+        return size;
+    }
+
+    @Override
+    public Size getVideoPreviewSize(Size size, Size[] supportSizes) {
+        Log.d(TAG, "getVideoPreviewSize: size:" + size  + "   supportSize:" + Arrays.toString(supportSizes));
         return size;
     }
 

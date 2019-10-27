@@ -1,6 +1,5 @@
 package com.cfox.camera.model;
 
-import com.cfox.camera.IConfig;
 import com.cfox.camera.utils.FxRequest;
 import com.cfox.camera.utils.FxResult;
 
@@ -10,7 +9,7 @@ public interface ICameraModule {
 
     Observable<FxResult> startPreview(FxRequest request);
 
-    void initModule(CameraModule.ModuleFlag moduleFlag, IConfig config);
+    void initModule(CameraModule.ModuleFlag moduleFlag);
     Observable<FxResult> sendCameraConfig(FxRequest request);
     Observable<FxResult> capture(FxRequest request);
     Observable<FxResult> stop();

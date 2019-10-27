@@ -4,7 +4,8 @@ import android.util.Size;
 
 public interface IConfig {
 
-    Size getPreviewSize(Size size, Size[] supportSizes);
+    Size getPhotoPreviewSize(Size size, Size[] supportSizes);
+    Size getVideoPreviewSize(Size size, Size[] supportSizes);
     Size getPictureSize(Size size, Size[] supportSizes);
     int getPictureOrientation(int cameraSensorOrientation);
 }
