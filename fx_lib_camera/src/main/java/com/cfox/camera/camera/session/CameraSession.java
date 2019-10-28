@@ -10,6 +10,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.cfox.camera.FxException;
+import com.cfox.camera.camera.device.IFxCameraDevice;
 import com.cfox.camera.surface.ISurfaceHelper;
 import com.cfox.camera.utils.FxError;
 import com.cfox.camera.utils.FxRe;
@@ -20,6 +21,7 @@ import com.cfox.camera.utils.ThreadHandlerManager;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.functions.Function;
 
 public class CameraSession implements ICameraSession {
     private static final String TAG = "CameraSession";

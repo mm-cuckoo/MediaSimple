@@ -56,13 +56,7 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
                 Log.d(TAG, "subscribe: capture: ......3333...");
 
                 if (previewCapture) {
-                    mCaptureSession.capture(requestBuilder.build(), new CameraCaptureSession.CaptureCallback() {
-                        @Override
-                        public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
-
-                        }
-                    }, null);
-
+                    mCaptureSession.capture(requestBuilder.build(), null, null);
                     emitter.onNext(new FxResult());
                     return;
                 }
@@ -106,28 +100,24 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
         return Observable.create(new ObservableOnSubscribe<FxResult>() {
             @Override
             public void subscribe(final ObservableEmitter<FxResult> emitter) throws Exception {
-                CameraCaptureSession.CaptureCallback CaptureCallback
-                        = new CameraCaptureSession.CaptureCallback() {
-
+                mCaptureSession.stopRepeating();
+//                mCaptureSession.abortCaptures();
+                mCaptureSession.capture(requestBuilder.build(), new CameraCaptureSession.CaptureCallback() {
                     @Override
                     public void onCaptureCompleted(@NonNull CameraCaptureSession session,
                                                    @NonNull CaptureRequest request,
                                                    @NonNull TotalCaptureResult result) {
-//                    Log.d(TAG, mFile.toString());
-//                    unlockFocus();
                         emitter.onNext(new FxResult());
                         Log.d(TAG, "onCaptureCompleted: pic success .....");
                     }
 
                     @Override
-                    public void onCaptureFailed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureFailure failure) {
+                    public void onCaptureFailed(@NonNull CameraCaptureSession session,
+                                                @NonNull CaptureRequest request,
+                                                @NonNull CaptureFailure failure) {
                         Log.d(TAG, "onCaptureFailed: ........." +failure);
                     }
-                };
-
-                mCaptureSession.stopRepeating();
-//                mCaptureSession.abortCaptures();
-                mCaptureSession.capture(requestBuilder.build(), CaptureCallback, null);
+                }, null);
             }
         });
     }

@@ -23,7 +23,7 @@ public class DefaultConfig implements IConfig {
     public Size getPictureSize(Size size, Size[] supportSizes) {
         Log.d(TAG, "getPictureSize: size:" + size  + "   supportSize:" + Arrays.toString(supportSizes));
         for (Size size1 : supportSizes) {
-            if (size.getWidth() < size1.getWidth() && size.getWidth() / size.getHeight() == size1.getWidth() / size1.getHeight()) {
+            if (size.getWidth() <= size1.getWidth() && size.getWidth() / size.getHeight() == size1.getWidth() / size1.getHeight()) {
                 size = size1;
             }
         }
