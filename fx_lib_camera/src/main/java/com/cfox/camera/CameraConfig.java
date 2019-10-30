@@ -24,4 +24,8 @@ public class CameraConfig {
     public Set<Map.Entry<CaptureRequest.Key<Integer>, Integer>> getValue() {
         return mConfigMap.entrySet();
     }
+
+    public Integer getValue(CaptureRequest.Key<Integer> key) {
+        return mConfigMap.get(key);
+    }
 }

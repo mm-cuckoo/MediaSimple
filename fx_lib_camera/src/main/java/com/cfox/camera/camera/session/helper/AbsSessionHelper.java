@@ -36,12 +36,4 @@ public abstract class AbsSessionHelper implements ISessionHelper {
     public void closeSession() {
         mCameraSession.closeSession();
     }
-    void configToBuilder(FxRequest request, CaptureRequest.Builder builder) {
-        CameraConfig cameraConfig = (CameraConfig) request.getObj(FxRe.Key.CAMERA_CONFIG);
-        if (cameraConfig == null) return;
-        for (Map.Entry<CaptureRequest.Key<Integer>, Integer> value : cameraConfig.getValue()) {
-            Log.d(TAG, "CaptureRequest: key:" + value.getKey()  + "   value:" + value.getValue());
-            builder.set(value.getKey(), value.getValue());
-        }
-    }
 }

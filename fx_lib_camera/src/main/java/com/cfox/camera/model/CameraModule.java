@@ -6,6 +6,7 @@ import android.util.Log;
 import com.cfox.camera.IConfigWrapper;
 import com.cfox.camera.camera.device.IFxCameraDevice;
 import com.cfox.camera.camera.device.FxCameraDevice;
+import com.cfox.camera.camera.session.BuilderPack;
 import com.cfox.camera.camera.session.PhotoSession;
 import com.cfox.camera.camera.session.helper.IPhotoSessionHelper;
 import com.cfox.camera.camera.session.helper.IVideoSessionHelper;
@@ -74,7 +75,7 @@ public class CameraModule implements ICameraModule {
         IBusiness business;
         IFxCameraDevice cameraDevice = FxCameraDevice.getsInstance(context);
 
-        IPhotoSessionHelper photoSessionHelper = new PhotoSessionHelper(new PhotoSession());
+        IPhotoSessionHelper photoSessionHelper = new PhotoSessionHelper(new PhotoSession(), new BuilderPack());
         business = new PhotoBusiness(configWrapper);
         mModuleMap.put(ModuleFlag.MODULE_PHOTO, new PhotoModule(cameraDevice, photoSessionHelper, business));
 
