@@ -28,7 +28,6 @@ public class PhotoSessionHelper extends AbsSessionHelper implements IPhotoSessio
 
     private IReaderHelper mImageReaderHelper;
     private CaptureRequest.Builder mBuilder;
-    private CameraDevice mCameraDevice;
     private List<ImageReader> mImageReaders = new ArrayList<>();
     private IPhotoSession mPhotoSession;
     private IBuilderPack mBuilderPack;
@@ -45,8 +44,7 @@ public class PhotoSessionHelper extends AbsSessionHelper implements IPhotoSessio
         Log.d(TAG, "createPreviewRepeatingBuilder: "  + request);
         mBuilderPack.clear();
         ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);
-        mCameraDevice = (CameraDevice) request.getObj(FxRe.Key.CAMERA_DEVICE);
-        mBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+        mBuilder = mPhotoSession.onCreateCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
 
 //        ImageReader previewImageReader = mImageReaderHelper.createPreviewImageReader(request);
         ImageReader imageReader = mImageReaderHelper.createImageReader(request);
@@ -83,7 +81,7 @@ public class PhotoSessionHelper extends AbsSessionHelper implements IPhotoSessio
             public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
                 Log.d(TAG, "apply: .....222..111......"  + mImageReaders.size()  +  "   picOrientation:" + picOrientation );
                 FxRequest stRequest = new FxRequest();
-                CaptureRequest.Builder captureBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
+                CaptureRequest.Builder captureBuilder = mPhotoSession.onCreateCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
                 for (ImageReader reader : mImageReaders) {
                     Log.d(TAG, "apply:add target:width:"  + reader.getWidth()  + "  height: " + reader.getHeight()  + "  ImageFormat:" + reader.getImageFormat());
                     captureBuilder.addTarget(reader.getSurface());
@@ -116,9 +114,14 @@ public class PhotoSessionHelper extends AbsSessionHelper implements IPhotoSessio
     }
 
     @Override
-    public void closeSession() {
-        super.closeSession();
-        Log.d(TAG, "closeSession: close image readers");
-        mImageReaderHelper.closeImageReaders();
+    public Observable<FxResult> close() {
+        return super.close().map(new Function<FxResult, FxResult>() {
+            @Override
+            public FxResult apply(FxResult result) throws Exception {
+                Log.d(TAG, "closeSession: close image readers");
+                mImageReaderHelper.closeImageReaders();
+                return result;
+            }
+        });
     }
 }

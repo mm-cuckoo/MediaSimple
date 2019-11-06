@@ -20,8 +20,8 @@ public class PhotoModule extends BaseModule {
     private static final String TAG = "PhotoModule";
     private IPhotoSessionHelper mPhotoSessionHelper;
     private CameraInfo mCameraInfo;
-    public PhotoModule(IFxCameraDevice cameraDevice, IPhotoSessionHelper photoSessionHelper, IBusiness business) {
-        super(cameraDevice, photoSessionHelper, business);
+    public PhotoModule(IPhotoSessionHelper photoSessionHelper, IBusiness business) {
+        super(photoSessionHelper, business);
         mPhotoSessionHelper = photoSessionHelper;
     }
 

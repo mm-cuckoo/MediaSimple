@@ -1,5 +1,7 @@
 package com.cfox.camera.camera.session;
 
+import android.content.Context;
+import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureFailure;
@@ -10,6 +12,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.cfox.camera.FxException;
+import com.cfox.camera.camera.device.FxCameraDevice;
 import com.cfox.camera.camera.device.IFxCameraDevice;
 import com.cfox.camera.surface.ISurfaceHelper;
 import com.cfox.camera.utils.FxError;
@@ -27,16 +30,37 @@ public class CameraSession implements ICameraSession {
     private static final String TAG = "CameraSession";
     CameraCaptureSession mCaptureSession;
     private boolean mFirstFrameCompleted = false;
+    private IFxCameraDevice mFxCameraDevice;
+    private CameraDevice mCameraDevice;
+
+    CameraSession(Context context) {
+        mFxCameraDevice = FxCameraDevice.getsInstance(context);
+    }
+
+    @Override
+    public Observable<FxResult> onOpenCamera(FxRequest request) {
+        return mFxCameraDevice.openCameraDevice(request).map(new Function<FxResult, FxResult>() {
+            @Override
+            public FxResult apply(FxResult result) throws Exception {
+                mCameraDevice = (CameraDevice) result.getObj(FxRe.Key.CAMERA_DEVICE);
+                return result;
+            }
+        });
+    }
+
+    @Override
+    public CaptureRequest.Builder onCreateCaptureRequest(int templateType) throws CameraAccessException {
+        return mCameraDevice.createCaptureRequest(templateType);
+    }
 
     public Observable<FxResult> onCreatePreviewSession(FxRequest request) {
         final ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);
-        final CameraDevice cameraDevice = (CameraDevice) request.getObj(FxRe.Key.CAMERA_DEVICE);
         Log.d(TAG, "createPreviewSession: ---->" + surfaceHelper.getSurfaces().size());
         closeSession();
         return Observable.create(new ObservableOnSubscribe<FxResult>() {
             @Override
             public void subscribe(final ObservableEmitter<FxResult> emitter) throws Exception {
-                cameraDevice.createCaptureSession(surfaceHelper.getSurfaces(), new CameraCaptureSession.StateCallback() {
+                mCameraDevice.createCaptureSession(surfaceHelper.getSurfaces(), new CameraCaptureSession.StateCallback() {
                     @Override
                     public void onConfigured(@NonNull CameraCaptureSession session) {
                         Log.d(TAG, "onConfigured: create session success .....");
@@ -83,7 +107,18 @@ public class CameraSession implements ICameraSession {
     }
 
     @Override
-    public void closeSession() {
+    public Observable<FxResult> onClose() {
+        if (mCameraDevice == null) return null;
+        return mFxCameraDevice.closeCameraDevice(mCameraDevice.getId()).map(new Function<FxResult, FxResult>() {
+            @Override
+            public FxResult apply(FxResult result) throws Exception {
+                closeSession();
+                return result;
+            }
+        });
+    }
+
+    private void closeSession() {
         Log.d(TAG, "closeSession: .......");
         if (mCaptureSession != null) {
             mCaptureSession.close();

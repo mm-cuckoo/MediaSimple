@@ -73,15 +73,14 @@ public class CameraModule implements ICameraModule {
 
     private CameraModule(Context context, IConfigWrapper configWrapper) {
         IBusiness business;
-        IFxCameraDevice cameraDevice = FxCameraDevice.getsInstance(context);
 
-        IPhotoSessionHelper photoSessionHelper = new PhotoSessionHelper(new PhotoSession(), new BuilderPack());
+        IPhotoSessionHelper photoSessionHelper = new PhotoSessionHelper(new PhotoSession(context), new BuilderPack());
         business = new PhotoBusiness(configWrapper);
-        mModuleMap.put(ModuleFlag.MODULE_PHOTO, new PhotoModule(cameraDevice, photoSessionHelper, business));
+        mModuleMap.put(ModuleFlag.MODULE_PHOTO, new PhotoModule(photoSessionHelper, business));
 
-        IVideoSessionHelper videoSessionHelper = new VideoSessionHelper(new VideoSession());
+        IVideoSessionHelper videoSessionHelper = new VideoSessionHelper(new VideoSession(context));
         business = new VideoBusiness(configWrapper);
-        mModuleMap.put(ModuleFlag.MODULE_VIDEO, new VideoModule(cameraDevice, videoSessionHelper, business));
+        mModuleMap.put(ModuleFlag.MODULE_VIDEO, new VideoModule(videoSessionHelper, business));
     }
 
     @Override

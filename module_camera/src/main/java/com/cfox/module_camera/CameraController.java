@@ -3,13 +3,11 @@ package com.cfox.module_camera;
 
 import android.hardware.camera2.CaptureRequest;
 import android.os.Environment;
-import android.util.Log;
 import android.util.Size;
 
 import com.cfox.camera.CameraConfig;
 import com.cfox.camera.FxCamera;
 import com.cfox.camera.FxCameraManager;
-import com.cfox.camera.IFxCameraManager;
 import com.cfox.camera.controller.IPhotoController;
 import com.cfox.camera.surface.SurfaceHelper;
 import com.cfox.camera.utils.FxRe;
@@ -31,6 +29,7 @@ class CameraController {
         CameraConfig cameraConfig = CameraConfig.getInstance();
         cameraConfig.push(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
         cameraConfig.push(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+        cameraConfig.push(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
         request.put(FxRe.Key.CAMERA_CONFIG, cameraConfig);
         mCameraController = mFxCameraManager.photo();
         mCameraController.onStartPreview(request);
@@ -62,8 +61,8 @@ class CameraController {
 
     void openFlash() {
         CameraConfig cameraConfig = CameraConfig.getInstance();
+//        cameraConfig.push(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
         cameraConfig.push(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
-        cameraConfig.push(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
         FxRequest request = new FxRequest();
         request.put(FxRe.Key.CAMERA_CONFIG, cameraConfig);
         mCameraController.onCameraConfig(request);
@@ -82,7 +81,8 @@ class CameraController {
         FxRequest request = new FxRequest();
         CameraConfig cameraConfig = CameraConfig.getInstance();
 //        cameraConfig.push(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-//        cameraConfig.push(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH);
+        cameraConfig.push(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
+        cameraConfig.push(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
         request.put(FxRe.Key.CAMERA_CONFIG, cameraConfig);
         mCameraController.onCapture(request);
     }

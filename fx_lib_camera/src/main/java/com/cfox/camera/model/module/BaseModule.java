@@ -24,12 +24,10 @@ import io.reactivex.functions.Function;
 public abstract class BaseModule implements IModule {
     private static final String TAG = "BaseModule";
 
-    private IFxCameraDevice mCameraDevice;
     private ISessionHelper mSessionHelper;
     private IBusiness mBusiness;
 
-    BaseModule(IFxCameraDevice cameraDevice, ISessionHelper sessionHelper, IBusiness business) {
-        this.mCameraDevice = cameraDevice;
+    BaseModule(ISessionHelper sessionHelper, IBusiness business) {
         this.mSessionHelper = sessionHelper;
         this.mBusiness = business;
     }
@@ -72,7 +70,7 @@ public abstract class BaseModule implements IModule {
 
     @Override
     public Observable<FxResult> onOpenCamera(FxRequest request) {
-        return mCameraDevice.openCameraDevice(request);
+        return mSessionHelper.onOpenCamera(request);
     }
 
     @Override
@@ -82,13 +80,7 @@ public abstract class BaseModule implements IModule {
 
     @Override
     public Observable<FxResult> onStop() {
-        return Observable.create(new ObservableOnSubscribe<FxResult>() {
-            @Override
-            public void subscribe(ObservableEmitter<FxResult> emitter) throws Exception {
-                mSessionHelper.closeSession();
-                mCameraDevice.closeCameraDevice();
-            }
-        }).subscribeOn(AndroidSchedulers.from(ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_OTHER).getLooper()));
+        return mSessionHelper.close().subscribeOn(AndroidSchedulers.from(ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_OTHER).getLooper()));
     }
 }
 

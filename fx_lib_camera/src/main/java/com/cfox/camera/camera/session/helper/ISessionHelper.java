@@ -9,11 +9,12 @@ import com.cfox.camera.utils.FxResult;
 import io.reactivex.Observable;
 
 public interface ISessionHelper {
+    Observable<FxResult> onOpenCamera(FxRequest request);
     Observable<FxResult> createPreviewSession(FxRequest request);
     CaptureRequest.Builder createPreviewRepeatingBuilder(FxRequest request) throws CameraAccessException;
     Observable<FxResult> sendRepeatingRequest(FxRequest request);
     Observable<FxResult> sendPreviewRepeatingRequest(FxRequest request);
 
-    void closeSession();
+    Observable<FxResult> close();
 
 }

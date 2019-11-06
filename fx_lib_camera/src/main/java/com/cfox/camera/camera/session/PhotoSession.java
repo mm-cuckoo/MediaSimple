@@ -1,5 +1,6 @@
 package com.cfox.camera.camera.session;
 
+import android.content.Context;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
@@ -19,6 +20,10 @@ import io.reactivex.ObservableOnSubscribe;
 
 public class PhotoSession extends CameraSession implements IPhotoSession {
     private static final String TAG = "PhotoSession";
+
+    public PhotoSession(Context context) {
+        super(context);
+    }
 
     @Override
     public Observable<FxResult> onSendRepeatingRequest(FxRequest request) {
