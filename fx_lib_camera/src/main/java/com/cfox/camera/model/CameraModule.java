@@ -4,8 +4,6 @@ import android.content.Context;
 import android.util.Log;
 
 import com.cfox.camera.IConfigWrapper;
-import com.cfox.camera.camera.device.IFxCameraDevice;
-import com.cfox.camera.camera.device.FxCameraDevice;
 import com.cfox.camera.camera.session.BuilderPack;
 import com.cfox.camera.camera.session.PhotoSession;
 import com.cfox.camera.camera.session.helper.IPhotoSessionHelper;

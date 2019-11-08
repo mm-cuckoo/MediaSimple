@@ -45,4 +45,29 @@ public class BuilderPack implements IBuilderPack {
             builder.set(value.getKey(), value.getValue());
         }
     }
+
+    @Override
+    public void configBuilder(FxRequest request) {
+
+    }
+
+    @Override
+    public void previewBuilder(CaptureRequest.Builder builder) {
+
+    }
+
+    @Override
+    public void startCaptureBuilder(CaptureRequest.Builder builder) {
+
+    }
+
+    @Override
+    public void captureBuilder(CaptureRequest.Builder builder) {
+
+    }
+
+    @Override
+    public void previewCaptureBuilder(CaptureRequest.Builder builder) {
+
+    }
 }
