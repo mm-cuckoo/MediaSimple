@@ -50,7 +50,6 @@ class CameraController {
 
     private FxRequest getRequest() {
         FxRequest request = new FxRequest();
-        request.put(FxRe.Key.CAMERA_ID, FxRe.Camera.ID.BACK.id);
         Size previewSize = new Size(1920, 1080);
         request.put(FxRe.Key.PREVIEW_SIZE, previewSize);
         Size picSize = new Size(1920, 1080);
@@ -61,7 +60,7 @@ class CameraController {
 
     void openFlash() {
         CameraConfig cameraConfig = CameraConfig.getInstance();
-//        cameraConfig.push(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
+        cameraConfig.push(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
         cameraConfig.push(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
         FxRequest request = new FxRequest();
         request.put(FxRe.Key.CAMERA_CONFIG, cameraConfig);

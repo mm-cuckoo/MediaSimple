@@ -109,7 +109,7 @@ public class CameraSession implements ICameraSession {
     @Override
     public Observable<FxResult> onClose() {
         if (mCameraDevice == null) return null;
-        return mFxCameraDevice.closeCameraDevice(mCameraDevice.getId()).map(new Function<FxResult, FxResult>() {
+        return mFxCameraDevice.closeCameraDevice(/*mCameraDevice.getId()*/).map(new Function<FxResult, FxResult>() {
             @Override
             public FxResult apply(FxResult result) throws Exception {
                 closeSession();
