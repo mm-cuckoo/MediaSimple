@@ -12,6 +12,13 @@ public interface FxRe {
         }
     }
 
+    interface FLASH_TYPE {
+        int OPEN        = 1;
+        int CLOSE       = 2;
+        int AUTO        = 3;
+        int TORCH       = 4;
+    }
+
     interface Key {
         String CAMERA_ID = "camera_id";
         String SURFACE_HELPER = "Surface_helper";

@@ -2,6 +2,7 @@ package com.cfox.camera.camera.session;
 
 import android.content.Context;
 import android.hardware.camera2.CameraCaptureSession;
+import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
@@ -85,6 +86,12 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
                     }
 
                     @Override
+                    public void onCaptureProgressed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureResult partialResult) {
+                        onCapture(partialResult);
+
+                    }
+
+                    @Override
                     public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
                         onCapture(result);
                     }
@@ -127,4 +134,18 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
         });
     }
 
+    @Override
+    public int createStillCaptureTemplate() {
+        return CameraDevice.TEMPLATE_STILL_CAPTURE;
+    }
+
+    @Override
+    public IBuilderPack getBuilderPack() {
+        return new PhotoBuilderPack(this);
+    }
+
+    @Override
+    public int createPreviewTemplate() {
+        return CameraDevice.TEMPLATE_PREVIEW;
+    }
 }

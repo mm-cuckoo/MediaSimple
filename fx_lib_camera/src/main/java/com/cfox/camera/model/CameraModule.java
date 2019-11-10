@@ -4,7 +4,6 @@ import android.content.Context;
 import android.util.Log;
 
 import com.cfox.camera.IConfigWrapper;
-import com.cfox.camera.camera.session.BuilderPack;
 import com.cfox.camera.camera.session.PhotoSession;
 import com.cfox.camera.camera.session.helper.IPhotoSessionHelper;
 import com.cfox.camera.camera.session.helper.IVideoSessionHelper;
@@ -72,7 +71,7 @@ public class CameraModule implements ICameraModule {
     private CameraModule(Context context, IConfigWrapper configWrapper) {
         IBusiness business;
 
-        IPhotoSessionHelper photoSessionHelper = new PhotoSessionHelper(new PhotoSession(context), new BuilderPack());
+        IPhotoSessionHelper photoSessionHelper = new PhotoSessionHelper(new PhotoSession(context));
         business = new PhotoBusiness(configWrapper);
         mModuleMap.put(ModuleFlag.MODULE_PHOTO, new PhotoModule(photoSessionHelper, business));
 

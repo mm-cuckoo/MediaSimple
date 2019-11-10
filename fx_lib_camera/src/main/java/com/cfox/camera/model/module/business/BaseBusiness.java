@@ -4,7 +4,7 @@ import android.util.Size;
 
 import com.cfox.camera.IConfigWrapper;
 
-public class BaseBusiness implements IBusiness {
+public abstract class BaseBusiness implements IBusiness {
     IConfigWrapper mConfigWrapper;
 
     BaseBusiness(IConfigWrapper configWrapper) {

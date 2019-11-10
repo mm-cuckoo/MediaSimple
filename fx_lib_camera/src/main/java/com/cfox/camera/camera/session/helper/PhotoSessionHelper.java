@@ -1,7 +1,6 @@
 package com.cfox.camera.camera.session.helper;
 
 import android.hardware.camera2.CameraAccessException;
-import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.media.ImageReader;
@@ -23,7 +22,7 @@ import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
 import io.reactivex.functions.Function;
 
-public class PhotoSessionHelper extends AbsSessionHelper implements IPhotoSessionHelper{
+public class PhotoSessionHelper extends AbsSessionHelper implements IPhotoSessionHelper {
     private static final String TAG = "PhotoSessionHelper";
 
     private IReaderHelper mImageReaderHelper;
@@ -32,10 +31,10 @@ public class PhotoSessionHelper extends AbsSessionHelper implements IPhotoSessio
     private IPhotoSession mPhotoSession;
     private IBuilderPack mBuilderPack;
 
-    public PhotoSessionHelper(IPhotoSession photoSession, IBuilderPack builderPack) {
+    public PhotoSessionHelper(IPhotoSession photoSession) {
         super(photoSession);
         mPhotoSession = photoSession;
-        mBuilderPack = builderPack;
+        mBuilderPack = photoSession.getBuilderPack();
         mImageReaderHelper = new ImageReaderHelper();
     }
 
@@ -43,8 +42,10 @@ public class PhotoSessionHelper extends AbsSessionHelper implements IPhotoSessio
     public CaptureRequest.Builder createPreviewRepeatingBuilder(FxRequest request) throws CameraAccessException {
         Log.d(TAG, "createPreviewRepeatingBuilder: "  + request);
         mBuilderPack.clear();
+        mImageReaders.clear();
+        mBuilderPack.configBuilder(request);
         ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);
-        mBuilder = mPhotoSession.onCreateCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+        mBuilder = mPhotoSession.onCreateCaptureRequest(mPhotoSession.createPreviewTemplate());
 
 //        ImageReader previewImageReader = mImageReaderHelper.createPreviewImageReader(request);
         ImageReader imageReader = mImageReaderHelper.createImageReader(request);
@@ -54,9 +55,7 @@ public class PhotoSessionHelper extends AbsSessionHelper implements IPhotoSessio
         mBuilder.addTarget(surfaceHelper.getSurface());
 //        mBuilder.addTarget(previewImageReader.getSurface());
 
-        mBuilderPack.configToBuilder(request, mBuilder);
-
-        mImageReaders.clear();
+        mBuilderPack.previewBuilder(mBuilder);
         mImageReaders.add(imageReader);
 
         return mBuilder;
@@ -64,7 +63,7 @@ public class PhotoSessionHelper extends AbsSessionHelper implements IPhotoSessio
 
     @Override
     public Observable<FxResult> sendRepeatingRequest(FxRequest request) {
-        mBuilderPack.configToBuilder(request, mBuilder);
+        mBuilderPack.repeatingRequestBuilder(request, mBuilder);
         request.put(FxRe.Key.REQUEST_BUILDER, mBuilder);
         return mPhotoSession.onSendRepeatingRequest(request);
     }
@@ -72,8 +71,7 @@ public class PhotoSessionHelper extends AbsSessionHelper implements IPhotoSessio
     @Override
     public Observable<FxResult> capture(final FxRequest request) {
         Log.d(TAG, "capture: " + request);
-        mBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
-        mBuilderPack.configToBuilder(request, mBuilder, false);
+        mBuilderPack.startCaptureBuilder(mBuilder);
         request.put(FxRe.Key.REQUEST_BUILDER, mBuilder);
         final int picOrientation = request.getInt(FxRe.Key.PIC_ORIENTATION);
         return mPhotoSession.onCapture(request).flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
@@ -81,12 +79,12 @@ public class PhotoSessionHelper extends AbsSessionHelper implements IPhotoSessio
             public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
                 Log.d(TAG, "apply: .....222..111......"  + mImageReaders.size()  +  "   picOrientation:" + picOrientation );
                 FxRequest stRequest = new FxRequest();
-                CaptureRequest.Builder captureBuilder = mPhotoSession.onCreateCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
+                CaptureRequest.Builder captureBuilder = mPhotoSession.onCreateCaptureRequest(mPhotoSession.createStillCaptureTemplate());
                 for (ImageReader reader : mImageReaders) {
                     Log.d(TAG, "apply:add target:width:"  + reader.getWidth()  + "  height: " + reader.getHeight()  + "  ImageFormat:" + reader.getImageFormat());
                     captureBuilder.addTarget(reader.getSurface());
                 }
-                mBuilderPack.appendPreviewBuilder(captureBuilder);
+                mBuilderPack.captureBuilder(captureBuilder);
                 captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, picOrientation);
 
                 stRequest.put(FxRe.Key.REQUEST_BUILDER, captureBuilder);
@@ -96,7 +94,7 @@ public class PhotoSessionHelper extends AbsSessionHelper implements IPhotoSessio
             @Override
             public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
                 Log.d(TAG, "apply: re onCapture ");
-                mBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
+                mBuilderPack.previewCaptureBuilder(mBuilder);
                 FxRequest previewRequest = new FxRequest();
                 previewRequest.put(FxRe.Key.REQUEST_BUILDER, mBuilder);
                 previewRequest.put(FxRe.Key.PREVIEW_CAPTURE, true);

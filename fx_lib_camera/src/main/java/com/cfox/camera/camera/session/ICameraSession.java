@@ -15,4 +15,6 @@ public interface ICameraSession {
     Observable<FxResult> onOpenCamera(FxRequest request);
     CaptureRequest.Builder onCreateCaptureRequest(int templateType) throws CameraAccessException;
     Observable<FxResult> onClose();
+    IBuilderPack getBuilderPack();
+    int createPreviewTemplate();
 }

@@ -27,9 +27,9 @@ class CameraController {
         request.put(FxRe.Key.CAMERA_ID, FxRe.Camera.ID.BACK.id);
         request.put(FxRe.Key.SURFACE_HELPER, helper);
         CameraConfig cameraConfig = CameraConfig.getInstance();
-        cameraConfig.push(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-        cameraConfig.push(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
-        cameraConfig.push(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
+//        cameraConfig.push(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+//        cameraConfig.push(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+        cameraConfig.push(CaptureRequest.FLASH_MODE, FxRe.FLASH_TYPE.CLOSE);
         request.put(FxRe.Key.CAMERA_CONFIG, cameraConfig);
         mCameraController = mFxCameraManager.photo();
         mCameraController.onStartPreview(request);
@@ -60,8 +60,7 @@ class CameraController {
 
     void openFlash() {
         CameraConfig cameraConfig = CameraConfig.getInstance();
-        cameraConfig.push(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
-        cameraConfig.push(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
+        cameraConfig.push(CaptureRequest.FLASH_MODE, FxRe.FLASH_TYPE.OPEN);
         FxRequest request = new FxRequest();
         request.put(FxRe.Key.CAMERA_CONFIG, cameraConfig);
         mCameraController.onCameraConfig(request);
@@ -70,7 +69,7 @@ class CameraController {
 
     void closeFlash() {
         CameraConfig cameraConfig = CameraConfig.getInstance();
-        cameraConfig.push(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
+        cameraConfig.push(CaptureRequest.FLASH_MODE, FxRe.FLASH_TYPE.CLOSE);
         FxRequest request = new FxRequest();
         request.put(FxRe.Key.CAMERA_CONFIG, cameraConfig);
         mCameraController.onCameraConfig(request);
@@ -78,11 +77,11 @@ class CameraController {
 
     void capture() {
         FxRequest request = new FxRequest();
-        CameraConfig cameraConfig = CameraConfig.getInstance();
+//        CameraConfig cameraConfig = CameraConfig.getInstance();
 //        cameraConfig.push(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-        cameraConfig.push(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
-        cameraConfig.push(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
-        request.put(FxRe.Key.CAMERA_CONFIG, cameraConfig);
+//        cameraConfig.push(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
+//        cameraConfig.push(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
+//        request.put(FxRe.Key.CAMERA_CONFIG, cameraConfig);
         mCameraController.onCapture(request);
     }
 }

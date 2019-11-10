@@ -9,4 +9,5 @@ public interface IPhotoSession extends ICameraSession{
     Observable<FxResult> onSendRepeatingRequest(FxRequest request);
     Observable<FxResult> onCapture(FxRequest request);
     Observable<FxResult> onCaptureStillPicture(FxRequest request);
+    int createStillCaptureTemplate();
 }

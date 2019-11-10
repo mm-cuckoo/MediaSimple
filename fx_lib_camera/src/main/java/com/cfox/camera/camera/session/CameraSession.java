@@ -26,7 +26,7 @@ import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.functions.Function;
 
-public class CameraSession implements ICameraSession {
+public abstract class CameraSession implements ICameraSession {
     private static final String TAG = "CameraSession";
     CameraCaptureSession mCaptureSession;
     private boolean mFirstFrameCompleted = false;
@@ -91,8 +91,8 @@ public class CameraSession implements ICameraSession {
                         if (!mFirstFrameCompleted) {
                             mFirstFrameCompleted = true;
                             emitter.onNext(new FxResult());
+                            Log.d(TAG, "mFirstFrameCompleted  onCaptureCompleted: .....");
                         }
-                        Log.d(TAG, "onCaptureCompleted: .....");
                     }
 
                     @Override
