@@ -17,4 +17,6 @@ public interface ICameraSession {
     Observable<FxResult> onClose();
     IBuilderPack getBuilderPack();
     int createPreviewTemplate();
+    boolean isAutoFocusSupported();
+    boolean isRawSupported();
 }

@@ -3,7 +3,9 @@ package com.cfox.camera.camera.session;
 import android.content.Context;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
+import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
+import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.TotalCaptureResult;
@@ -12,6 +14,8 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 
 import com.cfox.camera.FxException;
+import com.cfox.camera.camera.CameraInfo;
+import com.cfox.camera.camera.CameraInfoHelper;
 import com.cfox.camera.camera.device.FxCameraDevice;
 import com.cfox.camera.camera.device.IFxCameraDevice;
 import com.cfox.camera.surface.ISurfaceHelper;
@@ -32,6 +36,7 @@ public abstract class CameraSession implements ICameraSession {
     private boolean mFirstFrameCompleted = false;
     private IFxCameraDevice mFxCameraDevice;
     private CameraDevice mCameraDevice;
+    private CameraInfo mCameraInfo;
 
     CameraSession(Context context) {
         mFxCameraDevice = FxCameraDevice.getsInstance(context);
@@ -43,6 +48,7 @@ public abstract class CameraSession implements ICameraSession {
             @Override
             public FxResult apply(FxResult result) throws Exception {
                 mCameraDevice = (CameraDevice) result.getObj(FxRe.Key.CAMERA_DEVICE);
+                mCameraInfo = CameraInfoHelper.getInstance().getCameraInfo(mCameraDevice.getId());
                 return result;
             }
         });
@@ -124,5 +130,22 @@ public abstract class CameraSession implements ICameraSession {
             mCaptureSession.close();
             mCaptureSession = null;
         }
+    }
+
+    @Override
+    public boolean isAutoFocusSupported() {
+        boolean autoFocusSupported = true;
+        int[] afAvailableModes = mCameraInfo.getCharacteristics().get(CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES);
+
+        if (afAvailableModes.length == 0 || (afAvailableModes.length == 1
+                && afAvailableModes[0] == CameraMetadata.CONTROL_AF_MODE_OFF)) {
+            autoFocusSupported = false;
+        }
+        return autoFocusSupported;
+    }
+
+    @Override
+    public boolean isRawSupported() {
+        return false;
     }
 }

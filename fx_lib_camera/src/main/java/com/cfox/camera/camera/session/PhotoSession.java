@@ -66,6 +66,13 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
                     emitter.onNext(new FxResult());
                     return;
                 }
+
+                if (!isAutoFocusSupported()) {
+                    Log.d(TAG, "subscribe: no supported AF , capture");
+                    emitter.onNext(new FxResult());
+                    return;
+                }
+
                 mCaptureSession.capture(requestBuilder.build(), new CameraCaptureSession.CaptureCallback() {
 
                     void onCapture(CaptureResult result) {
@@ -84,12 +91,11 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
                             }
                         }
                     }
-
-                    @Override
-                    public void onCaptureProgressed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureResult partialResult) {
-                        onCapture(partialResult);
-
-                    }
+//                    @Override
+//                    public void onCaptureProgressed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureResult partialResult) {
+//                        onCapture(partialResult);
+//
+//                    }
 
                     @Override
                     public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
