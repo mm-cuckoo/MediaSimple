@@ -11,15 +11,28 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/btn_torch_flash"
+            android:text="torch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/btn_auto_flash"
+            android:text="auto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
         <Button
             android:id="@+id/btn_open_flash"
-            android:text="open flash"
+            android:text="open"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
         <Button
             android:id="@+id/btn_close_flash"
-            android:text="close flash"
+            android:text="close"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
     </LinearLayout>

@@ -7,6 +7,7 @@ import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
+import android.os.SystemClock;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -22,30 +23,25 @@ import io.reactivex.ObservableOnSubscribe;
 public class PhotoSession extends CameraSession implements IPhotoSession {
     private static final String TAG = "PhotoSession";
 
+    private static final long PRE_CAPTURE_TIMEOUT_MS = 1000;
+
+    private final Object mCaptureLock = new Object();
+    private boolean mCaptured = false;
+    private long mCaptureTime;
+    private boolean mFirstFrameCompleted = false;
+
     public PhotoSession(Context context) {
         super(context);
     }
 
+
     @Override
-    public Observable<FxResult> onSendRepeatingRequest(FxRequest request) {
+    public Observable<FxResult> onSendRepeatingRequest(final FxRequest request) {
         Log.d(TAG, "onSendRepeatingRequest: .....");
-        final CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(FxRe.Key.REQUEST_BUILDER);
         return Observable.create(new ObservableOnSubscribe<FxResult>() {
             @Override
             public void subscribe(ObservableEmitter<FxResult> emitter) throws Exception {
-                mCaptureSession.setRepeatingRequest(requestBuilder.build(), new CameraCaptureSession.CaptureCallback() {
-                    @Override
-                    public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
-                        super.onCaptureCompleted(session, request, result);
-                        Log.d(TAG, "onCaptureCompleted: .....");
-                    }
-
-                    @Override
-                    public void onCaptureFailed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureFailure failure) {
-                        super.onCaptureFailed(session, request, failure);
-                        Log.d(TAG, "onCaptureFailed: ...." + failure.toString());
-                    }
-                }, null);
+                onRepeatingRequest(request,null);
                 emitter.onNext(new FxResult());
             }
         });
@@ -60,6 +56,7 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
             public void subscribe(final ObservableEmitter<FxResult> emitter) throws Exception {
                 boolean previewCapture = request.getBoolean(FxRe.Key.PREVIEW_CAPTURE, false);
                 Log.d(TAG, "subscribe: capture: ......3333...");
+                mCaptured = false;
 
                 if (previewCapture) {
                     mCaptureSession.capture(requestBuilder.build(), null, null);
@@ -67,46 +64,9 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
                     return;
                 }
 
-                if (!isAutoFocusSupported()) {
-                    Log.d(TAG, "subscribe: no supported AF , capture");
-                    emitter.onNext(new FxResult());
-                    return;
-                }
-
-                mCaptureSession.capture(requestBuilder.build(), new CameraCaptureSession.CaptureCallback() {
-
-                    void onCapture(CaptureResult result) {
-                        Integer afState = result.get(CaptureResult.CONTROL_AF_STATE);
-                        Log.d(TAG, "onCapture: af state   " + afState);
-                        if (afState == null) {
-                            Log.d(TAG, "onCapture: .......next");
-                            emitter.onNext(new FxResult());
-                        } else if (CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED == afState
-                                || CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED == afState){
-                            Integer aeState = result.get(CaptureResult.CONTROL_AE_STATE);
-                            Log.d(TAG, "onCapture: .....ae state    " + aeState);
-                            if (aeState == null || aeState == CaptureResult.CONTROL_AE_STATE_CONVERGED) {
-                                Log.d(TAG, "onCapture: ..... next 1111");
-                                emitter.onNext(new FxResult());
-                            }
-                        }
-                    }
-//                    @Override
-//                    public void onCaptureProgressed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureResult partialResult) {
-//                        onCapture(partialResult);
-//
-//                    }
-
-                    @Override
-                    public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
-                        onCapture(result);
-                    }
-
-                    @Override
-                    public void onCaptureFailed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureFailure failure) {
-                        Log.d(TAG, "onCaptureFailed: .....");
-                    }
-                }, null);
+                mCaptureTime = SystemClock.elapsedRealtime();
+                mCaptureCallback.setEmitter(emitter, true);
+                mCaptureSession.capture(requestBuilder.build(),mCaptureCallback, null);
             }
         });
     }
@@ -141,6 +101,17 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
     }
 
     @Override
+    public Observable<FxResult> onPreviewRepeatingRequest(final FxRequest request) {
+        return Observable.create(new ObservableOnSubscribe<FxResult>() {
+            @Override
+            public void subscribe(ObservableEmitter<FxResult> emitter) throws Exception {
+                mCaptureCallback.setEmitter(emitter, false);
+                onRepeatingRequest(request, mCaptureCallback);
+            }
+        });
+    }
+
+    @Override
     public int createStillCaptureTemplate() {
         return CameraDevice.TEMPLATE_STILL_CAPTURE;
     }
@@ -153,5 +124,101 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
     @Override
     public int createPreviewTemplate() {
         return CameraDevice.TEMPLATE_PREVIEW;
+    }
+
+    private CaptureCallback mCaptureCallback = new CaptureCallback();
+
+    private class CaptureCallback extends CameraCaptureSession.CaptureCallback {
+
+        private ObservableEmitter<FxResult> mEmitter;
+        private boolean mIsCapture = false;
+
+        void setEmitter(ObservableEmitter<FxResult> emitter, boolean isCapture) {
+            this.mEmitter = emitter;
+            this.mIsCapture = isCapture;
+            if (!isCapture) {
+                mFirstFrameCompleted = false;
+            }
+        }
+
+        @Override
+        public void onCaptureProgressed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureResult partialResult) {
+            onCapture(partialResult);
+        }
+
+        @Override
+        public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
+            if (!mFirstFrameCompleted) {
+                mFirstFrameCompleted = true;
+                FxResult fxResult = new FxResult();
+                fxResult.put(FxRe.Key.FIRST_FRAME_CALLBACK, FxRe.Value.OK);
+                mEmitter.onNext(fxResult);
+                Log.d(TAG, "mFirstFrameCompleted  onCaptureCompleted: .....");
+            }
+
+            onCapture(result);
+        }
+
+        void onCapture(CaptureResult result) {
+            synchronized (mCaptureLock) {
+
+                Integer aeState1 = result.get(CaptureResult.CONTROL_AE_STATE);
+                Integer awbState1 = result.get(CaptureResult.CONTROL_AWB_STATE);
+                Log.d(TAG, "onCapture: ae ---- :" + aeState1  + "   awb:" + awbState1);
+
+
+                if (!mIsCapture) return;
+                if (!isAutoFocusSupported() && !mCaptured) {
+                    Log.d(TAG, "subscribe: no supported AF , capture");
+                    mCaptured = true;
+                    mEmitter.onNext(new FxResult());
+                    return;
+                }
+
+                boolean readyCapture;
+
+                Integer afState = result.get(CaptureResult.CONTROL_AF_STATE);
+                Log.d(TAG, "onCapture: af state   " + afState);
+
+                if (afState == null) return;
+
+                readyCapture = CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED == afState
+                        || CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED == afState;
+
+                Log.d(TAG, "onCapture: readyCaptur11111e:" + readyCapture);
+
+
+                if (!isLegacyLocked()) {
+                    Integer aeState = result.get(CaptureResult.CONTROL_AE_STATE);
+                    Integer awbState = result.get(CaptureResult.CONTROL_AWB_STATE);
+                    Log.d(TAG, "onCapture: ae  :" + aeState  + "   awb:" + awbState);
+                    if (aeState == null || awbState == null) {
+                        return;
+                    }
+
+                    readyCapture = readyCapture &&
+                            aeState == CaptureResult.CONTROL_AE_STATE_CONVERGED &&
+                            awbState == CaptureResult.CONTROL_AWB_STATE_CONVERGED;
+                }
+
+
+                Log.d(TAG, "onCapture: readyCapture22222:" + readyCapture);
+
+                if (!readyCapture && hitTimeoutLocked()) {
+                    Log.w(TAG, "Timed out waiting for pre-capture sequence to complete.");
+                    readyCapture = true;
+                }
+
+                if (readyCapture && !mCaptured) {
+                    mCaptured = true;
+                    mIsCapture = false;
+                    mEmitter.onNext(new FxResult());
+                }
+            }
+        }
+    }
+
+    private boolean hitTimeoutLocked() {
+        return (SystemClock.elapsedRealtime() - mCaptureTime) > PRE_CAPTURE_TIMEOUT_MS;
     }
 }

@@ -1,10 +1,14 @@
 package com.cfox.camera.camera.session.helper;
 
 import android.hardware.camera2.CameraAccessException;
-import android.hardware.camera2.CameraMetadata;
+import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.CaptureResult;
+import android.hardware.camera2.TotalCaptureResult;
 import android.media.ImageReader;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 import com.cfox.camera.camera.IReaderHelper;
 import com.cfox.camera.camera.ImageReaderHelper;
@@ -19,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableSource;
 import io.reactivex.functions.Function;
 
@@ -71,7 +76,7 @@ public class PhotoSessionHelper extends AbsSessionHelper implements IPhotoSessio
     @Override
     public Observable<FxResult> capture(final FxRequest request) {
         Log.d(TAG, "capture: " + request);
-        mBuilderPack.startCaptureBuilder(mBuilder);
+        mBuilderPack.preCaptureBuilder(mBuilder);
         request.put(FxRe.Key.REQUEST_BUILDER, mBuilder);
         final int picOrientation = request.getInt(FxRe.Key.PIC_ORIENTATION);
         return mPhotoSession.onCapture(request).flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
@@ -106,7 +111,7 @@ public class PhotoSessionHelper extends AbsSessionHelper implements IPhotoSessio
                 Log.d(TAG, "apply: re onSendRepeatingRequest");
                 FxRequest previewRequest = new FxRequest();
                 previewRequest.put(FxRe.Key.REQUEST_BUILDER, mBuilder);
-                return mPhotoSession.onSendRepeatingRequest(previewRequest);
+                return sendPreviewRepeatingRequest(previewRequest);
             }
         });
     }
@@ -122,4 +127,22 @@ public class PhotoSessionHelper extends AbsSessionHelper implements IPhotoSessio
             }
         });
     }
+
+    public class CaptureCallback extends CameraCaptureSession.CaptureCallback {
+        private ObservableEmitter<FxResult> mEmitter;
+        public void setEmitter(ObservableEmitter<FxResult> emitter) {
+            this.mEmitter = emitter;
+        }
+
+        @Override
+        public void onCaptureProgressed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureResult partialResult) {
+            super.onCaptureProgressed(session, request, partialResult);
+        }
+
+        @Override
+        public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
+            super.onCaptureCompleted(session, request, result);
+        }
+    }
+
 }

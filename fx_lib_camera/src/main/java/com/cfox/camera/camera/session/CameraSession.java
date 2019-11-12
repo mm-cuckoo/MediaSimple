@@ -18,6 +18,7 @@ import com.cfox.camera.camera.CameraInfo;
 import com.cfox.camera.camera.CameraInfoHelper;
 import com.cfox.camera.camera.device.FxCameraDevice;
 import com.cfox.camera.camera.device.IFxCameraDevice;
+import com.cfox.camera.camera.session.helper.PhotoSessionHelper;
 import com.cfox.camera.surface.ISurfaceHelper;
 import com.cfox.camera.utils.FxError;
 import com.cfox.camera.utils.FxRe;
@@ -33,7 +34,6 @@ import io.reactivex.functions.Function;
 public abstract class CameraSession implements ICameraSession {
     private static final String TAG = "CameraSession";
     CameraCaptureSession mCaptureSession;
-    private boolean mFirstFrameCompleted = false;
     private IFxCameraDevice mFxCameraDevice;
     private CameraDevice mCameraDevice;
     private CameraInfo mCameraInfo;
@@ -83,33 +83,10 @@ public abstract class CameraSession implements ICameraSession {
         });
     }
 
-    @Override
-    public Observable<FxResult> onPreviewRepeatingRequest(FxRequest request) {
-        mFirstFrameCompleted = false;
+    void onRepeatingRequest(FxRequest request, CameraCaptureSession.CaptureCallback captureCallback) throws CameraAccessException {
         final CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(FxRe.Key.REQUEST_BUILDER);
-        return Observable.create(new ObservableOnSubscribe<FxResult>() {
-            @Override
-            public void subscribe(final ObservableEmitter<FxResult> emitter) throws Exception {
-                mCaptureSession.setRepeatingRequest(requestBuilder.build(), new CameraCaptureSession.CaptureCallback() {
-                    @Override
-                    public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
-                        super.onCaptureCompleted(session, request, result);
-                        if (!mFirstFrameCompleted) {
-                            mFirstFrameCompleted = true;
-                            emitter.onNext(new FxResult());
-                            Log.d(TAG, "mFirstFrameCompleted  onCaptureCompleted: .....");
-                        }
-                    }
-
-                    @Override
-                    public void onCaptureFailed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureFailure failure) {
-                        super.onCaptureFailed(session, request, failure);
-                        Log.d(TAG, "onCaptureFailed: ....");
-                    }
-                }, ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_CAMERA).getHandler());
-
-            }
-        });
+        mCaptureSession.setRepeatingRequest(requestBuilder.build(), captureCallback,
+                ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_CAMERA).getHandler());
     }
 
     @Override
@@ -134,18 +111,27 @@ public abstract class CameraSession implements ICameraSession {
 
     @Override
     public boolean isAutoFocusSupported() {
-        boolean autoFocusSupported = true;
-        int[] afAvailableModes = mCameraInfo.getCharacteristics().get(CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES);
-
-        if (afAvailableModes.length == 0 || (afAvailableModes.length == 1
-                && afAvailableModes[0] == CameraMetadata.CONTROL_AF_MODE_OFF)) {
-            autoFocusSupported = false;
-        }
-        return autoFocusSupported;
+        Float minFocusDist = mCameraInfo.getCharacteristics().get(CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE);
+        Log.d(TAG, "isAutoFocusSupported: minFocusDist:" + minFocusDist);
+        return minFocusDist != null && minFocusDist > 0;
     }
 
     @Override
     public boolean isRawSupported() {
-        return false;
+        boolean rawSupported = false;
+        int[] modes = mCameraInfo.getCharacteristics().get(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES);
+        for (int mode : modes) {
+            if (mode == CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_RAW) {
+                rawSupported = true;
+                break;
+            }
+        }
+        return rawSupported;
+    }
+
+    @Override
+    public boolean isLegacyLocked() {
+        return mCameraInfo.getCharacteristics().get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL) ==
+                CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY;
     }
 }

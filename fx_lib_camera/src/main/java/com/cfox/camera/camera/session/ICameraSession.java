@@ -19,4 +19,5 @@ public interface ICameraSession {
     int createPreviewTemplate();
     boolean isAutoFocusSupported();
     boolean isRawSupported();
+    boolean isLegacyLocked();
 }

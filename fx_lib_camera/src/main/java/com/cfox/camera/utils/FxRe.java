@@ -35,9 +35,11 @@ public interface FxRe {
 
         String CAMERA_CONFIG = "camera_config";
         String PREVIEW_CAPTURE = "preview_capture";
+        String FIRST_FRAME_CALLBACK = "first_frame_callback";
     }
 
     interface Value {
+        String OK = "ok";
         String OPEN_SUCCESS = "open_success";
         String OPEN_FAIL = "open_fail";
     }
