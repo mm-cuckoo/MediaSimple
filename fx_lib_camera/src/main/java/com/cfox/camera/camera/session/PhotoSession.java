@@ -23,6 +23,10 @@ import io.reactivex.ObservableOnSubscribe;
 public class PhotoSession extends CameraSession implements IPhotoSession {
     private static final String TAG = "PhotoSession";
 
+    private static final int FLAG_PREVIEW   = 1;
+    private static final int FLAG_REPEAT    = 2;
+    private static final int FLAG_CAPTURE   = 3;
+
     private static final long PRE_CAPTURE_TIMEOUT_MS = 1000;
 
     private final Object mCaptureLock = new Object();
@@ -41,7 +45,8 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
         return Observable.create(new ObservableOnSubscribe<FxResult>() {
             @Override
             public void subscribe(ObservableEmitter<FxResult> emitter) throws Exception {
-                onRepeatingRequest(request,null);
+                mCaptureCallback.setEmitter(emitter, FLAG_REPEAT);
+                onRepeatingRequest(request,mCaptureCallback);
                 emitter.onNext(new FxResult());
             }
         });
@@ -65,7 +70,7 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
                 }
 
                 mCaptureTime = SystemClock.elapsedRealtime();
-                mCaptureCallback.setEmitter(emitter, true);
+                mCaptureCallback.setEmitter(emitter, FLAG_CAPTURE);
                 mCaptureSession.capture(requestBuilder.build(),mCaptureCallback, null);
             }
         });
@@ -105,7 +110,7 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
         return Observable.create(new ObservableOnSubscribe<FxResult>() {
             @Override
             public void subscribe(ObservableEmitter<FxResult> emitter) throws Exception {
-                mCaptureCallback.setEmitter(emitter, false);
+                mCaptureCallback.setEmitter(emitter, FLAG_PREVIEW);
                 onRepeatingRequest(request, mCaptureCallback);
             }
         });
@@ -131,12 +136,12 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
     private class CaptureCallback extends CameraCaptureSession.CaptureCallback {
 
         private ObservableEmitter<FxResult> mEmitter;
-        private boolean mIsCapture = false;
+        private int mFlag = 0;
 
-        void setEmitter(ObservableEmitter<FxResult> emitter, boolean isCapture) {
+        void setEmitter(ObservableEmitter<FxResult> emitter, int flag) {
             this.mEmitter = emitter;
-            this.mIsCapture = isCapture;
-            if (!isCapture) {
+            this.mFlag = flag;
+            if (flag == FLAG_PREVIEW) {
                 mFirstFrameCompleted = false;
             }
         }
@@ -161,22 +166,9 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
 
         void onCapture(CaptureResult result) {
             synchronized (mCaptureLock) {
-
-                Integer aeState1 = result.get(CaptureResult.CONTROL_AE_STATE);
-                Integer awbState1 = result.get(CaptureResult.CONTROL_AWB_STATE);
-                Log.d(TAG, "onCapture: ae ---- :" + aeState1  + "   awb:" + awbState1);
-
-
-                if (!mIsCapture) return;
-                if (!isAutoFocusSupported() && !mCaptured) {
-                    Log.d(TAG, "subscribe: no supported AF , capture");
-                    mCaptured = true;
-                    mEmitter.onNext(new FxResult());
-                    return;
-                }
+                if (mFlag != FLAG_CAPTURE) return;
 
                 boolean readyCapture;
-
                 Integer afState = result.get(CaptureResult.CONTROL_AF_STATE);
                 Log.d(TAG, "onCapture: af state   " + afState);
 
@@ -184,8 +176,6 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
 
                 readyCapture = CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED == afState
                         || CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED == afState;
-
-                Log.d(TAG, "onCapture: readyCaptur11111e:" + readyCapture);
 
 
                 if (!isLegacyLocked()) {
@@ -201,17 +191,16 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
                             awbState == CaptureResult.CONTROL_AWB_STATE_CONVERGED;
                 }
 
+                Log.d(TAG, "onCapture: readyCapture:" + readyCapture);
 
-                Log.d(TAG, "onCapture: readyCapture22222:" + readyCapture);
-
-                if (!readyCapture && hitTimeoutLocked()) {
-                    Log.w(TAG, "Timed out waiting for pre-capture sequence to complete.");
-                    readyCapture = true;
-                }
+//                if (!readyCapture && hitTimeoutLocked()) {
+//                    Log.w(TAG, "Timed out waiting for pre-capture sequence to complete.");
+//                    readyCapture = true;
+//                }
 
                 if (readyCapture && !mCaptured) {
                     mCaptured = true;
-                    mIsCapture = false;
+                    mFlag = 0;
                     mEmitter.onNext(new FxResult());
                 }
             }

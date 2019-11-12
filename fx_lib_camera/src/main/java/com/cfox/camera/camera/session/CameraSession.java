@@ -131,7 +131,8 @@ public abstract class CameraSession implements ICameraSession {
 
     @Override
     public boolean isLegacyLocked() {
-        return mCameraInfo.getCharacteristics().get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL) ==
-                CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY;
+        Integer leve = mCameraInfo.getCharacteristics().get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL);
+        Log.d(TAG, "isLegacyLocked: INFO_SUPPORTED_HARDWARE_LEVEL:" + leve);
+        return leve != null && leve == CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY;
     }
 }

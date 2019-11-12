@@ -17,7 +17,7 @@ public abstract class BaseBuilderPack implements IBuilderPack  {
     private ICameraSession mCameraSession;
     private Map<CaptureRequest.Key<Integer>, Integer> mConfigMap = new HashMap<>();
 
-    public BaseBuilderPack(ICameraSession cameraSession) {
+    BaseBuilderPack(ICameraSession cameraSession) {
         this.mCameraSession = cameraSession;
     }
 
@@ -42,8 +42,8 @@ public abstract class BaseBuilderPack implements IBuilderPack  {
     public void previewBuilder(CaptureRequest.Builder builder) {
         mConfigMap.put(CaptureRequest.FLASH_MODE, FxRe.FLASH_TYPE.CLOSE);
 //        applyAFMode(builder);
-        builder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO);
-        builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+//        builder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO);
+//        builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
 //        builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
         builder.set(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_AUTO);
 //        applyFlash(builder);
@@ -76,6 +76,9 @@ public abstract class BaseBuilderPack implements IBuilderPack  {
     @Override
     public void previewCaptureBuilder(CaptureRequest.Builder builder) {
         builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
+        if (!mCameraSession.isLegacyLocked()) {
+            builder.set(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER, CameraMetadata.CONTROL_AE_PRECAPTURE_TRIGGER_CANCEL);
+        }
 //        builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
 //        builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
 //        builder.set(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_AUTO);
