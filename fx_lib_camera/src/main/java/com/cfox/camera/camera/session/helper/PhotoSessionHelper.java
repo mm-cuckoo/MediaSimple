@@ -110,6 +110,7 @@ public class PhotoSessionHelper extends AbsSessionHelper implements IPhotoSessio
             public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
                 Log.d(TAG, "apply: re onSendRepeatingRequest");
                 FxRequest previewRequest = new FxRequest();
+                mBuilderPack.previewBuilder(mBuilder);
                 previewRequest.put(FxRe.Key.REQUEST_BUILDER, mBuilder);
                 return sendPreviewRepeatingRequest(previewRequest);
             }

@@ -27,7 +27,7 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
     private static final int FLAG_REPEAT    = 2;
     private static final int FLAG_CAPTURE   = 3;
 
-    private static final long PRE_CAPTURE_TIMEOUT_MS = 1000;
+    private static final long PRE_CAPTURE_TIMEOUT_MS = 2000;
 
     private final Object mCaptureLock = new Object();
     private boolean mCaptured = false;
@@ -61,7 +61,6 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
             public void subscribe(final ObservableEmitter<FxResult> emitter) throws Exception {
                 boolean previewCapture = request.getBoolean(FxRe.Key.PREVIEW_CAPTURE, false);
                 Log.d(TAG, "subscribe: capture: ......3333...");
-                mCaptured = false;
 
                 if (previewCapture) {
                     mCaptureSession.capture(requestBuilder.build(), null, null);
@@ -143,6 +142,8 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
             this.mFlag = flag;
             if (flag == FLAG_PREVIEW) {
                 mFirstFrameCompleted = false;
+            } else if (flag == FLAG_CAPTURE) {
+                mCaptured = false;
             }
         }
 
@@ -168,15 +169,16 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
             synchronized (mCaptureLock) {
                 if (mFlag != FLAG_CAPTURE) return;
 
-                boolean readyCapture;
-                Integer afState = result.get(CaptureResult.CONTROL_AF_STATE);
-                Log.d(TAG, "onCapture: af state   " + afState);
+                boolean readyCapture = true;
+                if (isAutoFocusSupported()) {
+                    Integer afState = result.get(CaptureResult.CONTROL_AF_STATE);
+                    Log.d(TAG, "onCapture: af state   " + afState);
 
-                if (afState == null) return;
+                    if (afState == null) return;
 
-                readyCapture = CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED == afState
-                        || CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED == afState;
-
+                    readyCapture = CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED == afState
+                            || CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED == afState;
+                }
 
                 if (!isLegacyLocked()) {
                     Integer aeState = result.get(CaptureResult.CONTROL_AE_STATE);
@@ -197,7 +199,7 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
 //                    Log.w(TAG, "Timed out waiting for pre-capture sequence to complete.");
 //                    readyCapture = true;
 //                }
-
+                Log.d(TAG, "onCapture: mFlag:" + mFlag  + "   readyCapture:" + readyCapture  + "   mCaptured"  + mCaptured);
                 if (readyCapture && !mCaptured) {
                     mCaptured = true;
                     mFlag = 0;

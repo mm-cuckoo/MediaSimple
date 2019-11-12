@@ -21,12 +21,10 @@ public abstract class BaseBuilderPack implements IBuilderPack  {
         this.mCameraSession = cameraSession;
     }
 
-
     @Override
     public void clear() {
         mConfigMap.clear();
     }
-
 
     @Override
     public void configBuilder(FxRequest request) {
@@ -40,11 +38,15 @@ public abstract class BaseBuilderPack implements IBuilderPack  {
 
     @Override
     public void previewBuilder(CaptureRequest.Builder builder) {
-        mConfigMap.put(CaptureRequest.FLASH_MODE, FxRe.FLASH_TYPE.CLOSE);
+        Log.d(TAG, "previewBuilder: ");
+        builder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO);
+        if (mCameraSession.isAutoFocusSupported()) {
+            builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_IDLE);
+        }
 //        applyAFMode(builder);
-//        builder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO);
 //        builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-//        builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+        builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+        builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.FLASH_MODE_SINGLE);
         builder.set(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_AUTO);
 //        applyFlash(builder);
 //        applyAFTrigger(builder);
@@ -53,7 +55,7 @@ public abstract class BaseBuilderPack implements IBuilderPack  {
 
     @Override
     public void preCaptureBuilder(CaptureRequest.Builder builder) {
-//        applyFlash(builder);
+        applyFlash(builder);
         if (mCameraSession.isAutoFocusSupported()) {
             builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
         }
@@ -61,7 +63,6 @@ public abstract class BaseBuilderPack implements IBuilderPack  {
         if (!mCameraSession.isLegacyLocked()) {
             builder.set(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER, CameraMetadata.CONTROL_AE_PRECAPTURE_TRIGGER_START);
         }
-
     }
 
     @Override
@@ -69,13 +70,15 @@ public abstract class BaseBuilderPack implements IBuilderPack  {
 //        applyFlash(builder);
 //        applyAFMode(builder);
         builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-        builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+//        builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
         builder.set(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_AUTO);
     }
 
     @Override
     public void previewCaptureBuilder(CaptureRequest.Builder builder) {
-        builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
+        if (mCameraSession.isAutoFocusSupported()) {
+            builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
+        }
         if (!mCameraSession.isLegacyLocked()) {
             builder.set(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER, CameraMetadata.CONTROL_AE_PRECAPTURE_TRIGGER_CANCEL);
         }
@@ -93,8 +96,9 @@ public abstract class BaseBuilderPack implements IBuilderPack  {
             Log.d(TAG, "CaptureRequest: key:" + value.getKey()  + "   value:" + value.getValue());
             mConfigMap.put(value.getKey(), value.getValue());
             if (builder == null) return;
-            if (value.getKey().equals(CaptureRequest.FLASH_MODE) &&
-                    (value.getValue() == FxRe.FLASH_TYPE.CLOSE || value.getValue() == FxRe.FLASH_TYPE.TORCH)) {
+            if (value.getKey().equals(CaptureRequest.FLASH_MODE)) {
+                if (value.getValue() == FxRe.FLASH_TYPE.CLOSE
+                        || value.getValue() == FxRe.FLASH_TYPE.TORCH)
                 applyFlash(builder);
             } else {
                 builder.set(value.getKey(), value.getValue());
@@ -120,10 +124,11 @@ public abstract class BaseBuilderPack implements IBuilderPack  {
     }
 
     private void applyFlash(CaptureRequest.Builder builder) {
-        int flashType = FxRe.FLASH_TYPE.AUTO;
+        int flashType = FxRe.FLASH_TYPE.CLOSE;
         if (mConfigMap.containsKey(CaptureRequest.FLASH_MODE)) {
             flashType =  mConfigMap.get(CaptureRequest.FLASH_MODE);
         }
+        Log.d(TAG, "applyFlash: flashType:" + flashType);
         switch (flashType) {
             case FxRe.FLASH_TYPE.AUTO:
                 builder.set(CaptureRequest.CONTROL_AE_MODE,CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
