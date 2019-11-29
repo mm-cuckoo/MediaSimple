@@ -1,6 +1,8 @@
 package com.cfox.camera.model.module;
 
 
+import android.util.Range;
+
 import com.cfox.camera.utils.FxRequest;
 import com.cfox.camera.utils.FxResult;
 
@@ -13,5 +15,6 @@ public interface IModule {
     Observable<FxResult> onStop();
     Observable<FxResult> onCameraConfig(FxRequest request);
     Observable<FxResult> onCapture(FxRequest request);
+    Range<Integer> getEvRange();
 
 }

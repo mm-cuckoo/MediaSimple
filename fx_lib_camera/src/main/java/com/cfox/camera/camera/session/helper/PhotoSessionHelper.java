@@ -1,5 +1,6 @@
 package com.cfox.camera.camera.session.helper;
 
+import android.content.Context;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CaptureRequest;
@@ -13,7 +14,9 @@ import androidx.annotation.NonNull;
 import com.cfox.camera.camera.IReaderHelper;
 import com.cfox.camera.camera.ImageReaderHelper;
 import com.cfox.camera.camera.session.IBuilderPack;
+import com.cfox.camera.camera.session.ICameraSession;
 import com.cfox.camera.camera.session.IPhotoSession;
+import com.cfox.camera.camera.session.PhotoSession;
 import com.cfox.camera.surface.ISurfaceHelper;
 import com.cfox.camera.utils.FxRe;
 import com.cfox.camera.utils.FxRequest;

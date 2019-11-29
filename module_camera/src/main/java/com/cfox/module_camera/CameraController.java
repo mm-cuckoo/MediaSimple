@@ -3,6 +3,7 @@ package com.cfox.module_camera;
 
 import android.hardware.camera2.CaptureRequest;
 import android.os.Environment;
+import android.util.Range;
 import android.util.Size;
 
 import com.cfox.camera.CameraConfig;
@@ -56,13 +57,13 @@ class CameraController {
         return request;
     }
 
-    void openFlash() {
-        CameraConfig cameraConfig = CameraConfig.getInstance();
-        cameraConfig.push(CaptureRequest.FLASH_MODE, FxRe.FLASH_TYPE.OPEN);
-        FxRequest request = new FxRequest();
-        request.put(FxRe.Key.CAMERA_CONFIG, cameraConfig);
-        mCameraController.onCameraConfig(request);
-    }
+//    void openFlash() {
+//        CameraConfig cameraConfig = CameraConfig.getInstance();
+//        cameraConfig.push(CaptureRequest.FLASH_MODE, FxRe.FLASH_TYPE.OPEN);
+//        FxRequest request = new FxRequest();
+//        request.put(FxRe.Key.CAMERA_CONFIG, cameraConfig);
+//        mCameraController.onCameraConfig(request);
+//    }
 
 
     void torchFlash() {
@@ -73,13 +74,13 @@ class CameraController {
         mCameraController.onCameraConfig(request);
     }
 
-    void autoFlash() {
-        CameraConfig cameraConfig = CameraConfig.getInstance();
-        cameraConfig.push(CaptureRequest.FLASH_MODE, FxRe.FLASH_TYPE.AUTO);
-        FxRequest request = new FxRequest();
-        request.put(FxRe.Key.CAMERA_CONFIG, cameraConfig);
-        mCameraController.onCameraConfig(request);
-    }
+//    void autoFlash() {
+//        CameraConfig cameraConfig = CameraConfig.getInstance();
+//        cameraConfig.push(CaptureRequest.FLASH_MODE, FxRe.FLASH_TYPE.AUTO);
+//        FxRequest request = new FxRequest();
+//        request.put(FxRe.Key.CAMERA_CONFIG, cameraConfig);
+//        mCameraController.onCameraConfig(request);
+//    }
 
     void closeFlash() {
         CameraConfig cameraConfig = CameraConfig.getInstance();
@@ -89,8 +90,20 @@ class CameraController {
         mCameraController.onCameraConfig(request);
     }
 
+    void setEv(int value) {
+        CameraConfig cameraConfig = CameraConfig.getInstance();
+        cameraConfig.push(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, value);
+        FxRequest request = new FxRequest();
+        request.put(FxRe.Key.CAMERA_CONFIG, cameraConfig);
+        mCameraController.onCameraConfig(request);
+    }
+
     void capture() {
         FxRequest request = new FxRequest();
         mCameraController.onCapture(request);
+    }
+
+    Range<Integer> getEvRange() {
+        return mCameraController.getEvRange();
     }
 }

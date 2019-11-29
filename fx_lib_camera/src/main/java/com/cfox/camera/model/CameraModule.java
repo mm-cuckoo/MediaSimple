@@ -2,6 +2,7 @@ package com.cfox.camera.model;
 
 import android.content.Context;
 import android.util.Log;
+import android.util.Range;
 
 import com.cfox.camera.IConfigWrapper;
 import com.cfox.camera.camera.session.PhotoSession;
@@ -83,5 +84,10 @@ public class CameraModule implements ICameraModule {
     @Override
     public Observable<FxResult> stop() {
         return mCurrentModule.onStop();
+    }
+
+    @Override
+    public Range<Integer> getEvRange() {
+        return mCurrentModule.getEvRange();
     }
 }

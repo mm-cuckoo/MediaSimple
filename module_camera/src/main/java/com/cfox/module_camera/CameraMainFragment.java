@@ -6,6 +6,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.SeekBar;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -48,20 +50,6 @@ public class CameraMainFragment extends BaseFragment {
             }
         });
 
-        view.findViewById(R.id.btn_auto_flash).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mCameraController.autoFlash();
-            }
-        });
-
-        view.findViewById(R.id.btn_open_flash).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mCameraController.openFlash();
-            }
-        });
-
         view.findViewById(R.id.btn_close_flash).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -91,6 +79,24 @@ public class CameraMainFragment extends BaseFragment {
             }
         });
 
+        ((SeekBar)view.findViewById(R.id.seek_ev)).setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                showMsg("ev :" + progress);
+                mCameraController.setEv(progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
     }
 
     @Override
@@ -107,5 +113,9 @@ public class CameraMainFragment extends BaseFragment {
         Log.d(TAG, "onPause: ........");
         if (mCameraController == null) return;
         mCameraController.stopCamera();
+    }
+
+    private void showMsg(String msg) {
+        Toast.makeText(getContext(), "" + msg, Toast.LENGTH_SHORT).show();
     }
 }

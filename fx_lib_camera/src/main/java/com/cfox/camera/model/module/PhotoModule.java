@@ -6,7 +6,6 @@ import android.util.Size;
 
 import com.cfox.camera.camera.CameraInfo;
 import com.cfox.camera.camera.CameraInfoHelper;
-import com.cfox.camera.camera.device.IFxCameraDevice;
 import com.cfox.camera.camera.session.helper.IPhotoSessionHelper;
 import com.cfox.camera.model.module.business.IBusiness;
 import com.cfox.camera.surface.ISurfaceHelper;

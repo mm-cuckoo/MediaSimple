@@ -2,6 +2,7 @@ package com.cfox.camera.camera.session.helper;
 
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CaptureRequest;
+import android.util.Range;
 
 import com.cfox.camera.utils.FxRequest;
 import com.cfox.camera.utils.FxResult;
@@ -16,5 +17,7 @@ public interface ISessionHelper {
     Observable<FxResult> sendPreviewRepeatingRequest(FxRequest request);
 
     Observable<FxResult> close();
+
+    Range<Integer> getEvRange();
 
 }

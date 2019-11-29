@@ -1,5 +1,7 @@
 package com.cfox.camera.camera.session.helper;
 
+import android.util.Range;
+
 import com.cfox.camera.camera.session.ICameraSession;
 import com.cfox.camera.utils.FxRequest;
 import com.cfox.camera.utils.FxResult;
@@ -31,5 +33,10 @@ public abstract class AbsSessionHelper implements ISessionHelper {
     @Override
     public Observable<FxResult> close() {
         return mCameraSession.onClose();
+    }
+
+    @Override
+    public Range<Integer> getEvRange() {
+        return mCameraSession.getEvRange();
     }
 }

@@ -3,8 +3,8 @@ package com.cfox.camera.model.module;
 
 import android.hardware.camera2.CaptureRequest;
 import android.util.Log;
+import android.util.Range;
 
-import com.cfox.camera.camera.device.IFxCameraDevice;
 import com.cfox.camera.camera.session.helper.ISessionHelper;
 import com.cfox.camera.model.module.business.IBusiness;
 import com.cfox.camera.surface.ISurfaceHelper;
@@ -14,8 +14,6 @@ import com.cfox.camera.utils.FxResult;
 import com.cfox.camera.utils.ThreadHandlerManager;
 
 import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.ObservableSource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.BiFunction;
@@ -81,6 +79,11 @@ public abstract class BaseModule implements IModule {
     @Override
     public Observable<FxResult> onStop() {
         return mSessionHelper.close().subscribeOn(AndroidSchedulers.from(ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_OTHER).getLooper()));
+    }
+
+    @Override
+    public Range<Integer> getEvRange() {
+        return mSessionHelper.getEvRange();
     }
 }
 

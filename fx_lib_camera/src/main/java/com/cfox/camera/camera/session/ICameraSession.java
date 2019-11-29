@@ -3,6 +3,7 @@ package com.cfox.camera.camera.session;
 
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CaptureRequest;
+import android.util.Range;
 
 import com.cfox.camera.utils.FxRequest;
 import com.cfox.camera.utils.FxResult;
@@ -20,4 +21,5 @@ public interface ICameraSession {
     boolean isAutoFocusSupported();
     boolean isRawSupported();
     boolean isLegacyLocked();
+    Range<Integer> getEvRange();
 }

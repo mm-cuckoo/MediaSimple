@@ -46,7 +46,8 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
             @Override
             public void subscribe(ObservableEmitter<FxResult> emitter) throws Exception {
                 mCaptureCallback.setEmitter(emitter, FLAG_REPEAT);
-                onRepeatingRequest(request,mCaptureCallback);
+                request.put(FxRe.Key.SESSION_CAPTURE_CALLBACK, mCaptureCallback);
+                onRepeatingRequest(request);
                 emitter.onNext(new FxResult());
             }
         });
@@ -110,7 +111,8 @@ public class PhotoSession extends CameraSession implements IPhotoSession {
             @Override
             public void subscribe(ObservableEmitter<FxResult> emitter) throws Exception {
                 mCaptureCallback.setEmitter(emitter, FLAG_PREVIEW);
-                onRepeatingRequest(request, mCaptureCallback);
+                request.put(FxRe.Key.SESSION_CAPTURE_CALLBACK, mCaptureCallback);
+                onRepeatingRequest(request);
             }
         });
     }

@@ -28,8 +28,7 @@ public class FxCameraDevice implements IFxCameraDevice {
     private static IFxCameraDevice sInstance;
     private Semaphore mCameraOpenCloseLock = new Semaphore(1);
     private CameraManager mCameraManager;
-    private CameraDevice mCameraDevice;
-//    private Map<String, CameraDevice> mDeviceMap = new HashMap<>();
+    private Map<String, CameraDevice> mDeviceMap = new HashMap<>();
 
     private FxCameraDevice(Context context) {
         mCameraManager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
@@ -52,7 +51,6 @@ public class FxCameraDevice implements IFxCameraDevice {
     public Observable<FxResult> openCameraDevice(final FxRequest request) {
         final String cameraId = request.getString(FxRe.Key.CAMERA_ID);
         Log.d(TAG, "open camera start .....camera id:" + cameraId);
-        closeCameraDevice().subscribe();
         return Observable.create(new ObservableOnSubscribe<FxResult>() {
             @Override
             public void subscribe(final ObservableEmitter<FxResult> emitter) throws Exception {
@@ -64,9 +62,9 @@ public class FxCameraDevice implements IFxCameraDevice {
                     mCameraManager.openCamera(cameraId, new CameraDevice.StateCallback() {
                         @Override
                         public void onOpened(@NonNull CameraDevice camera) {
-//                            mDeviceMap.put(camera.getId(), camera);
+                            mDeviceMap.put(camera.getId(), camera);
                             Log.d(TAG, "camera device opened....: ");
-                            mCameraDevice= camera;
+//                            mCameraDevice= camera;
                             FxResult result = new FxResult();
                             result.put(FxRe.Key.CAMERA_DEVICE, camera);
                             result.put(FxRe.Key.OPEN_CAMERA_STATUS, FxRe.Value.OPEN_SUCCESS);
@@ -77,15 +75,13 @@ public class FxCameraDevice implements IFxCameraDevice {
                         @Override
                         public void onDisconnected(@NonNull CameraDevice camera) {
                             Log.d(TAG, "onDisconnected: ");
-//                            removeCameraDevice(camera.getId());
-                            camera.close();
+                            closeCameraDevice(camera.getId());
                         }
 
                         @Override
                         public void onError(@NonNull CameraDevice camera, int error) {
                             Log.d(TAG, "onError: code:" + error);
-//                            removeCameraDevice(camera.getId());
-                            camera.close();
+                            closeCameraDevice(camera.getId());
                             emitter.onError(new Throwable("open camera error Code:" + error));
 
                         }
@@ -100,8 +96,8 @@ public class FxCameraDevice implements IFxCameraDevice {
     }
 
     @Override
-    public Observable<FxResult> closeCameraDevice(/*final String cameraId*/) {
-        Log.d(TAG, "close  Camera   Device");
+    public Observable<FxResult> closeCameraDevice(final String cameraId) {
+        Log.d(TAG, "close  Camera   id:" + cameraId);
 
         return Observable.create(new ObservableOnSubscribe<FxResult>() {
             @Override
@@ -111,14 +107,16 @@ public class FxCameraDevice implements IFxCameraDevice {
                         throw new RuntimeException("Time out waiting to lock camera opening.");
                     }
 
-//                    CameraDevice cameraDevice = null;
-//                    if (mDeviceMap.containsKey(cameraId)) {
-//                        cameraDevice = mDeviceMap.remove(cameraId);
-//                    }
-
-                    if (mCameraDevice != null) {
-                        mCameraDevice.close();
+                    CameraDevice cameraDevice = null;
+                    if (mDeviceMap.containsKey(cameraId)) {
+                        cameraDevice = mDeviceMap.remove(cameraId);
                     }
+
+                    if (cameraDevice != null) {
+                        cameraDevice.close();
+                    }
+                    FxResult result = new FxResult();
+                    emitter.onNext(result);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 } finally {
@@ -127,8 +125,4 @@ public class FxCameraDevice implements IFxCameraDevice {
             }
         });
     }
-
-//    private synchronized void removeCameraDevice(String cameraId) {
-//        mDeviceMap.remove(cameraId);
-//    }
 }

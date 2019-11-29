@@ -5,7 +5,7 @@ import com.cfox.camera.utils.FxResult;
 
 import io.reactivex.Observable;
 
-public interface IPhotoSession extends ICameraSession{
+public interface IPhotoSession extends ICameraSession {
     Observable<FxResult> onSendRepeatingRequest(FxRequest request);
     Observable<FxResult> onCapture(FxRequest request);
     Observable<FxResult> onCaptureStillPicture(FxRequest request);

@@ -2,6 +2,7 @@ package com.cfox.camera.controller;
 
 
 import android.util.Log;
+import android.util.Range;
 
 import com.cfox.camera.model.ICameraModule;
 import com.cfox.camera.utils.CameraObserver;
@@ -49,6 +50,11 @@ public class FxPhotoController implements IPhotoController {
 
             }
         });
+    }
+
+    @Override
+    public Range<Integer> getEvRange() {
+        return mCameraModule.getEvRange();
     }
 
     @Override

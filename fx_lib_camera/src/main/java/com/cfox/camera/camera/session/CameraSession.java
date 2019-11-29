@@ -10,6 +10,8 @@ import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.TotalCaptureResult;
 import android.util.Log;
+import android.util.Range;
+import android.util.Rational;
 
 import androidx.annotation.NonNull;
 
@@ -29,6 +31,8 @@ import com.cfox.camera.utils.ThreadHandlerManager;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 
 public abstract class CameraSession implements ICameraSession {
@@ -44,6 +48,7 @@ public abstract class CameraSession implements ICameraSession {
 
     @Override
     public Observable<FxResult> onOpenCamera(FxRequest request) {
+        close();
         return mFxCameraDevice.openCameraDevice(request).map(new Function<FxResult, FxResult>() {
             @Override
             public FxResult apply(FxResult result) throws Exception {
@@ -62,7 +67,7 @@ public abstract class CameraSession implements ICameraSession {
     public Observable<FxResult> onCreatePreviewSession(FxRequest request) {
         final ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);
         Log.d(TAG, "createPreviewSession: ---->" + surfaceHelper.getSurfaces().size());
-        closeSession();
+        // TODO: 19-11-29 check  mCaptureSession is null
         return Observable.create(new ObservableOnSubscribe<FxResult>() {
             @Override
             public void subscribe(final ObservableEmitter<FxResult> emitter) throws Exception {
@@ -83,30 +88,30 @@ public abstract class CameraSession implements ICameraSession {
         });
     }
 
-    void onRepeatingRequest(FxRequest request, CameraCaptureSession.CaptureCallback captureCallback) throws CameraAccessException {
-        final CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(FxRe.Key.REQUEST_BUILDER);
+    void onRepeatingRequest(FxRequest request) throws CameraAccessException {
+        CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(FxRe.Key.REQUEST_BUILDER);
+        CameraCaptureSession.CaptureCallback captureCallback  = (CameraCaptureSession.CaptureCallback) request.getObj(FxRe.Key.SESSION_CAPTURE_CALLBACK);
         mCaptureSession.setRepeatingRequest(requestBuilder.build(), captureCallback,
                 ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_CAMERA).getHandler());
     }
 
     @Override
     public Observable<FxResult> onClose() {
-        if (mCameraDevice == null) return null;
-        return mFxCameraDevice.closeCameraDevice(/*mCameraDevice.getId()*/).map(new Function<FxResult, FxResult>() {
+        return mFxCameraDevice.closeCameraDevice(mCameraDevice.getId()).doOnNext(new Consumer<FxResult>() {
             @Override
-            public FxResult apply(FxResult result) throws Exception {
-                closeSession();
-                return result;
+            public void accept(FxResult result) throws Exception {
+                Log.d(TAG, "closeSession: .......");
+                if (mCaptureSession != null) {
+                    mCaptureSession.close();
+                    mCaptureSession = null;
+                }
             }
         });
     }
 
-    private void closeSession() {
-        Log.d(TAG, "closeSession: .......");
-        if (mCaptureSession != null) {
-            mCaptureSession.close();
-            mCaptureSession = null;
-        }
+    private void close() {
+        if (mCameraDevice == null) return;
+        onClose().subscribe();
     }
 
     @Override
@@ -131,8 +136,17 @@ public abstract class CameraSession implements ICameraSession {
 
     @Override
     public boolean isLegacyLocked() {
-        Integer leve = mCameraInfo.getCharacteristics().get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL);
-        Log.d(TAG, "isLegacyLocked: INFO_SUPPORTED_HARDWARE_LEVEL:" + leve);
-        return leve != null && leve == CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY;
+        Integer level = mCameraInfo.getCharacteristics().get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL);
+        Log.d(TAG, "isLegacyLocked: INFO_SUPPORTED_HARDWARE_LEVEL:" + level);
+        return level != null && level == CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY;
     }
+
+    @Override
+    public Range<Integer> getEvRange() {
+        return mCameraInfo.getCharacteristics().get(CameraCharacteristics.CONTROL_AE_COMPENSATION_RANGE);
+    }
+
+//    public Rational getEvStep() {
+//        return mCameraInfo.getCharacteristics().get(CameraCharacteristics.CONTROL_AE_COMPENSATION_STEP);
+//    }
 }

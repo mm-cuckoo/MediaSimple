@@ -13,10 +13,10 @@ public interface FxRe {
     }
 
     interface FLASH_TYPE {
-        int OPEN        = 1;
+        int TORCH       = 1;
         int CLOSE       = 2;
-        int AUTO        = 3;
-        int TORCH       = 4;
+//        int AUTO        = 3;
+//        int OPEN        = 4;
     }
 
     interface Key {
@@ -36,6 +36,7 @@ public interface FxRe {
         String CAMERA_CONFIG = "camera_config";
         String PREVIEW_CAPTURE = "preview_capture";
         String FIRST_FRAME_CALLBACK = "first_frame_callback";
+        String SESSION_CAPTURE_CALLBACK = "session_capture_callback";
     }
 
     interface Value {

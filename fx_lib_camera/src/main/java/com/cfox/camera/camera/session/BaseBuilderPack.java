@@ -3,6 +3,7 @@ package com.cfox.camera.camera.session;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.util.Log;
+import android.util.Range;
 
 import com.cfox.camera.CameraConfig;
 import com.cfox.camera.utils.FxRe;
@@ -16,6 +17,8 @@ public abstract class BaseBuilderPack implements IBuilderPack  {
 
     private ICameraSession mCameraSession;
     private Map<CaptureRequest.Key<Integer>, Integer> mConfigMap = new HashMap<>();
+
+    private int mEvValue = 0;
 
     BaseBuilderPack(ICameraSession cameraSession) {
         this.mCameraSession = cameraSession;
@@ -43,19 +46,16 @@ public abstract class BaseBuilderPack implements IBuilderPack  {
         if (mCameraSession.isAutoFocusSupported()) {
             builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_IDLE);
         }
-//        applyAFMode(builder);
-//        builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
         builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
         builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.FLASH_MODE_SINGLE);
         builder.set(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_AUTO);
-//        applyFlash(builder);
-//        applyAFTrigger(builder);
 
+        setExposureValue(builder, mEvValue);
     }
 
     @Override
     public void preCaptureBuilder(CaptureRequest.Builder builder) {
-        applyFlash(builder);
+        setExposureValue(builder, mEvValue);
         if (mCameraSession.isAutoFocusSupported()) {
             builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
         }
@@ -67,11 +67,9 @@ public abstract class BaseBuilderPack implements IBuilderPack  {
 
     @Override
     public void captureBuilder(CaptureRequest.Builder builder) {
-//        applyFlash(builder);
-//        applyAFMode(builder);
         builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-//        builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
         builder.set(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_AUTO);
+        setExposureValue(builder, mEvValue);
     }
 
     @Override
@@ -82,10 +80,7 @@ public abstract class BaseBuilderPack implements IBuilderPack  {
         if (!mCameraSession.isLegacyLocked()) {
             builder.set(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER, CameraMetadata.CONTROL_AE_PRECAPTURE_TRIGGER_CANCEL);
         }
-//        builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-//        builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
-//        builder.set(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_AUTO);
-//        builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_IDLE);
+        setExposureValue(builder, mEvValue);
 
     }
 
@@ -96,32 +91,35 @@ public abstract class BaseBuilderPack implements IBuilderPack  {
             Log.d(TAG, "CaptureRequest: key:" + value.getKey()  + "   value:" + value.getValue());
             mConfigMap.put(value.getKey(), value.getValue());
             if (builder == null) return;
-            if (value.getKey().equals(CaptureRequest.FLASH_MODE)) {
+            if (CaptureRequest.FLASH_MODE.equals(value.getKey())) {
                 if (value.getValue() == FxRe.FLASH_TYPE.CLOSE
                         || value.getValue() == FxRe.FLASH_TYPE.TORCH)
                 applyFlash(builder);
+            } else if (CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION.equals(value.getKey())) {
+                setExposureValue(builder, value.getValue());
             } else {
                 builder.set(value.getKey(), value.getValue());
             }
         }
     }
 
-    private void applyAFTrigger(CaptureRequest.Builder builder) {
-        int afTrigger = CaptureRequest.CONTROL_AF_TRIGGER_IDLE;
-        if (mConfigMap.containsKey(CaptureRequest.CONTROL_AF_TRIGGER)) {
-            afTrigger = mConfigMap.get(CaptureRequest.CONTROL_AF_TRIGGER);
-        }
-        builder.set(CaptureRequest.CONTROL_AF_TRIGGER, afTrigger);
+    private void setExposureValue(CaptureRequest.Builder builder, int value) {
+        Log.d(TAG, "setExposureValue: value:" + value);
 
+        if (value == mEvValue) return;
+
+        Range<Integer> evRange = mCameraSession.getEvRange();
+
+        if (value >= evRange.getUpper()) {
+            value = evRange.getUpper();
+        } else if (value <= evRange.getLower()) {
+            value = evRange.getLower();
+        }
+
+        mEvValue = value;
+        builder.set(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, value);
     }
 
-    private void applyAFMode(CaptureRequest.Builder builder) {
-        int afMode = CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE;
-        if (mConfigMap.containsKey(CaptureRequest.CONTROL_AF_MODE)) {
-            afMode = mConfigMap.get(CaptureRequest.CONTROL_AF_MODE);
-        }
-        builder.set(CaptureRequest.CONTROL_AF_MODE, afMode);
-    }
 
     private void applyFlash(CaptureRequest.Builder builder) {
         int flashType = FxRe.FLASH_TYPE.CLOSE;
@@ -130,14 +128,14 @@ public abstract class BaseBuilderPack implements IBuilderPack  {
         }
         Log.d(TAG, "applyFlash: flashType:" + flashType);
         switch (flashType) {
-            case FxRe.FLASH_TYPE.AUTO:
-                builder.set(CaptureRequest.CONTROL_AE_MODE,CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
-                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
-                break;
-            case FxRe.FLASH_TYPE.OPEN:
-                builder.set(CaptureRequest.CONTROL_AE_MODE,CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH);
-                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
-                break;
+//            case FxRe.FLASH_TYPE.AUTO:
+//                builder.set(CaptureRequest.CONTROL_AE_MODE,CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+//                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
+//                break;
+//            case FxRe.FLASH_TYPE.OPEN:
+//                builder.set(CaptureRequest.CONTROL_AE_MODE,CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH);
+//                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
+//                break;
             case FxRe.FLASH_TYPE.CLOSE:
                 builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
                 builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);

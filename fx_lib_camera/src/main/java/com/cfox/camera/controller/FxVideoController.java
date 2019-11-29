@@ -1,5 +1,7 @@
 package com.cfox.camera.controller;
 
+import android.util.Range;
+
 import com.cfox.camera.model.ICameraModule;
 import com.cfox.camera.utils.FxRequest;
 
@@ -23,5 +25,10 @@ public class FxVideoController implements IVideoController {
     @Override
     public void onStop() {
         mCameraModule.stop();
+    }
+
+    @Override
+    public Range<Integer> getEvRange() {
+        return mCameraModule.getEvRange();
     }
 }
