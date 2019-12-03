@@ -1,11 +1,13 @@
 package com.cfox.camera.model.module;
 
 
+import android.graphics.ImageFormat;
 import android.hardware.camera2.CaptureRequest;
 import android.util.Log;
 import android.util.Range;
+import android.util.Size;
 
-import com.cfox.camera.camera.session.helper.ISessionHelper;
+import com.cfox.camera.camera.session.helper.ICameraSessionHelper;
 import com.cfox.camera.model.module.business.IBusiness;
 import com.cfox.camera.surface.ISurfaceHelper;
 import com.cfox.camera.utils.FxRe;
@@ -22,11 +24,11 @@ import io.reactivex.functions.Function;
 public abstract class BaseModule implements IModule {
     private static final String TAG = "BaseModule";
 
-    private ISessionHelper mSessionHelper;
+    private ICameraSessionHelper mCameraSessionHelper;
     private IBusiness mBusiness;
 
-    BaseModule(ISessionHelper sessionHelper, IBusiness business) {
-        this.mSessionHelper = sessionHelper;
+    BaseModule(ICameraSessionHelper cameraSessionHelper, IBusiness business) {
+        this.mCameraSessionHelper = cameraSessionHelper;
         this.mBusiness = business;
     }
 
@@ -47,43 +49,44 @@ public abstract class BaseModule implements IModule {
                 }).flatMap(new Function<FxRequest, ObservableSource<FxResult>>() {
                     @Override
                     public ObservableSource<FxResult> apply(FxRequest fxRequest) throws Exception {
+                        int imageFormat = request.getInt(FxRe.Key.IMAGE_FORMAT, ImageFormat.JPEG);
+                        Size pictureSizeForReq = (Size) request.getObj(FxRe.Key.PIC_SIZE);
+                        Size pictureSize = getBusiness().getPictureSize(pictureSizeForReq, mCameraSessionHelper.getPictureSize(imageFormat));
+                        request.put(FxRe.Key.PIC_SIZE, pictureSize);
                         Log.d(TAG, "apply: create  session ....." + request);
-                        CaptureRequest.Builder builder = mSessionHelper.createPreviewRepeatingBuilder(request);
-                        request.put(FxRe.Key.REQUEST_BUILDER, builder);
-                        return mSessionHelper.createPreviewSession(request);
+                        return mCameraSessionHelper.createPreviewSession(request);
                     }
                 }).flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
                     @Override
                     public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
                         Log.d(TAG, "apply: sendRepeatingRequest......");
-                        return mSessionHelper.sendPreviewRepeatingRequest(request);
+                        return mCameraSessionHelper.sendPreviewRepeatingRequest(request);
                     }
                 }).subscribeOn(AndroidSchedulers.from(ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_CAMERA).getLooper()));
     }
 
     @Override
     public Observable<FxResult> onCameraConfig(FxRequest request) {
-        return mSessionHelper.sendRepeatingRequest(request);
+        return mCameraSessionHelper.sendRepeatingRequest(request);
+    }
+
+    private Observable<FxResult> onOpenCamera(FxRequest request) {
+        return mCameraSessionHelper.onOpenCamera(request);
     }
 
     @Override
-    public Observable<FxResult> onOpenCamera(FxRequest request) {
-        return mSessionHelper.onOpenCamera(request);
-    }
-
-    @Override
-    public Observable<FxResult> onCapture(FxRequest request) {
+    public Observable<FxResult> requestCapture(FxRequest request) {
         return null;
     }
 
     @Override
-    public Observable<FxResult> onStop() {
-        return mSessionHelper.close().subscribeOn(AndroidSchedulers.from(ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_OTHER).getLooper()));
+    public Observable<FxResult> requestStop() {
+        return mCameraSessionHelper.close().subscribeOn(AndroidSchedulers.from(ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_OTHER).getLooper()));
     }
 
     @Override
     public Range<Integer> getEvRange() {
-        return mSessionHelper.getEvRange();
+        return mCameraSessionHelper.getEvRange();
     }
 }
 

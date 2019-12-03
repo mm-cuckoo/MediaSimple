@@ -1,4 +1,4 @@
 package com.cfox.camera.log;
 
-public class FxLog {
+public class EsLog {
 }

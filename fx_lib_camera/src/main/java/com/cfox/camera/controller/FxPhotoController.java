@@ -23,7 +23,7 @@ public class FxPhotoController implements IPhotoController {
         mCameraModule.startPreview(request).subscribe(new CameraObserver<FxResult>(){
             @Override
             public void onNext(FxResult fxResult) {
-                Log.d(TAG, "onNext: .onStartPreview....");
+                Log.d(TAG, "onNext: .requestPreview....");
 
 
             }
@@ -46,7 +46,7 @@ public class FxPhotoController implements IPhotoController {
         mCameraModule.stop().subscribe(new CameraObserver<FxResult>(){
             @Override
             public void onNext(FxResult fxResult) {
-                Log.d(TAG, "onNext: .onStop....");
+                Log.d(TAG, "onNext: .requestStop....");
 
             }
         });
@@ -62,7 +62,7 @@ public class FxPhotoController implements IPhotoController {
         mCameraModule.capture(request).subscribe(new CameraObserver<FxResult>(){
             @Override
             public void onNext(FxResult fxResult) {
-                Log.d(TAG, "onNext: .onCapture....");
+                Log.d(TAG, "onNext: .requestCapture....");
 
             }
         });

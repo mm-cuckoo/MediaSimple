@@ -6,6 +6,8 @@ import com.cfox.camera.utils.FxResult;
 
 import io.reactivex.Observable;
 
-public interface IPhotoSessionHelper extends ISessionHelper {
+public interface IPhotoSessionHelper extends ICameraSessionHelper/*extends ISessionHelper*/ {
     Observable<FxResult> capture(FxRequest request);
+    Observable<FxResult> captureStillPicture(FxRequest request);
+
 }

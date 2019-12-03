@@ -10,11 +10,10 @@ import io.reactivex.Observable;
 
 public interface IModule {
 
-    Observable<FxResult> onStartPreview(FxRequest request);
-    Observable<FxResult> onOpenCamera(FxRequest request);
-    Observable<FxResult> onStop();
+    Observable<FxResult> requestPreview(FxRequest request);
+    Observable<FxResult> requestStop();
     Observable<FxResult> onCameraConfig(FxRequest request);
-    Observable<FxResult> onCapture(FxRequest request);
+    Observable<FxResult> requestCapture(FxRequest request);
     Range<Integer> getEvRange();
 
 }

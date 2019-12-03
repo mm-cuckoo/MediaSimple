@@ -15,7 +15,7 @@ public class CameraInfoHelper {
     private final Object obj = new Object();
     private CameraManager mCameraManager;
     private boolean mIsLoadFinish = false;
-    private Map<String, CameraInfo> mCameraInfoMap = new HashMap<String, CameraInfo>();
+    private Map<String, ICameraInfo> mCameraInfoMap = new HashMap<String, ICameraInfo>();
 
     public static CameraInfoHelper getInstance() {
         return sCameraInfoHelper;
@@ -34,23 +34,23 @@ public class CameraInfoHelper {
         }
     }
 
-    public Map<String, CameraInfo> getInfos() {
+    public Map<String, ICameraInfo> getInfos() {
         checkLoadFinish();
         return mCameraInfoMap;
     }
 
 
-    public CameraInfo getFontCameraInfo() {
+    public ICameraInfo getFontCameraInfo() {
         checkLoadFinish();
         return mCameraInfoMap.get(String.valueOf(CameraCharacteristics.LENS_FACING_FRONT));
     }
 
-    public CameraInfo getBackCameraInfo() {
+    public ICameraInfo getBackCameraInfo() {
         checkLoadFinish();
         return mCameraInfoMap.get(String.valueOf(CameraCharacteristics.LENS_FACING_BACK));
     }
 
-    public CameraInfo getCameraInfo(String cameraId) {
+    public ICameraInfo getCameraInfo(String cameraId) {
         checkLoadFinish();
         return mCameraInfoMap.get(cameraId);
     }

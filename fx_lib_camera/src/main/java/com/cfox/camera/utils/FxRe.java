@@ -21,8 +21,10 @@ public interface FxRe {
 
     interface Key {
         String CAMERA_ID = "camera_id";
-        String SURFACE_HELPER = "Surface_helper";
+        String SURFACE_HELPER = "surface_helper";
+        String SURFACE_CLASS = "surface_class";
         String CAMERA_DEVICE = "camera_device";
+        String CAMERA_INFO = "camera_info";
         String OPEN_CAMERA_STATUS = "open_camera_status";
         String REQUEST_BUILDER = "request_builder";
 
