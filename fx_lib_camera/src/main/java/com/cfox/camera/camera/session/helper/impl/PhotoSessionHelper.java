@@ -26,7 +26,6 @@ import com.cfox.camera.utils.FxRequest;
 import com.cfox.camera.utils.FxResult;
 
 
-import java.util.List;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
@@ -42,36 +41,31 @@ public class PhotoSessionHelper extends AbsCameraSessionHelper implements IPhoto
     private IPhotoCameraHelper mPhotoCameraHelper;
 
     public PhotoSessionHelper(ISessionManager sessionManager) {
-        List<ICameraSession> list = sessionManager.getCameraSession(1);
-        mCameraSession = list.get(0);
+        mCameraSession = sessionManager.getCameraSession(1).get(0);
         mImageReaderHelper = new ImageReaderHelper();
         mPhotoCameraHelper = new PhotoCameraHelper();
     }
 
     @Override
+    public void openCamera(FxRequest request) {
+        mCameraSession.onClose().subscribe();
+    }
+
+    @Override
     public void applyPreviewRepeatingBuilder(FxRequest request) throws CameraAccessException {
-//        mImageReaders.clear();
-//        mBuilderPack.configBuilder(request);
         ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);
         mBuilder = mCameraSession.onCreateRequestBuilder(mPhotoCameraHelper.createPreviewTemplate());
 
-//        ImageReader previewImageReader = mImageReaderHelper.createPreviewImageReader(request);
         ImageReader imageReader = mImageReaderHelper.createImageReader(request);
 
         surfaceHelper.addSurface(imageReader.getSurface());
-//        surfaceHelper.addSurface(previewImageReader.getSurface());
         mBuilder.addTarget(surfaceHelper.getSurface());
-//        mBuilder.addTarget(previewImageReader.getSurface());
-
-//        mBuilderPack.previewBuilder(mBuilder);
-//        mImageReaders.add(imageReader);
         request.put(FxRe.Key.REQUEST_BUILDER, mBuilder);
     }
 
 
     @Override
-    public Observable<FxResult> sendRepeatingRequest(FxRequest request) {
-//        mBuilderPack.repeatingRequestBuilder(request, mBuilder);
+    public Observable<FxResult> onSendRepeatingRequest(FxRequest request) {
         request.put(FxRe.Key.REQUEST_BUILDER, mBuilder);
         return mCameraSession.onRepeatingRequest(request);
     }
@@ -99,7 +93,8 @@ public class PhotoSessionHelper extends AbsCameraSessionHelper implements IPhoto
         return Observable.create(new ObservableOnSubscribe<FxResult>() {
             @Override
             public void subscribe(ObservableEmitter<FxResult> emitter) throws Exception {
-                mCameraSession.onClose();
+                mCameraSession.onClose().subscribe();
+                mImageReaderHelper.closeImageReaders();
             }
         });
     }
@@ -156,26 +151,9 @@ public class PhotoSessionHelper extends AbsCameraSessionHelper implements IPhoto
         });
     }
 
-    public Observable<FxResult> closes() {
-//        return super.close().map(new Function<FxResult, FxResult>() {
-//            @Override
-//            public FxResult apply(FxResult result) throws Exception {
-//                Log.d(TAG, "closeSession: close image readers");
-//                mImageReaderHelper.closeImageReaders();
-//                return result;
-//            }
-//        });
-
-        return null;
-    }
-
     @Override
     public ICameraSession getCameraSession(FxRequest request) {
         return mCameraSession;
-    }
-
-    private ICameraInfo getCameraInfo(String cameraId) {
-        return CameraInfoHelper.getInstance().getCameraInfo(cameraId);
     }
 
 }

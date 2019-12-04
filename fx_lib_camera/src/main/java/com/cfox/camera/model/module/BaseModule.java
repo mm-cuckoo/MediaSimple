@@ -2,7 +2,6 @@ package com.cfox.camera.model.module;
 
 
 import android.graphics.ImageFormat;
-import android.hardware.camera2.CaptureRequest;
 import android.util.Log;
 import android.util.Range;
 import android.util.Size;
@@ -54,20 +53,20 @@ public abstract class BaseModule implements IModule {
                         Size pictureSize = getBusiness().getPictureSize(pictureSizeForReq, mCameraSessionHelper.getPictureSize(imageFormat));
                         request.put(FxRe.Key.PIC_SIZE, pictureSize);
                         Log.d(TAG, "apply: create  session ....." + request);
-                        return mCameraSessionHelper.createPreviewSession(request);
+                        return mCameraSessionHelper.onCreatePreviewSession(request);
                     }
                 }).flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
                     @Override
                     public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
-                        Log.d(TAG, "apply: sendRepeatingRequest......");
-                        return mCameraSessionHelper.sendPreviewRepeatingRequest(request);
+                        Log.d(TAG, "apply: onSendRepeatingRequest......");
+                        return mCameraSessionHelper.onSendPreviewRepeatingRequest(request);
                     }
                 }).subscribeOn(AndroidSchedulers.from(ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_CAMERA).getLooper()));
     }
 
     @Override
     public Observable<FxResult> onCameraConfig(FxRequest request) {
-        return mCameraSessionHelper.sendRepeatingRequest(request);
+        return mCameraSessionHelper.onSendRepeatingRequest(request);
     }
 
     private Observable<FxResult> onOpenCamera(FxRequest request) {

@@ -46,10 +46,10 @@ public class CameraSession implements ICameraSession {
         return mFxCameraDevice.openCameraDevice(request).map(new Function<FxResult, FxResult>() {
             @Override
             public FxResult apply(FxResult result) throws Exception {
-              ICameraInfo cameraInfo = CameraInfoHelper.getInstance().getCameraInfo(mCameraDevice.getId());
-              mCameraDevice = (CameraDevice) result.getObj(FxRe.Key.CAMERA_DEVICE);
-              request.put(FxRe.Key.CAMERA_INFO, cameraInfo);
-              return result;
+                mCameraDevice = (CameraDevice) result.getObj(FxRe.Key.CAMERA_DEVICE);
+                ICameraInfo cameraInfo = CameraInfoHelper.getInstance().getCameraInfo(mCameraDevice.getId());
+                request.put(FxRe.Key.CAMERA_INFO, cameraInfo);
+                return result;
             }
         });
     }
@@ -61,7 +61,7 @@ public class CameraSession implements ICameraSession {
 
     public Observable<FxResult> onCreatePreviewSession(FxRequest request) {
         final ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);
-        Log.d(TAG, "createPreviewSession: ---->" + surfaceHelper.getSurfaces().size());
+        Log.d(TAG, "onCreatePreviewSession: ---->" + surfaceHelper.getSurfaces().size());
         // TODO: 19-11-29 check  mCaptureSession is null
         return Observable.create(new ObservableOnSubscribe<FxResult>() {
             @Override
@@ -98,10 +98,11 @@ public class CameraSession implements ICameraSession {
 
     @Override
     public Observable<FxResult> onClose() {
+        Log.d(TAG, "onClose: camera id:" + mCameraId);
         return mFxCameraDevice.closeCameraDevice(mCameraId).doOnNext(new Consumer<FxResult>() {
             @Override
             public void accept(FxResult result) throws Exception {
-                Log.d(TAG, "closeSession: .......");
+                Log.d(TAG, "onClose: closeSession: .......");
                 if (mCaptureSession != null) {
                     mCaptureSession.close();
                     mCaptureSession = null;

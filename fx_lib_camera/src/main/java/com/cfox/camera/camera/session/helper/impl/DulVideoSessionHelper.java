@@ -4,29 +4,32 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CaptureRequest;
 import android.util.Size;
 
+import com.cfox.camera.camera.ICameraInfo;
 import com.cfox.camera.camera.session.ICameraSession;
 import com.cfox.camera.camera.session.ISessionManager;
+import com.cfox.camera.camera.session.helper.ICameraHelper;
 import com.cfox.camera.camera.session.helper.IDulVideoSessionHelper;
+import com.cfox.camera.utils.FxRe;
 import com.cfox.camera.utils.FxRequest;
 import com.cfox.camera.utils.FxResult;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import io.reactivex.Observable;
 
 public class DulVideoSessionHelper extends AbsCameraSessionHelper implements IDulVideoSessionHelper {
+    private static final String TAG = "DulVideoSessionHelper";
 
-
-
+    private Map<String, ICameraInfo> mCameraInfoMap = new HashMap<>(2);
+    private Map<String, ICameraHelper> mCameraHelperMap = new HashMap<>(2);
+    private Map<String, CaptureRequest.Builder> mPreviewBuilderMap = new HashMap<>(2);
+    private Map<String, ICameraSession> mCameraSessionMap = new HashMap<>(2);
     private ISessionManager mCameraSessionManager;
-    private ICameraSession mCameraSession1;
-    private ICameraSession mCameraSession2;
 
     public DulVideoSessionHelper(ISessionManager cameraSessionManager) {
         this.mCameraSessionManager = cameraSessionManager;
-        List<ICameraSession> cameraSessionList = cameraSessionManager.getCameraSession(2);
-        mCameraSession1 = cameraSessionList.get(0);
-        mCameraSession2 = cameraSessionList.get(1);
+        cameraSessionManager.getCameraSession(2);
     }
 
     @Override
@@ -35,12 +38,12 @@ public class DulVideoSessionHelper extends AbsCameraSessionHelper implements IDu
     }
 
     @Override
-    public Observable<FxResult> sendRepeatingRequest(FxRequest request) {
+    public Observable<FxResult> onSendRepeatingRequest(FxRequest request) {
         return null;
     }
 
     @Override
-    public Observable<FxResult> sendPreviewRepeatingRequest(FxRequest request) {
+    public Observable<FxResult> onSendPreviewRepeatingRequest(FxRequest request) {
         return null;
     }
 
@@ -51,7 +54,9 @@ public class DulVideoSessionHelper extends AbsCameraSessionHelper implements IDu
 
     @Override
     public Size[] getPreviewSize(FxRequest request) {
-        return new Size[0];
+        String cameraId = request.getString(FxRe.Key.CAMERA_ID);
+        Class klass = (Class) request.getObj(FxRe.Key.SURFACE_CLASS);
+        return getCameraHelperForId(cameraId).getPreviewSize(klass);
     }
 
     @Override
@@ -62,5 +67,41 @@ public class DulVideoSessionHelper extends AbsCameraSessionHelper implements IDu
     @Override
     public Observable<FxResult> close() {
         return null;
+    }
+
+    private ICameraSession getCameraSessionForId(String cameraId) {
+        ICameraSession cameraSession;
+        if (mCameraSessionMap.containsKey(cameraId)) {
+            cameraSession = mCameraSessionMap.get(cameraId);
+        } else {
+            cameraSession = mCameraSessionManager.getCameraSession();
+            mCameraSessionMap.put(cameraId, cameraSession);
+        }
+        return cameraSession;
+    }
+
+    private ICameraHelper getCameraHelperForId(String cameraId) {
+        ICameraHelper cameraHelper;
+        if (mCameraHelperMap.containsKey(cameraId)) {
+            cameraHelper = mCameraHelperMap.get(cameraId);
+        } else {
+            cameraHelper = new PhotoCameraHelper();
+            cameraHelper.initCameraInfo(getCameraInfoForId(cameraId));
+            mCameraHelperMap.put(cameraId, cameraHelper);
+        }
+
+        return cameraHelper;
+    }
+
+    private ICameraInfo getCameraInfoForId(String cameraId) {
+        ICameraInfo cameraInfo;
+        if (mCameraInfoMap.containsKey(cameraId)) {
+            cameraInfo = mCameraInfoMap.get(cameraId);
+        } else {
+            cameraInfo = getCameraInfo(cameraId);
+            mCameraInfoMap.put(cameraId, cameraInfo);
+        }
+
+        return cameraInfo;
     }
 }

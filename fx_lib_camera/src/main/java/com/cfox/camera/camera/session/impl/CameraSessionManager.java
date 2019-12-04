@@ -8,6 +8,7 @@ import com.cfox.camera.camera.session.ISessionManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class CameraSessionManager implements ISessionManager {
     private static final String TAG = "CameraSessionManager";
@@ -15,6 +16,7 @@ public class CameraSessionManager implements ISessionManager {
     private static ISessionManager mSessionManager;
     private List<ICameraSession> mCameraSessionList = new ArrayList<>();
     private Context mContext;
+    private AtomicInteger mSessionIndex = new AtomicInteger(0);
 
 
     private CameraSessionManager(Context context) {
@@ -33,9 +35,9 @@ public class CameraSessionManager implements ISessionManager {
     }
 
     @Override
-    public List<ICameraSession> getCameraSession(int count) {
-        Log.d(TAG, "getCameraSession: count:" + count);
-
+    public void getCameraSession(int count) {
+        Log.d(TAG, "getCameraSession: count:" + count  + "  session size:" + mCameraSessionList.size());
+        mSessionIndex.set(0);
         for (int i = 0 ; i < count; i ++) {
             if (i < mCameraSessionList.size()) {
                 Log.d(TAG, "getCameraSession: get i:" + i);
@@ -50,7 +52,21 @@ public class CameraSessionManager implements ISessionManager {
             Log.d(TAG, "getCameraSession: remove i：" + i);
             mCameraSessionList.remove(i).onClose();
         }
-        return mCameraSessionList;
+
+        Log.d(TAG, "getCameraSession: end session size:" + mCameraSessionList.size());
+    }
+
+    @Override
+    public boolean hasSession() {
+        return mSessionIndex.get() < mCameraSessionList.size() - 1;
+    }
+
+    @Override
+    public ICameraSession getCameraSession() {
+        if (!hasSession()) {
+            throw new RuntimeException("don`t have camera session , create size :" + mCameraSessionList.size()  + "  current session count :" + mSessionIndex.get() + 1 );
+        }
+        return mCameraSessionList.get(mSessionIndex.get());
     }
 
     private ICameraSession createSession() {

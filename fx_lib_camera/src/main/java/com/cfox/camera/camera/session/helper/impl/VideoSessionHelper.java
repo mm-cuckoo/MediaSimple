@@ -28,12 +28,12 @@ public class VideoSessionHelper extends AbsCameraSessionHelper implements IVideo
     }
 
     @Override
-    public Observable<FxResult> sendRepeatingRequest(FxRequest request) {
+    public Observable<FxResult> onSendRepeatingRequest(FxRequest request) {
         return null;
     }
 
     @Override
-    public Observable<FxResult> sendPreviewRepeatingRequest(FxRequest request) {
+    public Observable<FxResult> onSendPreviewRepeatingRequest(FxRequest request) {
         return null;
     }
 

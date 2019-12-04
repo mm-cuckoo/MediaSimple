@@ -34,7 +34,6 @@ public class FxCameraDevice implements IFxCameraDevice {
         mCameraManager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
     }
 
-
     public static IFxCameraDevice getsInstance(Context context) {
         if (sInstance == null) {
             synchronized (FxCameraDevice.class) {
@@ -69,13 +68,14 @@ public class FxCameraDevice implements IFxCameraDevice {
                             result.put(FxRe.Key.CAMERA_DEVICE, camera);
                             result.put(FxRe.Key.OPEN_CAMERA_STATUS, FxRe.Value.OPEN_SUCCESS);
                             emitter.onNext(result);
-//                            emitter.onComplete();
+                            emitter.onComplete();
                         }
 
                         @Override
                         public void onDisconnected(@NonNull CameraDevice camera) {
                             Log.d(TAG, "onDisconnected: ");
                             closeCameraDevice(camera.getId());
+                            emitter.onComplete();
                         }
 
                         @Override
@@ -83,7 +83,6 @@ public class FxCameraDevice implements IFxCameraDevice {
                             Log.d(TAG, "onError: code:" + error);
                             closeCameraDevice(camera.getId());
                             emitter.onError(new Throwable("open camera error Code:" + error));
-
                         }
                     }, null);
                 } catch (CameraAccessException | InterruptedException e) {
@@ -109,7 +108,10 @@ public class FxCameraDevice implements IFxCameraDevice {
 
                     CameraDevice cameraDevice = null;
                     if (mDeviceMap.containsKey(cameraId)) {
+                        Log.d(TAG, "closeCameraDevice :: subscribe: has camera device id:" + cameraId);
                         cameraDevice = mDeviceMap.remove(cameraId);
+                    } else {
+                        Log.d(TAG, "closeCameraDevice:  no camera device camera id: " + cameraId);
                     }
 
                     if (cameraDevice != null) {
@@ -117,6 +119,7 @@ public class FxCameraDevice implements IFxCameraDevice {
                     }
                     FxResult result = new FxResult();
                     emitter.onNext(result);
+                    emitter.onComplete();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 } finally {

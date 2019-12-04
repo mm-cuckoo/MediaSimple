@@ -13,9 +13,9 @@ import io.reactivex.Observable;
 public interface ICameraSessionHelper {
 
     Observable<FxResult> onOpenCamera(FxRequest request);
-    Observable<FxResult> createPreviewSession(FxRequest request) throws CameraAccessException;
-    Observable<FxResult> sendRepeatingRequest(FxRequest request);
-    Observable<FxResult> sendPreviewRepeatingRequest(FxRequest request);
+    Observable<FxResult> onCreatePreviewSession(FxRequest request) throws CameraAccessException;
+    Observable<FxResult> onSendRepeatingRequest(FxRequest request);
+    Observable<FxResult> onSendPreviewRepeatingRequest(FxRequest request);
     Size[] getPictureSize(int format);
     Size[] getPreviewSize(FxRequest request);
     int getSensorOrientation();

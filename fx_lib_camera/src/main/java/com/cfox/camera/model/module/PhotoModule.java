@@ -84,7 +84,7 @@ public class PhotoModule extends BaseModule {
                 FxRequest previewRequest = new FxRequest();
 //                mBuilderPack.previewBuilder(mBuilder);
                 previewRequest.put(FxRe.Key.REQUEST_BUILDER, mBuilder);
-                return sendPreviewRepeatingRequest(previewRequest);
+                return onSendPreviewRepeatingRequest(previewRequest);
             }
         })*/;
     }
