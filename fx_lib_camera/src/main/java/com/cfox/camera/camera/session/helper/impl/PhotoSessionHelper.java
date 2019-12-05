@@ -1,5 +1,6 @@
 package com.cfox.camera.camera.session.helper.impl;
 
+import android.graphics.ImageFormat;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CaptureFailure;
@@ -41,7 +42,8 @@ public class PhotoSessionHelper extends AbsCameraSessionHelper implements IPhoto
     private IPhotoCameraHelper mPhotoCameraHelper;
 
     public PhotoSessionHelper(ISessionManager sessionManager) {
-        mCameraSession = sessionManager.getCameraSession(1).get(0);
+        sessionManager.getCameraSession(1);
+        mCameraSession = sessionManager.getCameraSession();
         mImageReaderHelper = new ImageReaderHelper();
         mPhotoCameraHelper = new PhotoCameraHelper();
     }
@@ -71,8 +73,9 @@ public class PhotoSessionHelper extends AbsCameraSessionHelper implements IPhoto
     }
 
     @Override
-    public Size[] getPictureSize(int format) {
-        return mPhotoCameraHelper.getPictureSize(format);
+    public Size[] getPictureSize(FxRequest request) {
+        int imageFormat = request.getInt(FxRe.Key.IMAGE_FORMAT, ImageFormat.JPEG);
+        return mPhotoCameraHelper.getPictureSize(imageFormat);
     }
 
     @Override

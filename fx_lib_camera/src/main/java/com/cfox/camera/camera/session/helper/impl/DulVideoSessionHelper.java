@@ -1,7 +1,10 @@
 package com.cfox.camera.camera.session.helper.impl;
 
+import android.graphics.ImageFormat;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CaptureRequest;
+import android.media.ImageReader;
+import android.util.Log;
 import android.util.Size;
 
 import com.cfox.camera.camera.ICameraInfo;
@@ -9,6 +12,7 @@ import com.cfox.camera.camera.session.ICameraSession;
 import com.cfox.camera.camera.session.ISessionManager;
 import com.cfox.camera.camera.session.helper.ICameraHelper;
 import com.cfox.camera.camera.session.helper.IDulVideoSessionHelper;
+import com.cfox.camera.surface.ISurfaceHelper;
 import com.cfox.camera.utils.FxRe;
 import com.cfox.camera.utils.FxRequest;
 import com.cfox.camera.utils.FxResult;
@@ -33,8 +37,21 @@ public class DulVideoSessionHelper extends AbsCameraSessionHelper implements IDu
     }
 
     @Override
+    public void applyPreviewRepeatingBuilder(FxRequest request) throws CameraAccessException {
+        String cameraId = request.getString(FxRe.Key.CAMERA_ID);
+        ICameraHelper cameraHelper = getCameraHelperForId(cameraId);
+        ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);
+        CaptureRequest.Builder builder = getCameraSessionForId(cameraId).onCreateRequestBuilder(cameraHelper.createPreviewTemplate());
+
+        builder.addTarget(surfaceHelper.getSurface());
+        request.put(FxRe.Key.REQUEST_BUILDER, builder);
+    }
+
+    @Override
     public ICameraSession getCameraSession(FxRequest request) {
-        return null;
+        String cameraId = request.getString(FxRe.Key.CAMERA_ID);
+        // TODO: 19-12-5 check camera id
+        return getCameraSessionForId(cameraId);
     }
 
     @Override
@@ -43,18 +60,16 @@ public class DulVideoSessionHelper extends AbsCameraSessionHelper implements IDu
     }
 
     @Override
-    public Observable<FxResult> onSendPreviewRepeatingRequest(FxRequest request) {
-        return null;
-    }
-
-    @Override
-    public Size[] getPictureSize(int format) {
-        return new Size[0];
+    public Size[] getPictureSize(FxRequest request) {
+        String cameraId = request.getString(FxRe.Key.CAMERA_ID);
+        int imageFormat = request.getInt(FxRe.Key.IMAGE_FORMAT, ImageFormat.JPEG);
+        return getCameraHelperForId(cameraId).getPictureSize(imageFormat);
     }
 
     @Override
     public Size[] getPreviewSize(FxRequest request) {
         String cameraId = request.getString(FxRe.Key.CAMERA_ID);
+        Log.d(TAG, "getPreviewSize: camera id:" + cameraId);
         Class klass = (Class) request.getObj(FxRe.Key.SURFACE_CLASS);
         return getCameraHelperForId(cameraId).getPreviewSize(klass);
     }
@@ -85,7 +100,7 @@ public class DulVideoSessionHelper extends AbsCameraSessionHelper implements IDu
         if (mCameraHelperMap.containsKey(cameraId)) {
             cameraHelper = mCameraHelperMap.get(cameraId);
         } else {
-            cameraHelper = new PhotoCameraHelper();
+            cameraHelper = new DulVideoCameraHelper();
             cameraHelper.initCameraInfo(getCameraInfoForId(cameraId));
             mCameraHelperMap.put(cameraId, cameraHelper);
         }

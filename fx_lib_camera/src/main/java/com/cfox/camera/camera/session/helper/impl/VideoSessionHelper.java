@@ -1,10 +1,12 @@
 package com.cfox.camera.camera.session.helper.impl;
 
+import android.graphics.ImageFormat;
 import android.util.Size;
 
 import com.cfox.camera.camera.session.ICameraSession;
 import com.cfox.camera.camera.session.ISessionManager;
 import com.cfox.camera.camera.session.helper.IVideoSessionHelper;
+import com.cfox.camera.utils.FxRe;
 import com.cfox.camera.utils.FxRequest;
 import com.cfox.camera.utils.FxResult;
 
@@ -17,9 +19,9 @@ public class VideoSessionHelper extends AbsCameraSessionHelper implements IVideo
     private ISessionManager mCameraSessionManager;
     private ICameraSession mCameraSession;
 
-    public VideoSessionHelper(ISessionManager cameraSessionManager) {
-        this.mCameraSessionManager = cameraSessionManager;
-        mCameraSession = cameraSessionManager.getCameraSession(1).get(0);
+    public VideoSessionHelper(ISessionManager sessionManager) {
+        sessionManager.getCameraSession(1);
+        mCameraSession = sessionManager.getCameraSession();
     }
 
     @Override
@@ -38,7 +40,8 @@ public class VideoSessionHelper extends AbsCameraSessionHelper implements IVideo
     }
 
     @Override
-    public Size[] getPictureSize(int format) {
+    public Size[] getPictureSize(FxRequest request) {
+        int imageFormat = request.getInt(FxRe.Key.IMAGE_FORMAT, ImageFormat.JPEG);
         return new Size[0];
     }
 

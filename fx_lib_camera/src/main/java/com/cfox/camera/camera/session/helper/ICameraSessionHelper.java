@@ -16,7 +16,7 @@ public interface ICameraSessionHelper {
     Observable<FxResult> onCreatePreviewSession(FxRequest request) throws CameraAccessException;
     Observable<FxResult> onSendRepeatingRequest(FxRequest request);
     Observable<FxResult> onSendPreviewRepeatingRequest(FxRequest request);
-    Size[] getPictureSize(int format);
+    Size[] getPictureSize(FxRequest request);
     Size[] getPreviewSize(FxRequest request);
     int getSensorOrientation();
     Observable<FxResult> close();

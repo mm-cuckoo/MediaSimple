@@ -24,6 +24,7 @@ public class CameraMainFragment extends BaseFragment {
     private static final String TAG = "CameraMainFragment";
     private AutoFitTextureView mPreviewView;
     private SurfaceHelper mSurfaceHelper;
+    private AutoFitTextureView mPreviewView2;
     private CameraController mCameraController;
 
     @Override
@@ -43,6 +44,7 @@ public class CameraMainFragment extends BaseFragment {
         super.onViewCreated(view, savedInstanceState);
 
         mPreviewView = view.findViewById(R.id.preview_view);
+        mPreviewView2 = view.findViewById(R.id.preview_view_2);
         view.findViewById(R.id.btn_torch_flash).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -68,6 +70,39 @@ public class CameraMainFragment extends BaseFragment {
             @Override
             public void onClick(View v) {
                 mSurfaceHelper = new SurfaceHelper(mPreviewView);
+                mCameraController.fontCamera(mSurfaceHelper);
+            }
+        });
+
+        view.findViewById(R.id.btn_photo).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mPreviewView2.setVisibility(View.GONE);
+                mCameraController.photoModule();
+                mSurfaceHelper = new SurfaceHelper(mPreviewView);
+                mCameraController.backCamera(mSurfaceHelper);
+            }
+        });
+
+        view.findViewById(R.id.btn_video).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mPreviewView2.setVisibility(View.GONE);
+                mCameraController.videoModule();
+                mSurfaceHelper = new SurfaceHelper(mPreviewView);
+                mCameraController.backCamera(mSurfaceHelper);
+            }
+        });
+
+        view.findViewById(R.id.btn_dul).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mPreviewView2.setVisibility(View.VISIBLE);
+                mCameraController.dulVideoModule();
+                mSurfaceHelper = new SurfaceHelper(mPreviewView);
+                mCameraController.backCamera(mSurfaceHelper);
+
+                mSurfaceHelper = new SurfaceHelper(mPreviewView2);
                 mCameraController.fontCamera(mSurfaceHelper);
             }
         });

@@ -58,13 +58,13 @@ public class CameraSessionManager implements ISessionManager {
 
     @Override
     public boolean hasSession() {
-        return mSessionIndex.get() < mCameraSessionList.size() - 1;
+        return mSessionIndex.get() < mCameraSessionList.size();
     }
 
     @Override
     public ICameraSession getCameraSession() {
         if (!hasSession()) {
-            throw new RuntimeException("don`t have camera session , create size :" + mCameraSessionList.size()  + "  current session count :" + mSessionIndex.get() + 1 );
+            throw new RuntimeException("don`t have camera session , create size :" + mCameraSessionList.size()  + "  current session count :" + (mSessionIndex.get() + 1) );
         }
         return mCameraSessionList.get(mSessionIndex.get());
     }

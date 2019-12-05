@@ -48,9 +48,8 @@ public abstract class BaseModule implements IModule {
                 }).flatMap(new Function<FxRequest, ObservableSource<FxResult>>() {
                     @Override
                     public ObservableSource<FxResult> apply(FxRequest fxRequest) throws Exception {
-                        int imageFormat = request.getInt(FxRe.Key.IMAGE_FORMAT, ImageFormat.JPEG);
                         Size pictureSizeForReq = (Size) request.getObj(FxRe.Key.PIC_SIZE);
-                        Size pictureSize = getBusiness().getPictureSize(pictureSizeForReq, mCameraSessionHelper.getPictureSize(imageFormat));
+                        Size pictureSize = getBusiness().getPictureSize(pictureSizeForReq, mCameraSessionHelper.getPictureSize(request));
                         request.put(FxRe.Key.PIC_SIZE, pictureSize);
                         Log.d(TAG, "apply: create  session ....." + request);
                         return mCameraSessionHelper.onCreatePreviewSession(request);

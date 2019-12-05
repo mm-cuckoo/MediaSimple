@@ -9,6 +9,7 @@ import android.util.Size;
 import com.cfox.camera.CameraConfig;
 import com.cfox.camera.FxCamera;
 import com.cfox.camera.FxCameraManager;
+import com.cfox.camera.controller.IBaseController;
 import com.cfox.camera.controller.IPhotoController;
 import com.cfox.camera.surface.SurfaceHelper;
 import com.cfox.camera.utils.FxRe;
@@ -16,10 +17,24 @@ import com.cfox.camera.utils.FxRequest;
 
 class CameraController {
     private FxCameraManager mFxCameraManager;
-    private IPhotoController mCameraController;
+    private IBaseController mCameraController;
 
     public CameraController() {
         mFxCameraManager = FxCamera.getInstance().getCameraManager();
+        mCameraController = mFxCameraManager.photo();
+    }
+
+    void photoModule() {
+        mCameraController = mFxCameraManager.photo();
+    }
+
+    void videoModule() {
+        mCameraController = mFxCameraManager.video();
+    }
+
+
+    void dulVideoModule() {
+        mCameraController = mFxCameraManager.dulVideo();
     }
 
     void backCamera(SurfaceHelper helper) {
@@ -30,7 +45,7 @@ class CameraController {
         CameraConfig cameraConfig = CameraConfig.getInstance();
         cameraConfig.push(CaptureRequest.FLASH_MODE, FxRe.FLASH_TYPE.CLOSE);
         request.put(FxRe.Key.CAMERA_CONFIG, cameraConfig);
-        mCameraController = mFxCameraManager.photo();
+
         mCameraController.onStartPreview(request);
     }
 
@@ -99,8 +114,8 @@ class CameraController {
     }
 
     void capture() {
-        FxRequest request = new FxRequest();
-        mCameraController.onCapture(request);
+//        FxRequest request = new FxRequest();
+//        mCameraController.onCapture(request);
     }
 
     Range<Integer> getEvRange() {

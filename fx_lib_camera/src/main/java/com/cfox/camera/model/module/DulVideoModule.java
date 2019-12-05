@@ -16,8 +16,9 @@ import io.reactivex.Observable;
 public class DulVideoModule extends BaseModule {
     private static final String TAG = "DulVideoModule";
     private IDulVideoSessionHelper mDulVideoSessionHelper;
-    public DulVideoModule(ICameraSessionHelper cameraSessionHelper, IBusiness business) {
+    public DulVideoModule(IDulVideoSessionHelper cameraSessionHelper, IBusiness business) {
         super(cameraSessionHelper, business);
+        mDulVideoSessionHelper = cameraSessionHelper;
     }
 
     @Override
@@ -28,6 +29,7 @@ public class DulVideoModule extends BaseModule {
 
         Size previewSizeForReq = (Size) request.getObj(FxRe.Key.PREVIEW_SIZE);
         Size previewSize = getBusiness().getPreviewSize(previewSizeForReq, mDulVideoSessionHelper.getPreviewSize(request));
+        Log.d(TAG, "requestPreview: " + previewSize);
         surfaceHelper.setAspectRatio(previewSize);
 
         Log.d(TAG, "requestPreview: preview width:" + previewSize.getWidth()  +

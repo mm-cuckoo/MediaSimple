@@ -2,8 +2,10 @@ package com.cfox.camera;
 
 import android.content.Context;
 
+import com.cfox.camera.controller.FxDulVideoController;
 import com.cfox.camera.controller.FxPhotoController;
 import com.cfox.camera.controller.FxVideoController;
+import com.cfox.camera.controller.IDulVideoController;
 import com.cfox.camera.controller.IPhotoController;
 import com.cfox.camera.controller.IVideoController;
 import com.cfox.camera.model.CameraModule;
@@ -31,11 +33,13 @@ public class FxCameraManager implements IFxCameraManager {
         return new FxVideoController(mCameraModule);
     }
 
-    void setConfig(IConfig config) {
-        mConfigWrapper.setConfig(config);
+    @Override
+    public IDulVideoController dulVideo() {
+        mCameraModule.initModule(CameraModule.ModuleFlag.MODULE_DUL_VIDEO);
+        return new FxDulVideoController(mCameraModule);
     }
 
-    ConfigWrapper getConfigWrapper() {
-        return mConfigWrapper;
+    void setConfig(IConfig config) {
+        mConfigWrapper.setConfig(config);
     }
 }
