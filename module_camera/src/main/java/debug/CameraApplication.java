@@ -1,20 +1,16 @@
 package debug;
 
-import android.util.Log;
-import android.util.Size;
-
-import com.cfox.camera.FxCamera;
-import com.cfox.camera.IConfig;
+import com.cfox.camera.EsCamera;
 import com.cfox.lib_common.base.BaseApplication;
 
 public class CameraApplication extends BaseApplication {
     private static final String TAG = "CameraApplication";
 
-    FxCamera mFxCamera;
+    EsCamera mFxCamera;
     @Override
     public void onCreate() {
         super.onCreate();
-        mFxCamera = FxCamera.init(this);
+        mFxCamera = EsCamera.init(this);
 //        mFxCamera.setConfig(new IConfig() {
 //            @Override
 //            public Size getPreviewSize(Size size, Size[] supportSizes) {

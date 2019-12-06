@@ -2,6 +2,6 @@ package com.cfox.camera.controller;
 
 
 
-public interface IDulVideoController extends IBaseController {
+public interface IDulVideoController extends ICameraController {
 
 }

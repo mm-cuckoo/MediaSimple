@@ -1,25 +1,24 @@
 package com.cfox.camera.camera.session.helper;
 
 import android.hardware.camera2.CameraAccessException;
-import android.hardware.camera2.CaptureRequest;
 import android.util.Range;
 import android.util.Size;
 
-import com.cfox.camera.utils.FxRequest;
-import com.cfox.camera.utils.FxResult;
+import com.cfox.camera.utils.EsRequest;
+import com.cfox.camera.utils.EsResult;
 
 import io.reactivex.Observable;
 
 public interface ICameraSessionHelper {
 
-    Observable<FxResult> onOpenCamera(FxRequest request);
-    Observable<FxResult> onCreatePreviewSession(FxRequest request) throws CameraAccessException;
-    Observable<FxResult> onSendRepeatingRequest(FxRequest request);
-    Observable<FxResult> onSendPreviewRepeatingRequest(FxRequest request);
-    Size[] getPictureSize(FxRequest request);
-    Size[] getPreviewSize(FxRequest request);
-    int getSensorOrientation();
-    Observable<FxResult> close();
-    Range<Integer> getEvRange();
+    Observable<EsResult> onOpenCamera(EsRequest request);
+    Observable<EsResult> onCreatePreviewSession(EsRequest request) throws CameraAccessException;
+    Observable<EsResult> onSendRepeatingRequest(EsRequest request);
+    Observable<EsResult> onSendPreviewRepeatingRequest(EsRequest request);
+    Size[] getPictureSize(EsRequest request);
+    Size[] getPreviewSize(EsRequest request);
+    int getSensorOrientation(EsRequest request);
+    Observable<EsResult> close(EsRequest request);
+    Range<Integer> getEvRange(EsRequest request);
 
 }

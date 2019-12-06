@@ -2,41 +2,39 @@ package com.cfox.camera;
 
 import android.content.Context;
 
-import com.cfox.camera.controller.FxDulVideoController;
-import com.cfox.camera.controller.FxPhotoController;
-import com.cfox.camera.controller.FxVideoController;
-import com.cfox.camera.controller.IDulVideoController;
-import com.cfox.camera.controller.IPhotoController;
-import com.cfox.camera.controller.IVideoController;
+import com.cfox.camera.controller.DulVideoController;
+import com.cfox.camera.controller.PhotoController;
+import com.cfox.camera.controller.VideoController;
+import com.cfox.camera.controller.ICameraController;
 import com.cfox.camera.model.CameraModule;
 import com.cfox.camera.model.ICameraModule;
 
-public class FxCameraManager implements IFxCameraManager {
+public class EsCameraManager implements IEsCameraManager {
 
     private ICameraModule mCameraModule;
     private ConfigWrapper mConfigWrapper;
 
-    FxCameraManager(Context context) {
+    EsCameraManager(Context context) {
         mConfigWrapper = new ConfigWrapper();
         mCameraModule = CameraModule.getInstance(context, mConfigWrapper);
     }
 
     @Override
-    public IPhotoController photo() {
+    public ICameraController photoModule() {
         mCameraModule.initModule(CameraModule.ModuleFlag.MODULE_PHOTO);
-        return new FxPhotoController(mCameraModule);
+        return new PhotoController(mCameraModule);
     }
 
     @Override
-    public IVideoController video() {
+    public ICameraController videoModule() {
         mCameraModule.initModule(CameraModule.ModuleFlag.MODULE_VIDEO);
-        return new FxVideoController(mCameraModule);
+        return new VideoController(mCameraModule);
     }
 
     @Override
-    public IDulVideoController dulVideo() {
+    public ICameraController dulVideoModule() {
         mCameraModule.initModule(CameraModule.ModuleFlag.MODULE_DUL_VIDEO);
-        return new FxDulVideoController(mCameraModule);
+        return new DulVideoController(mCameraModule);
     }
 
     void setConfig(IConfig config) {

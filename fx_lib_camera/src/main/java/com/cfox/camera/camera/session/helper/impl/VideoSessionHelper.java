@@ -1,14 +1,15 @@
 package com.cfox.camera.camera.session.helper.impl;
 
 import android.graphics.ImageFormat;
+import android.util.Range;
 import android.util.Size;
 
 import com.cfox.camera.camera.session.ICameraSession;
 import com.cfox.camera.camera.session.ISessionManager;
 import com.cfox.camera.camera.session.helper.IVideoSessionHelper;
-import com.cfox.camera.utils.FxRe;
-import com.cfox.camera.utils.FxRequest;
-import com.cfox.camera.utils.FxResult;
+import com.cfox.camera.utils.Es;
+import com.cfox.camera.utils.EsRequest;
+import com.cfox.camera.utils.EsResult;
 
 import io.reactivex.Observable;
 
@@ -25,38 +26,43 @@ public class VideoSessionHelper extends AbsCameraSessionHelper implements IVideo
     }
 
     @Override
-    public ICameraSession getCameraSession(FxRequest request) {
+    public ICameraSession getCameraSession(EsRequest request) {
         return mCameraSession;
     }
 
     @Override
-    public Observable<FxResult> onSendRepeatingRequest(FxRequest request) {
+    public Observable<EsResult> onSendRepeatingRequest(EsRequest request) {
         return null;
     }
 
     @Override
-    public Observable<FxResult> onSendPreviewRepeatingRequest(FxRequest request) {
+    public Observable<EsResult> onSendPreviewRepeatingRequest(EsRequest request) {
         return null;
     }
 
     @Override
-    public Size[] getPictureSize(FxRequest request) {
-        int imageFormat = request.getInt(FxRe.Key.IMAGE_FORMAT, ImageFormat.JPEG);
+    public Size[] getPictureSize(EsRequest request) {
+        int imageFormat = request.getInt(Es.Key.IMAGE_FORMAT, ImageFormat.JPEG);
         return new Size[0];
     }
 
     @Override
-    public Size[] getPreviewSize(FxRequest request) {
+    public Size[] getPreviewSize(EsRequest request) {
         return new Size[0];
     }
 
     @Override
-    public int getSensorOrientation() {
+    public int getSensorOrientation(EsRequest request) {
         return 0;
     }
 
     @Override
-    public Observable<FxResult> close() {
+    public Observable<EsResult> close(EsRequest request) {
+        return null;
+    }
+
+    @Override
+    public Range<Integer> getEvRange(EsRequest request) {
         return null;
     }
 }

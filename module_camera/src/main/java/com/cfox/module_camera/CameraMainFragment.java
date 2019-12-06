@@ -5,7 +5,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
@@ -25,12 +24,12 @@ public class CameraMainFragment extends BaseFragment {
     private AutoFitTextureView mPreviewView;
     private SurfaceHelper mSurfaceHelper;
     private AutoFitTextureView mPreviewView2;
-    private CameraController mCameraController;
+    private EsyCameraController mCameraController;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mCameraController = new CameraController();
+        mCameraController = new EsyCameraController();
     }
 
     @Nullable

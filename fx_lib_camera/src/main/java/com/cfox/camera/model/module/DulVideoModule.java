@@ -3,13 +3,12 @@ package com.cfox.camera.model.module;
 import android.util.Log;
 import android.util.Size;
 
-import com.cfox.camera.camera.session.helper.ICameraSessionHelper;
 import com.cfox.camera.camera.session.helper.IDulVideoSessionHelper;
 import com.cfox.camera.model.module.business.IBusiness;
 import com.cfox.camera.surface.ISurfaceHelper;
-import com.cfox.camera.utils.FxRe;
-import com.cfox.camera.utils.FxRequest;
-import com.cfox.camera.utils.FxResult;
+import com.cfox.camera.utils.Es;
+import com.cfox.camera.utils.EsRequest;
+import com.cfox.camera.utils.EsResult;
 
 import io.reactivex.Observable;
 
@@ -22,12 +21,12 @@ public class DulVideoModule extends BaseModule {
     }
 
     @Override
-    public Observable<FxResult> requestPreview(FxRequest request) {
-        ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);
+    public Observable<EsResult> requestPreview(EsRequest request) {
+        ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(Es.Key.SURFACE_HELPER);
 
-        request.put(FxRe.Key.SURFACE_CLASS, surfaceHelper.getSurfaceClass());
+        request.put(Es.Key.SURFACE_CLASS, surfaceHelper.getSurfaceClass());
 
-        Size previewSizeForReq = (Size) request.getObj(FxRe.Key.PREVIEW_SIZE);
+        Size previewSizeForReq = (Size) request.getObj(Es.Key.PREVIEW_SIZE);
         Size previewSize = getBusiness().getPreviewSize(previewSizeForReq, mDulVideoSessionHelper.getPreviewSize(request));
         Log.d(TAG, "requestPreview: " + previewSize);
         surfaceHelper.setAspectRatio(previewSize);

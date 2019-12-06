@@ -3,7 +3,7 @@ package com.cfox.camera.utils;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FxResult {
+public class EsResult {
     private Map<String, Object> mMapObject = new HashMap<>();
 
     public void put(String key, Object value) {

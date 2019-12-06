@@ -6,16 +6,16 @@ import android.content.Context;
 import com.cfox.camera.camera.CameraInfoHelper;
 import com.cfox.camera.utils.ThreadHandlerManager;
 
-public class FxCamera {
+public class EsCamera {
     private Context mContext;
-    private FxCameraManager mCameraManager;
+    private EsCameraManager mCameraManager;
 
-    private FxCamera() {
+    private EsCamera() {
     }
 
-    private FxCamera attr(Context context) {
+    private EsCamera attr(Context context) {
         mContext = context.getApplicationContext();
-        mCameraManager = new FxCameraManager(mContext);
+        mCameraManager = new EsCameraManager(mContext);
         initCamera();
         return this;
     }
@@ -25,16 +25,16 @@ public class FxCamera {
                 ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_OTHER).getHandler());
     }
 
-    public static FxCamera init(Context context) {
-        return Create.sFxCamera.attr(context);
+    public static EsCamera init(Context context) {
+        return Create.sEsCamera.attr(context);
     }
 
-    public static FxCamera getInstance() {
-        Create.sFxCamera.checkContextUNLL();
-        return Create.sFxCamera;
+    public static EsCamera getInstance() {
+        Create.sEsCamera.checkContextUNLL();
+        return Create.sEsCamera;
     }
 
-    public FxCameraManager getCameraManager() {
+    public EsCameraManager getCameraManager() {
         return mCameraManager;
     }
 
@@ -49,13 +49,13 @@ public class FxCamera {
 
     private void checkContextUNLL() {
         if (mContext == null) {
-            throw new RuntimeException("FxCameraEngine context is null , " +
-                    "place use FxCamera init(Context context) method set context !!!!!!!");
+            throw new RuntimeException("Context is null , " +
+                    "place use EsCamera init(Context context) method set context !!!!!!!");
         }
     }
 
     private static class Create {
         @SuppressLint("StaticFieldLeak")
-        static FxCamera sFxCamera = new FxCamera();
+        static EsCamera sEsCamera = new EsCamera();
     }
 }

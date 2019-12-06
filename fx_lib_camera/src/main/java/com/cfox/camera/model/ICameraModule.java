@@ -2,18 +2,18 @@ package com.cfox.camera.model;
 
 import android.util.Range;
 
-import com.cfox.camera.utils.FxRequest;
-import com.cfox.camera.utils.FxResult;
+import com.cfox.camera.utils.EsRequest;
+import com.cfox.camera.utils.EsResult;
 
 import io.reactivex.Observable;
 
 public interface ICameraModule {
 
-    Observable<FxResult> startPreview(FxRequest request);
+    Observable<EsResult> startPreview(EsRequest request);
 
     void initModule(CameraModule.ModuleFlag moduleFlag);
-    Observable<FxResult> sendCameraConfig(FxRequest request);
-    Observable<FxResult> capture(FxRequest request);
-    Observable<FxResult> stop();
-    Range<Integer> getEvRange();
+    Observable<EsResult> sendCameraConfig(EsRequest request);
+    Observable<EsResult> capture(EsRequest request);
+    Observable<EsResult> stop(EsRequest request);
+    Range<Integer> getEvRange(EsRequest request);
 }

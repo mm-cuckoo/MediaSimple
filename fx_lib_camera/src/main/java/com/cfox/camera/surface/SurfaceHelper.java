@@ -1,13 +1,13 @@
 package com.cfox.camera.surface;
 
 import android.graphics.SurfaceTexture;
-import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 import android.view.TextureView;
 
 import com.cfox.camera.AutoFitTextureView;
-import com.cfox.camera.utils.FxResult;
+import com.cfox.camera.log.EsLog;
+import com.cfox.camera.utils.EsResult;
 import com.cfox.camera.utils.ThreadHandlerManager;
 
 import java.util.ArrayList;
@@ -19,7 +19,6 @@ import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 
 public class SurfaceHelper implements ISurfaceHelper {
-    private static final String TAG = "SurfaceHelper";
     private final Object obj = new Object();
     private AutoFitTextureView mTextureView;
     private List<Surface> mSurfaces;
@@ -43,11 +42,11 @@ public class SurfaceHelper implements ISurfaceHelper {
         return mTextureView.getSurfaceTexture();
     }
 
-    public Observable<FxResult> isAvailable() {
-        return Observable.create(new ObservableOnSubscribe<FxResult>() {
+    public Observable<EsResult> isAvailable() {
+        return Observable.create(new ObservableOnSubscribe<EsResult>() {
             @Override
-            public void subscribe(ObservableEmitter<FxResult> emitter) throws Exception {
-                Log.d(TAG, "subscribe: ..........");
+            public void subscribe(ObservableEmitter<EsResult> emitter) throws Exception {
+                EsLog.d("subscribe: ..........");
                 if (!mTextureView.isAvailable()) {
                     synchronized (obj) {
                         if (!mTextureView.isAvailable()) {
@@ -59,9 +58,9 @@ public class SurfaceHelper implements ISurfaceHelper {
                     }
                 }
 
-                Log.d(TAG, "SurfaceTexture isAvailable width:" + mTextureView.getWidth()  + "  height:" + mTextureView.getHeight());
+                EsLog.d("SurfaceTexture isAvailable width:" + mTextureView.getWidth()  + "  height:" + mTextureView.getHeight());
                 mSurfaces.add(getSurface());
-                emitter.onNext(new FxResult());
+                emitter.onNext(new EsResult());
             }
         }).subscribeOn(AndroidSchedulers.from(ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_OTHER).getLooper()));
     }
@@ -73,9 +72,9 @@ public class SurfaceHelper implements ISurfaceHelper {
 
     @Override
     public void addSurface(Surface surface) {
-        Log.d(TAG, "addSurface: "  + (!mSurfaces.contains(surface)));
+        EsLog.d("addSurface: "  + (!mSurfaces.contains(surface)));
         if (!mSurfaces.contains(surface)) {
-            Log.d(TAG, "addSurface: .......");
+            EsLog.d("addSurface: .......");
             mSurfaces.add(surface);
         }
     }
@@ -87,7 +86,7 @@ public class SurfaceHelper implements ISurfaceHelper {
 
     @Override
     public void setAspectRatio(Size size) {
-        Log.d(TAG, "setAspectRatio: size width:" + size.getWidth() + "  height:" + size.getHeight());
+        EsLog.d("setAspectRatio: size width:" + size.getWidth() + "  height:" + size.getHeight());
         mPreviewSize = size;
         mTextureView.setAspectRatio(size.getHeight(), size.getWidth());
     }
@@ -95,7 +94,7 @@ public class SurfaceHelper implements ISurfaceHelper {
     private TextureView.SurfaceTextureListener mTextureListener = new TextureView.SurfaceTextureListener() {
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-            Log.d(TAG, "onSurfaceTextureAvailable: .......width:" + width  + "   height:" + height  + "     mPreviewSize:" + mPreviewSize);
+            EsLog.d("onSurfaceTextureAvailable: .......width:" + width  + "   height:" + height  + "     mPreviewSize:" + mPreviewSize);
             mTextureView.getSurfaceTexture().setDefaultBufferSize(mPreviewSize.getWidth(), mPreviewSize.getHeight());
             sendNotify();
 
@@ -103,18 +102,18 @@ public class SurfaceHelper implements ISurfaceHelper {
 
         @Override
         public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-            Log.d(TAG, "onSurfaceTextureSizeChanged: ....");
+            EsLog.d("onSurfaceTextureSizeChanged: ....");
         }
 
         @Override
         public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-            Log.d(TAG, "onSurfaceTextureDestroyed: ,,,,,,,");
+            EsLog.d("onSurfaceTextureDestroyed: ,,,,,,,");
             return false;
         }
 
         @Override
         public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-//            Log.d(TAG, "onSurfaceTextureUpdated: ,,,,,,,,");
+//            EsLog.d("onSurfaceTextureUpdated: ,,,,,,,,");
 
         }
     };

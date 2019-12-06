@@ -2,8 +2,8 @@ package com.cfox.camera.model.module;
 
 import com.cfox.camera.camera.session.helper.IVideoSessionHelper;
 import com.cfox.camera.model.module.business.IBusiness;
-import com.cfox.camera.utils.FxRequest;
-import com.cfox.camera.utils.FxResult;
+import com.cfox.camera.utils.EsRequest;
+import com.cfox.camera.utils.EsResult;
 
 import io.reactivex.Observable;
 
@@ -13,7 +13,7 @@ public class VideoModule extends BaseModule {
     }
 
     @Override
-    public Observable<FxResult> requestPreview(FxRequest request) {
+    public Observable<EsResult> requestPreview(EsRequest request) {
         return startPreview(request);
     }
 }

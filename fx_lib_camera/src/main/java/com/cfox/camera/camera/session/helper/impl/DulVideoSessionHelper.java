@@ -3,8 +3,8 @@ package com.cfox.camera.camera.session.helper.impl;
 import android.graphics.ImageFormat;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CaptureRequest;
-import android.media.ImageReader;
 import android.util.Log;
+import android.util.Range;
 import android.util.Size;
 
 import com.cfox.camera.camera.ICameraInfo;
@@ -13,14 +13,16 @@ import com.cfox.camera.camera.session.ISessionManager;
 import com.cfox.camera.camera.session.helper.ICameraHelper;
 import com.cfox.camera.camera.session.helper.IDulVideoSessionHelper;
 import com.cfox.camera.surface.ISurfaceHelper;
-import com.cfox.camera.utils.FxRe;
-import com.cfox.camera.utils.FxRequest;
-import com.cfox.camera.utils.FxResult;
+import com.cfox.camera.utils.Es;
+import com.cfox.camera.utils.EsRequest;
+import com.cfox.camera.utils.EsResult;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
 
 public class DulVideoSessionHelper extends AbsCameraSessionHelper implements IDulVideoSessionHelper {
     private static final String TAG = "DulVideoSessionHelper";
@@ -37,51 +39,68 @@ public class DulVideoSessionHelper extends AbsCameraSessionHelper implements IDu
     }
 
     @Override
-    public void applyPreviewRepeatingBuilder(FxRequest request) throws CameraAccessException {
-        String cameraId = request.getString(FxRe.Key.CAMERA_ID);
+    public void applyPreviewRepeatingBuilder(EsRequest request) throws CameraAccessException {
+        String cameraId = request.getString(Es.Key.CAMERA_ID);
         ICameraHelper cameraHelper = getCameraHelperForId(cameraId);
-        ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);
+        ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(Es.Key.SURFACE_HELPER);
         CaptureRequest.Builder builder = getCameraSessionForId(cameraId).onCreateRequestBuilder(cameraHelper.createPreviewTemplate());
-
+        mPreviewBuilderMap.put(cameraId, builder);
         builder.addTarget(surfaceHelper.getSurface());
-        request.put(FxRe.Key.REQUEST_BUILDER, builder);
+        request.put(Es.Key.REQUEST_BUILDER, builder);
     }
 
     @Override
-    public ICameraSession getCameraSession(FxRequest request) {
-        String cameraId = request.getString(FxRe.Key.CAMERA_ID);
+    public ICameraSession getCameraSession(EsRequest request) {
+        String cameraId = request.getString(Es.Key.CAMERA_ID);
         // TODO: 19-12-5 check camera id
         return getCameraSessionForId(cameraId);
     }
 
     @Override
-    public Observable<FxResult> onSendRepeatingRequest(FxRequest request) {
-        return null;
+    public Observable<EsResult> onSendRepeatingRequest(EsRequest request) {
+        String cameraId = request.getString(Es.Key.CAMERA_ID);
+        request.put(Es.Key.REQUEST_BUILDER, mPreviewBuilderMap.get(cameraId));
+        return getCameraSessionForId(cameraId).onRepeatingRequest(request);
     }
 
     @Override
-    public Size[] getPictureSize(FxRequest request) {
-        String cameraId = request.getString(FxRe.Key.CAMERA_ID);
-        int imageFormat = request.getInt(FxRe.Key.IMAGE_FORMAT, ImageFormat.JPEG);
+    public Size[] getPictureSize(EsRequest request) {
+        String cameraId = request.getString(Es.Key.CAMERA_ID);
+        int imageFormat = request.getInt(Es.Key.IMAGE_FORMAT, ImageFormat.JPEG);
         return getCameraHelperForId(cameraId).getPictureSize(imageFormat);
     }
 
     @Override
-    public Size[] getPreviewSize(FxRequest request) {
-        String cameraId = request.getString(FxRe.Key.CAMERA_ID);
+    public Size[] getPreviewSize(EsRequest request) {
+        String cameraId = request.getString(Es.Key.CAMERA_ID);
         Log.d(TAG, "getPreviewSize: camera id:" + cameraId);
-        Class klass = (Class) request.getObj(FxRe.Key.SURFACE_CLASS);
+        Class klass = (Class) request.getObj(Es.Key.SURFACE_CLASS);
         return getCameraHelperForId(cameraId).getPreviewSize(klass);
     }
 
     @Override
-    public int getSensorOrientation() {
-        return 0;
+    public int getSensorOrientation(EsRequest request) {
+        String cameraId = request.getString(Es.Key.CAMERA_ID);
+        return getCameraHelperForId(cameraId).getSensorOrientation();
     }
 
     @Override
-    public Observable<FxResult> close() {
-        return null;
+    public Observable<EsResult> close(EsRequest request) {
+        Log.d(TAG, "close: dul video close camera s");
+        return Observable.create(new ObservableOnSubscribe<EsResult>() {
+            @Override
+            public void subscribe(ObservableEmitter<EsResult> emitter) throws Exception {
+                for (ICameraSession cameraSession : mCameraSessionMap.values()) {
+                    cameraSession.onClose();
+                }
+            }
+        });
+    }
+
+    @Override
+    public Range<Integer> getEvRange(EsRequest request) {
+        String cameraId = request.getString(Es.Key.CAMERA_ID);
+        return getCameraHelperForId(cameraId).getEvRange();
     }
 
     private ICameraSession getCameraSessionForId(String cameraId) {

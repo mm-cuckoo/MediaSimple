@@ -7,8 +7,9 @@ import android.os.Handler;
 import android.util.Log;
 import android.util.Size;
 
-import com.cfox.camera.utils.FxRe;
-import com.cfox.camera.utils.FxRequest;
+import com.cfox.camera.log.EsLog;
+import com.cfox.camera.utils.Es;
+import com.cfox.camera.utils.EsRequest;
 import com.cfox.camera.utils.ThreadHandlerManager;
 
 import java.io.File;
@@ -32,11 +33,11 @@ public class ImageReaderHelper implements IReaderHelper {
     }
 
     @Override
-    public ImageReader createImageReader(FxRequest request) {
-        Size picSize = (Size) request.getObj(FxRe.Key.PIC_SIZE);
-        int imageFormat = request.getInt(FxRe.Key.IMAGE_FORMAT, ImageFormat.JPEG);
-        final String filePath = request.getString(FxRe.Key.PIC_FILE_PATH);
-        Log.d(TAG, "createImageReader: pic width:" + picSize.getWidth() + "  pic height:" + picSize.getHeight()  + "   format:" + imageFormat);
+    public ImageReader createImageReader(EsRequest request) {
+        Size picSize = (Size) request.getObj(Es.Key.PIC_SIZE);
+        int imageFormat = request.getInt(Es.Key.IMAGE_FORMAT, ImageFormat.JPEG);
+        final String filePath = request.getString(Es.Key.PIC_FILE_PATH);
+        EsLog.d("createImageReader: pic width:" + picSize.getWidth() + "  pic height:" + picSize.getHeight()  + "   format:" + imageFormat);
         ImageReader imageReader = ImageReader.newInstance(picSize.getWidth(), picSize.getHeight(), imageFormat, 2);
         mImageReaders.add(imageReader);
         imageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
@@ -44,7 +45,7 @@ public class ImageReaderHelper implements IReaderHelper {
             public void onImageAvailable(ImageReader reader) {
                 SimpleDateFormat format = new SimpleDateFormat("'/PIC'_yyyyMMdd_HHmmss'.jpeg'", Locale.getDefault());
                 String fileName = format.format(new Date());
-                Log.d(TAG, "createImageReader: pic file path:" + (filePath + fileName));
+                EsLog.d("createImageReader: pic file path:" + (filePath + fileName));
                 mImageReaderHandler.post(new ImageSaver(reader.acquireNextImage(), new File(filePath + fileName)));
             }
         }, mImageReaderHandler);
@@ -52,16 +53,16 @@ public class ImageReaderHelper implements IReaderHelper {
     }
 
     @Override
-    public ImageReader createPreviewImageReader(FxRequest request) {
-        Size picSize = (Size) request.getObj(FxRe.Key.PREVIEW_SIZE);
-        int imageFormat = request.getInt(FxRe.Key.IMAGE_FORMAT, ImageFormat.JPEG);
-        Log.d(TAG, "createImageReader: pic width:" + picSize.getWidth() + "  pic height:" + picSize.getHeight()  + "   format:" + imageFormat);
+    public ImageReader createPreviewImageReader(EsRequest request) {
+        Size picSize = (Size) request.getObj(Es.Key.PREVIEW_SIZE);
+        int imageFormat = request.getInt(Es.Key.IMAGE_FORMAT, ImageFormat.JPEG);
+        EsLog.d("createImageReader: pic width:" + picSize.getWidth() + "  pic height:" + picSize.getHeight()  + "   format:" + imageFormat);
         ImageReader imageReader = ImageReader.newInstance(picSize.getWidth(), picSize.getHeight(), ImageFormat.YUV_420_888, 2);
         mImageReaders.add(imageReader);
         imageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
             @Override
             public void onImageAvailable(ImageReader reader) {
-                Log.d(TAG, "onImageAvailable: preview frame ....");
+                EsLog.d("onImageAvailable: preview frame ....");
                 Image image = reader.acquireNextImage();
                 if (image == null) return;
                 image.close();

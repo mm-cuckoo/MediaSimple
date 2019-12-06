@@ -1,13 +1,13 @@
 package com.cfox.camera.camera.session.helper;
 
 
-import com.cfox.camera.utils.FxRequest;
-import com.cfox.camera.utils.FxResult;
+import com.cfox.camera.utils.EsRequest;
+import com.cfox.camera.utils.EsResult;
 
 import io.reactivex.Observable;
 
 public interface IPhotoSessionHelper extends ICameraSessionHelper/*extends ISessionHelper*/ {
-    Observable<FxResult> capture(FxRequest request);
-    Observable<FxResult> captureStillPicture(FxRequest request);
+    Observable<EsResult> capture(EsRequest request);
+    Observable<EsResult> captureStillPicture(EsRequest request);
 
 }

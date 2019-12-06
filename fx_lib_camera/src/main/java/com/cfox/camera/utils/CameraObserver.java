@@ -1,12 +1,12 @@
 package com.cfox.camera.utils;
 
-import android.util.Log;
+
+import com.cfox.camera.log.EsLog;
 
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 
 public class CameraObserver<T> implements Observer<T> {
-    private static final String TAG = "CameraObserver";
     @Override
     public void onSubscribe(Disposable d) {
 
@@ -19,7 +19,7 @@ public class CameraObserver<T> implements Observer<T> {
 
     @Override
     public void onError(Throwable e) {
-        Log.d(TAG, "onError: " + e);
+        EsLog.d("onError: " + e);
 
     }
 

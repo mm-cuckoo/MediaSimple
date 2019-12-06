@@ -3,7 +3,7 @@ package com.cfox.camera.utils;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FxRequest {
+public class EsRequest {
 
     private Map<String, Object> mMapObject = new HashMap<>();
 
@@ -72,7 +72,7 @@ public class FxRequest {
 
     @Override
     public String toString() {
-        return "FxRequest{" +
+        return "EsRequest{" +
                 "mMapObject=" + mMapObject +
                 '}';
     }

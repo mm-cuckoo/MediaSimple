@@ -1,15 +1,17 @@
 package com.cfox.camera.model.module;
 
-import android.graphics.ImageFormat;
 import android.util.Log;
 import android.util.Size;
 
+import com.cfox.camera.camera.IReaderHelper;
+import com.cfox.camera.camera.ImageReaderHelper;
 import com.cfox.camera.camera.session.helper.IPhotoSessionHelper;
+import com.cfox.camera.log.EsLog;
 import com.cfox.camera.model.module.business.IBusiness;
 import com.cfox.camera.surface.ISurfaceHelper;
-import com.cfox.camera.utils.FxRe;
-import com.cfox.camera.utils.FxRequest;
-import com.cfox.camera.utils.FxResult;
+import com.cfox.camera.utils.Es;
+import com.cfox.camera.utils.EsRequest;
+import com.cfox.camera.utils.EsResult;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
@@ -18,22 +20,22 @@ import io.reactivex.functions.Function;
 public class PhotoModule extends BaseModule {
     private static final String TAG = "PhotoModule";
     private IPhotoSessionHelper mPhotoSessionHelper;
+    private IReaderHelper mImageReaderHelper;
     public PhotoModule(IPhotoSessionHelper photoSessionHelper, IBusiness business) {
         super(photoSessionHelper, business);
         mPhotoSessionHelper = photoSessionHelper;
+        mImageReaderHelper = new ImageReaderHelper();
     }
 
     @Override
-    public Observable<FxResult> requestPreview(FxRequest request) {
-        ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(FxRe.Key.SURFACE_HELPER);
-
-        request.put(FxRe.Key.SURFACE_CLASS, surfaceHelper.getSurfaceClass());
-
-        Size previewSizeForReq = (Size) request.getObj(FxRe.Key.PREVIEW_SIZE);
+    public Observable<EsResult> requestPreview(EsRequest request) {
+        ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(Es.Key.SURFACE_HELPER);
+        surfaceHelper.addSurface(mImageReaderHelper.createImageReader(request).getSurface());
+        request.put(Es.Key.SURFACE_CLASS, surfaceHelper.getSurfaceClass());
+        Size previewSizeForReq = (Size) request.getObj(Es.Key.PREVIEW_SIZE);
         Size previewSize = getBusiness().getPreviewSize(previewSizeForReq, mPhotoSessionHelper.getPreviewSize(request));
         surfaceHelper.setAspectRatio(previewSize);
-
-        Log.d(TAG, "requestPreview: preview width:" + previewSize.getWidth()  +
+        EsLog.d("requestPreview: preview width:" + previewSize.getWidth()  +
                 "   preview height:" + previewSize.getHeight()  +
                 "   preview size:" + previewSize);
 
@@ -42,20 +44,25 @@ public class PhotoModule extends BaseModule {
     }
 
     @Override
-    public Observable<FxResult> requestCapture(FxRequest request) {
-        Log.d(TAG, "requestCapture: ......");
-        int sensorOrientation = mPhotoSessionHelper.getSensorOrientation();
+    public void onRequestStop() {
+        mImageReaderHelper.closeImageReaders();
+    }
+
+    @Override
+    public Observable<EsResult> requestCapture(EsRequest request) {
+        EsLog.d("requestCapture: ......");
+        int sensorOrientation = mPhotoSessionHelper.getSensorOrientation(request);
         final int picOrientation = getBusiness().getPictureOrientation(sensorOrientation);
-        request.put(FxRe.Key.PIC_ORIENTATION, picOrientation);
-        Log.d(TAG, "capture: " + request);
+        request.put(Es.Key.PIC_ORIENTATION, picOrientation);
+        EsLog.d("capture: " + request);
 //        mBuilderPack.preCaptureBuilder(mBuilder);
 //        request.put(FxRe.Key.REQUEST_BUILDER, mBuilder);
 //        final int picOrientation = request.getInt(FxRe.Key.PIC_ORIENTATION);
-        return mPhotoSessionHelper.capture(request).flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
+        return mPhotoSessionHelper.capture(request).flatMap(new Function<EsResult, ObservableSource<EsResult>>() {
             @Override
-            public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
+            public ObservableSource<EsResult> apply(EsResult fxResult) throws Exception {
 //                Log.d(TAG, "apply: .....222..111......"  + mImageReaders.size()  +  "   picOrientation:" + picOrientation );
-                FxRequest stRequest = new FxRequest();
+                EsRequest stRequest = new EsRequest();
 //                CaptureRequest.Builder captureBuilder = mCameraSession.onCreateRequestBuilder(mPhotoCameraHelper.createStillCaptureTemplate());
 //                for (ImageReader reader : mImageReaders) {
 //                    Log.d(TAG, "apply:add target:width:"  + reader.getWidth()  + "  height: " + reader.getHeight()  + "  ImageFormat:" + reader.getImageFormat());
@@ -67,14 +74,14 @@ public class PhotoModule extends BaseModule {
 //                stRequest.put(FxRe.Key.REQUEST_BUILDER, captureBuilder);
                 return mPhotoSessionHelper.captureStillPicture(stRequest);
             }
-        }).flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
+        }).flatMap(new Function<EsResult, ObservableSource<EsResult>>() {
             @Override
-            public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
-                Log.d(TAG, "apply: re requestCapture ");
+            public ObservableSource<EsResult> apply(EsResult fxResult) throws Exception {
+                EsLog.d("apply: re requestCapture ");
 //                mBuilderPack.previewCaptureBuilder(mBuilder);
-                FxRequest previewRequest = new FxRequest();
+                EsRequest previewRequest = new EsRequest();
 //                previewRequest.put(FxRe.Key.REQUEST_BUILDER, mBuilder);
-                previewRequest.put(FxRe.Key.PREVIEW_CAPTURE, true);
+                previewRequest.put(Es.Key.PREVIEW_CAPTURE, true);
                 return mPhotoSessionHelper.capture(previewRequest);
             }
         })/*.flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
