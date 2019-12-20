@@ -1,0 +1,167 @@
+Index: module_camera/src/main/java/com/cfox/module_camera/CameraMainFragment.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.module_camera;\n\nimport android.os.Bundle;\nimport android.util.Log;\nimport android.view.LayoutInflater;\nimport android.view.View;\nimport android.view.ViewGroup;\nimport android.widget.Button;\n\nimport androidx.annotation.NonNull;\nimport androidx.annotation.Nullable;\n\nimport com.alibaba.android.arouter.facade.annotation.Route;\nimport com.cfox.camera.AutoFitTextureView;\nimport com.cfox.camera.surface.SurfaceHelper;\nimport com.cfox.lib_common.arouter.RouterPath;\nimport com.cfox.lib_common.base.BaseFragment;\n\n\n@Route(path = RouterPath.MAIN_CAMERA_FG)\npublic class CameraMainFragment extends BaseFragment {\n    private static final String TAG = \"CameraMainFragment\";\n    private AutoFitTextureView mPreviewView;\n    private SurfaceHelper mSurfaceHelper;\n    private CameraController mCameraController;\n\n    @Override\n    public void onCreate(@Nullable Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        mCameraController = new CameraController();\n    }\n\n    @Nullable\n    @Override\n    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {\n        return inflater.inflate(R.layout.fragment_camera_main, container, false);\n    }\n\n    @Override\n    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {\n        super.onViewCreated(view, savedInstanceState);\n\n        mPreviewView = view.findViewById(R.id.preview_view);\n\n        view.findViewById(R.id.btn_open_flash).setOnClickListener(new View.OnClickListener() {\n            @Override\n            public void onClick(View v) {\n                mCameraController.openFlash();\n//                mCameraController.capture();\n            }\n        });\n\n        view.findViewById(R.id.btn_close_flash).setOnClickListener(new View.OnClickListener() {\n            @Override\n            public void onClick(View v) {\n                mCameraController.closeFlash();\n            }\n        });\n\n        view.findViewById(R.id.btn_open_back).setOnClickListener(new View.OnClickListener() {\n            @Override\n            public void onClick(View v) {\n                mSurfaceHelper = new SurfaceHelper(mPreviewView);\n                mCameraController.backCamera(mSurfaceHelper);\n            }\n        });\n        view.findViewById(R.id.btn_open_font).setOnClickListener(new View.OnClickListener() {\n            @Override\n            public void onClick(View v) {\n                mSurfaceHelper = new SurfaceHelper(mPreviewView);\n                mCameraController.fontCamera(mSurfaceHelper);\n            }\n        });\n\n        view.findViewById(R.id.btn_capture).setOnClickListener(new View.OnClickListener() {\n            @Override\n            public void onClick(View v) {\n                mCameraController.capture();\n            }\n        });\n\n    }\n\n    @Override\n    public void onResume() {\n        super.onResume();\n        mSurfaceHelper = new SurfaceHelper(mPreviewView);\n        Log.d(TAG, \"onResume: .......\");\n        mCameraController.backCamera(mSurfaceHelper);\n    }\n\n    @Override\n    public void onPause() {\n        super.onPause();\n        Log.d(TAG, \"onPause: ........\");\n        if (mCameraController == null) return;\n        mCameraController.stopCamera();\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- module_camera/src/main/java/com/cfox/module_camera/CameraMainFragment.java	(revision f143b3926991bd17b8c4f37affb6ae269c847230)
++++ module_camera/src/main/java/com/cfox/module_camera/CameraMainFragment.java	(date 1573472487000)
+@@ -41,12 +41,24 @@
+         super.onViewCreated(view, savedInstanceState);
+ 
+         mPreviewView = view.findViewById(R.id.preview_view);
++        view.findViewById(R.id.btn_torch_flash).setOnClickListener(new View.OnClickListener() {
++            @Override
++            public void onClick(View v) {
++                mCameraController.torchFlash();
++            }
++        });
++
++        view.findViewById(R.id.btn_auto_flash).setOnClickListener(new View.OnClickListener() {
++            @Override
++            public void onClick(View v) {
++                mCameraController.autoFlash();
++            }
++        });
+ 
+         view.findViewById(R.id.btn_open_flash).setOnClickListener(new View.OnClickListener() {
+             @Override
+             public void onClick(View v) {
+                 mCameraController.openFlash();
+-//                mCameraController.capture();
+             }
+         });
+ 
+Index: module_camera/src/main/java/com/cfox/module_camera/CameraController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.module_camera;\n\n\nimport android.hardware.camera2.CaptureRequest;\nimport android.os.Environment;\nimport android.util.Size;\n\nimport com.cfox.camera.CameraConfig;\nimport com.cfox.camera.FxCamera;\nimport com.cfox.camera.FxCameraManager;\nimport com.cfox.camera.controller.IPhotoController;\nimport com.cfox.camera.surface.SurfaceHelper;\nimport com.cfox.camera.utils.FxRe;\nimport com.cfox.camera.utils.FxRequest;\n\nclass CameraController {\n    private FxCameraManager mFxCameraManager;\n    private IPhotoController mCameraController;\n\n    public CameraController() {\n        mFxCameraManager = FxCamera.getInstance().getCameraManager();\n    }\n\n    void backCamera(SurfaceHelper helper) {\n\n        FxRequest request = getRequest();\n        request.put(FxRe.Key.CAMERA_ID, FxRe.Camera.ID.BACK.id);\n        request.put(FxRe.Key.SURFACE_HELPER, helper);\n        CameraConfig cameraConfig = CameraConfig.getInstance();\n//        cameraConfig.push(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);\n//        cameraConfig.push(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);\n        cameraConfig.push(CaptureRequest.FLASH_MODE, FxRe.FLASH_TYPE.CLOSE);\n        request.put(FxRe.Key.CAMERA_CONFIG, cameraConfig);\n        mCameraController = mFxCameraManager.photo();\n        mCameraController.onStartPreview(request);\n    }\n\n    void fontCamera(SurfaceHelper helper) {\n        FxRequest request = getRequest();\n        request.put(FxRe.Key.CAMERA_ID, FxRe.Camera.ID.FONT.id);\n        request.put(FxRe.Key.SURFACE_HELPER, helper);\n        mCameraController.onStartPreview(request);\n    }\n\n\n    void stopCamera() {\n        mCameraController.onStop();\n    }\n\n\n    private FxRequest getRequest() {\n        FxRequest request = new FxRequest();\n        Size previewSize = new Size(1920, 1080);\n        request.put(FxRe.Key.PREVIEW_SIZE, previewSize);\n        Size picSize = new Size(1920, 1080);\n        request.put(FxRe.Key.PIC_SIZE, picSize);\n        request.put(FxRe.Key.PIC_FILE_PATH, Environment.getExternalStorageDirectory().getAbsoluteFile().getPath());\n        return request;\n    }\n\n    void openFlash() {\n        CameraConfig cameraConfig = CameraConfig.getInstance();\n        cameraConfig.push(CaptureRequest.FLASH_MODE, FxRe.FLASH_TYPE.OPEN);\n        FxRequest request = new FxRequest();\n        request.put(FxRe.Key.CAMERA_CONFIG, cameraConfig);\n        mCameraController.onCameraConfig(request);\n    }\n\n\n    void closeFlash() {\n        CameraConfig cameraConfig = CameraConfig.getInstance();\n        cameraConfig.push(CaptureRequest.FLASH_MODE, FxRe.FLASH_TYPE.CLOSE);\n        FxRequest request = new FxRequest();\n        request.put(FxRe.Key.CAMERA_CONFIG, cameraConfig);\n        mCameraController.onCameraConfig(request);\n    }\n\n    void capture() {\n        FxRequest request = new FxRequest();\n//        CameraConfig cameraConfig = CameraConfig.getInstance();\n//        cameraConfig.push(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);\n//        cameraConfig.push(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);\n//        cameraConfig.push(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);\n//        request.put(FxRe.Key.CAMERA_CONFIG, cameraConfig);\n        mCameraController.onCapture(request);\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- module_camera/src/main/java/com/cfox/module_camera/CameraController.java	(revision f143b3926991bd17b8c4f37affb6ae269c847230)
++++ module_camera/src/main/java/com/cfox/module_camera/CameraController.java	(date 1573472576000)
+@@ -27,8 +27,6 @@
+         request.put(FxRe.Key.CAMERA_ID, FxRe.Camera.ID.BACK.id);
+         request.put(FxRe.Key.SURFACE_HELPER, helper);
+         CameraConfig cameraConfig = CameraConfig.getInstance();
+-//        cameraConfig.push(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+-//        cameraConfig.push(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+         cameraConfig.push(CaptureRequest.FLASH_MODE, FxRe.FLASH_TYPE.CLOSE);
+         request.put(FxRe.Key.CAMERA_CONFIG, cameraConfig);
+         mCameraController = mFxCameraManager.photo();
+@@ -67,6 +65,22 @@
+     }
+ 
+ 
++    void torchFlash() {
++        CameraConfig cameraConfig = CameraConfig.getInstance();
++        cameraConfig.push(CaptureRequest.FLASH_MODE, FxRe.FLASH_TYPE.TORCH);
++        FxRequest request = new FxRequest();
++        request.put(FxRe.Key.CAMERA_CONFIG, cameraConfig);
++        mCameraController.onCameraConfig(request);
++    }
++
++    void autoFlash() {
++        CameraConfig cameraConfig = CameraConfig.getInstance();
++        cameraConfig.push(CaptureRequest.FLASH_MODE, FxRe.FLASH_TYPE.AUTO);
++        FxRequest request = new FxRequest();
++        request.put(FxRe.Key.CAMERA_CONFIG, cameraConfig);
++        mCameraController.onCameraConfig(request);
++    }
++
+     void closeFlash() {
+         CameraConfig cameraConfig = CameraConfig.getInstance();
+         cameraConfig.push(CaptureRequest.FLASH_MODE, FxRe.FLASH_TYPE.CLOSE);
+@@ -77,11 +91,6 @@
+ 
+     void capture() {
+         FxRequest request = new FxRequest();
+-//        CameraConfig cameraConfig = CameraConfig.getInstance();
+-//        cameraConfig.push(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+-//        cameraConfig.push(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
+-//        cameraConfig.push(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
+-//        request.put(FxRe.Key.CAMERA_CONFIG, cameraConfig);
+         mCameraController.onCapture(request);
+     }
+ }
+Index: module_camera/src/main/res/layout/fragment_camera_main.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"utf-8\"?>\n<FrameLayout xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:orientation=\"vertical\" android:layout_width=\"match_parent\"\n    android:layout_height=\"match_parent\">\n\n    <com.cfox.camera.AutoFitTextureView\n        android:id=\"@+id/preview_view\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"match_parent\" />\n\n    <LinearLayout\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\">\n        <Button\n            android:id=\"@+id/btn_open_flash\"\n            android:text=\"open flash\"\n            android:layout_width=\"wrap_content\"\n            android:layout_height=\"wrap_content\" />\n\n        <Button\n            android:id=\"@+id/btn_close_flash\"\n            android:text=\"close flash\"\n            android:layout_width=\"wrap_content\"\n            android:layout_height=\"wrap_content\" />\n    </LinearLayout>\n\n\n    <LinearLayout\n        android:layout_gravity=\"bottom\"\n        android:layout_width=\"match_parent\"\n        android:layout_height=\"wrap_content\">\n        <Button\n            android:id=\"@+id/btn_open_back\"\n            android:text=\"back camera\"\n            android:layout_width=\"wrap_content\"\n            android:layout_height=\"wrap_content\" />\n\n        <Button\n            android:id=\"@+id/btn_open_font\"\n            android:text=\"font camera\"\n            android:layout_width=\"wrap_content\"\n            android:layout_height=\"wrap_content\" />\n        <Button\n            android:id=\"@+id/btn_capture\"\n            android:text=\"do capture\"\n            android:layout_width=\"wrap_content\"\n            android:layout_height=\"wrap_content\" />\n    </LinearLayout>\n\n</FrameLayout>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- module_camera/src/main/res/layout/fragment_camera_main.xml	(revision f143b3926991bd17b8c4f37affb6ae269c847230)
++++ module_camera/src/main/res/layout/fragment_camera_main.xml	(date 1573472546000)
+@@ -11,15 +11,28 @@
+     <LinearLayout
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content">
++
++        <Button
++            android:id="@+id/btn_torch_flash"
++            android:text="torch"
++            android:layout_width="wrap_content"
++            android:layout_height="wrap_content" />
++
++        <Button
++            android:id="@+id/btn_auto_flash"
++            android:text="auto"
++            android:layout_width="wrap_content"
++            android:layout_height="wrap_content" />
++
+         <Button
+             android:id="@+id/btn_open_flash"
+-            android:text="open flash"
++            android:text="open"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content" />
+ 
+         <Button
+             android:id="@+id/btn_close_flash"
+-            android:text="close flash"
++            android:text="close"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content" />
+     </LinearLayout>
+Index: fx_lib_camera/src/main/java/com/cfox/camera/camera/session/PhotoSession.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.camera.session;\n\nimport android.content.Context;\nimport android.hardware.camera2.CameraCaptureSession;\nimport android.hardware.camera2.CameraDevice;\nimport android.hardware.camera2.CaptureFailure;\nimport android.hardware.camera2.CaptureRequest;\nimport android.hardware.camera2.CaptureResult;\nimport android.hardware.camera2.TotalCaptureResult;\nimport android.util.Log;\n\nimport androidx.annotation.NonNull;\n\nimport com.cfox.camera.utils.FxRe;\nimport com.cfox.camera.utils.FxRequest;\nimport com.cfox.camera.utils.FxResult;\n\nimport io.reactivex.Observable;\nimport io.reactivex.ObservableEmitter;\nimport io.reactivex.ObservableOnSubscribe;\n\npublic class PhotoSession extends CameraSession implements IPhotoSession {\n    private static final String TAG = \"PhotoSession\";\n\n    public PhotoSession(Context context) {\n        super(context);\n    }\n\n    @Override\n    public Observable<FxResult> onSendRepeatingRequest(FxRequest request) {\n        Log.d(TAG, \"onSendRepeatingRequest: .....\");\n        final CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(FxRe.Key.REQUEST_BUILDER);\n        return Observable.create(new ObservableOnSubscribe<FxResult>() {\n            @Override\n            public void subscribe(ObservableEmitter<FxResult> emitter) throws Exception {\n                mCaptureSession.setRepeatingRequest(requestBuilder.build(), new CameraCaptureSession.CaptureCallback() {\n                    @Override\n                    public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {\n                        super.onCaptureCompleted(session, request, result);\n                        Log.d(TAG, \"onCaptureCompleted: .....\");\n                    }\n\n                    @Override\n                    public void onCaptureFailed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureFailure failure) {\n                        super.onCaptureFailed(session, request, failure);\n                        Log.d(TAG, \"onCaptureFailed: ....\" + failure.toString());\n                    }\n                }, null);\n                emitter.onNext(new FxResult());\n            }\n        });\n    }\n\n    @Override\n    public Observable<FxResult> onCapture(final FxRequest request) {\n        Log.d(TAG, \"capture: ......3333...\");\n        final CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(FxRe.Key.REQUEST_BUILDER);\n        return Observable.create(new ObservableOnSubscribe<FxResult>() {\n            @Override\n            public void subscribe(final ObservableEmitter<FxResult> emitter) throws Exception {\n                boolean previewCapture = request.getBoolean(FxRe.Key.PREVIEW_CAPTURE, false);\n                Log.d(TAG, \"subscribe: capture: ......3333...\");\n\n                if (previewCapture) {\n                    mCaptureSession.capture(requestBuilder.build(), null, null);\n                    emitter.onNext(new FxResult());\n                    return;\n                }\n                mCaptureSession.capture(requestBuilder.build(), new CameraCaptureSession.CaptureCallback() {\n\n                    void onCapture(CaptureResult result) {\n                        Integer afState = result.get(CaptureResult.CONTROL_AF_STATE);\n                        Log.d(TAG, \"onCapture: af state   \" + afState);\n                        if (afState == null) {\n                            Log.d(TAG, \"onCapture: .......next\");\n                            emitter.onNext(new FxResult());\n                        } else if (CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED == afState\n                                || CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED == afState){\n                            Integer aeState = result.get(CaptureResult.CONTROL_AE_STATE);\n                            Log.d(TAG, \"onCapture: .....ae state    \" + aeState);\n                            if (aeState == null || aeState == CaptureResult.CONTROL_AE_STATE_CONVERGED) {\n                                Log.d(TAG, \"onCapture: ..... next 1111\");\n                                emitter.onNext(new FxResult());\n                            }\n                        }\n                    }\n\n                    @Override\n                    public void onCaptureProgressed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureResult partialResult) {\n                        onCapture(partialResult);\n\n                    }\n\n                    @Override\n                    public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {\n                        onCapture(result);\n                    }\n\n                    @Override\n                    public void onCaptureFailed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureFailure failure) {\n                        Log.d(TAG, \"onCaptureFailed: .....\");\n                    }\n                }, null);\n            }\n        });\n    }\n\n    @Override\n    public Observable<FxResult> onCaptureStillPicture(FxRequest request) {\n        Log.d(TAG, \"captureStillPicture: .......\");\n        final CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(FxRe.Key.REQUEST_BUILDER);\n        return Observable.create(new ObservableOnSubscribe<FxResult>() {\n            @Override\n            public void subscribe(final ObservableEmitter<FxResult> emitter) throws Exception {\n                mCaptureSession.stopRepeating();\n//                mCaptureSession.abortCaptures();\n                mCaptureSession.capture(requestBuilder.build(), new CameraCaptureSession.CaptureCallback() {\n                    @Override\n                    public void onCaptureCompleted(@NonNull CameraCaptureSession session,\n                                                   @NonNull CaptureRequest request,\n                                                   @NonNull TotalCaptureResult result) {\n                        emitter.onNext(new FxResult());\n                        Log.d(TAG, \"onCaptureCompleted: pic success .....\");\n                    }\n\n                    @Override\n                    public void onCaptureFailed(@NonNull CameraCaptureSession session,\n                                                @NonNull CaptureRequest request,\n                                                @NonNull CaptureFailure failure) {\n                        Log.d(TAG, \"onCaptureFailed: .........\" +failure);\n                    }\n                }, null);\n            }\n        });\n    }\n\n    @Override\n    public int createStillCaptureTemplate() {\n        return CameraDevice.TEMPLATE_STILL_CAPTURE;\n    }\n\n    @Override\n    public IBuilderPack getBuilderPack() {\n        return new PhotoBuilderPack(this);\n    }\n\n    @Override\n    public int createPreviewTemplate() {\n        return CameraDevice.TEMPLATE_PREVIEW;\n    }\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/camera/session/PhotoSession.java	(revision f143b3926991bd17b8c4f37affb6ae269c847230)
++++ fx_lib_camera/src/main/java/com/cfox/camera/camera/session/PhotoSession.java	(date 1573473608000)
+@@ -33,19 +33,7 @@
+         return Observable.create(new ObservableOnSubscribe<FxResult>() {
+             @Override
+             public void subscribe(ObservableEmitter<FxResult> emitter) throws Exception {
+-                mCaptureSession.setRepeatingRequest(requestBuilder.build(), new CameraCaptureSession.CaptureCallback() {
+-                    @Override
+-                    public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
+-                        super.onCaptureCompleted(session, request, result);
+-                        Log.d(TAG, "onCaptureCompleted: .....");
+-                    }
+-
+-                    @Override
+-                    public void onCaptureFailed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureFailure failure) {
+-                        super.onCaptureFailed(session, request, failure);
+-                        Log.d(TAG, "onCaptureFailed: ...." + failure.toString());
+-                    }
+-                }, null);
++                mCaptureSession.setRepeatingRequest(requestBuilder.build(), null, null);
+                 emitter.onNext(new FxResult());
+             }
+         });
+@@ -87,7 +75,7 @@
+ 
+                     @Override
+                     public void onCaptureProgressed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureResult partialResult) {
+-                        onCapture(partialResult);
++//                        onCapture(partialResult);
+ 
+                     }
+ 

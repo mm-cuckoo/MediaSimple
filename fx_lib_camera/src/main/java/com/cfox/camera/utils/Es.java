@@ -14,9 +14,9 @@ public interface Es {
 
     interface FLASH_TYPE {
         int TORCH       = 1;
-        int CLOSE       = 2;
-//        int AUTO        = 3;
-//        int OPEN        = 4;
+        int OFF         = 2;
+        int AUTO        = 3;
+        int ON          = 4;
     }
 
     interface Key {

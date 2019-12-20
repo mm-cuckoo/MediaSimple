@@ -42,7 +42,7 @@ class EsyCameraController {
         request.put(Es.Key.CAMERA_ID, Es.Camera.ID.BACK.id);
         request.put(Es.Key.SURFACE_HELPER, helper);
         CameraConfig cameraConfig = CameraConfig.getInstance();
-        cameraConfig.push(CaptureRequest.FLASH_MODE, Es.FLASH_TYPE.CLOSE);
+        cameraConfig.push(CaptureRequest.FLASH_MODE, Es.FLASH_TYPE.OFF);
         request.put(Es.Key.CAMERA_CONFIG, cameraConfig);
 
         mCameraController.onStartPreview(request);
@@ -74,7 +74,7 @@ class EsyCameraController {
 
 //    void openFlash() {
 //        CameraConfig cameraConfig = CameraConfig.getInstance();
-//        cameraConfig.push(CaptureRequest.FLASH_MODE, FxRe.FLASH_TYPE.OPEN);
+//        cameraConfig.push(CaptureRequest.FLASH_MODE, FxRe.FLASH_TYPE.ON);
 //        FxRequest request = new FxRequest();
 //        request.put(FxRe.Key.CAMERA_CONFIG, cameraConfig);
 //        mCameraController.requestCameraConfig(request);
@@ -99,7 +99,7 @@ class EsyCameraController {
 
     void closeFlash() {
         CameraConfig cameraConfig = CameraConfig.getInstance();
-        cameraConfig.push(CaptureRequest.FLASH_MODE, Es.FLASH_TYPE.CLOSE);
+        cameraConfig.push(CaptureRequest.FLASH_MODE, Es.FLASH_TYPE.OFF);
         EsRequest request = new EsRequest();
         request.put(Es.Key.CAMERA_CONFIG, cameraConfig);
         mCameraController.onCameraConfig(request);

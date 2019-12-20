@@ -19,4 +19,11 @@ public class EsLog {
     public static void i(String message) {
 
     }
+
+    public static void w(String message) {
+        Thread thread = Thread.currentThread();
+        String classname = new Exception().getStackTrace()[1].getFileName();
+        classname = classname.substring(0, classname.indexOf("."));
+        Log.w("[" + classname + "]", "[" + thread.getName() + "]" + message);
+    }
 }

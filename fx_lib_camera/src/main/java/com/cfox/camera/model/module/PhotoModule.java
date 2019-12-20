@@ -18,7 +18,6 @@ import io.reactivex.ObservableSource;
 import io.reactivex.functions.Function;
 
 public class PhotoModule extends BaseModule {
-    private static final String TAG = "PhotoModule";
     private IPhotoSessionHelper mPhotoSessionHelper;
     private IReaderHelper mImageReaderHelper;
     public PhotoModule(IPhotoSessionHelper photoSessionHelper, IBusiness business) {

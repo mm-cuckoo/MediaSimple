@@ -1,0 +1,127 @@
+Index: fx_lib_camera/src/main/java/com/cfox/camera/camera/session/PhotoSession.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.camera.session;\n\nimport android.content.Context;\nimport android.hardware.camera2.CameraCaptureSession;\nimport android.hardware.camera2.CameraDevice;\nimport android.hardware.camera2.CaptureFailure;\nimport android.hardware.camera2.CaptureRequest;\nimport android.hardware.camera2.CaptureResult;\nimport android.hardware.camera2.TotalCaptureResult;\nimport android.util.Log;\n\nimport androidx.annotation.NonNull;\n\nimport com.cfox.camera.utils.FxRe;\nimport com.cfox.camera.utils.FxRequest;\nimport com.cfox.camera.utils.FxResult;\n\nimport io.reactivex.Observable;\nimport io.reactivex.ObservableEmitter;\nimport io.reactivex.ObservableOnSubscribe;\n\npublic class PhotoSession extends CameraSession implements IPhotoSession {\n    private static final String TAG = \"PhotoSession\";\n\n    public PhotoSession(Context context) {\n        super(context);\n    }\n\n    @Override\n    public Observable<FxResult> onSendRepeatingRequest(FxRequest request) {\n        Log.d(TAG, \"onSendRepeatingRequest: .....\");\n        final CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(FxRe.Key.REQUEST_BUILDER);\n        return Observable.create(new ObservableOnSubscribe<FxResult>() {\n            @Override\n            public void subscribe(ObservableEmitter<FxResult> emitter) throws Exception {\n                mCaptureSession.setRepeatingRequest(requestBuilder.build(), new CameraCaptureSession.CaptureCallback() {\n                    @Override\n                    public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {\n                        super.onCaptureCompleted(session, request, result);\n                        Log.d(TAG, \"onCaptureCompleted: .....\");\n                    }\n\n                    @Override\n                    public void onCaptureFailed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureFailure failure) {\n                        super.onCaptureFailed(session, request, failure);\n                        Log.d(TAG, \"onCaptureFailed: ....\" + failure.toString());\n                    }\n                }, null);\n                emitter.onNext(new FxResult());\n            }\n        });\n    }\n\n    @Override\n    public Observable<FxResult> onCapture(final FxRequest request) {\n        Log.d(TAG, \"capture: ......3333...\");\n        final CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(FxRe.Key.REQUEST_BUILDER);\n        return Observable.create(new ObservableOnSubscribe<FxResult>() {\n            @Override\n            public void subscribe(final ObservableEmitter<FxResult> emitter) throws Exception {\n                boolean previewCapture = request.getBoolean(FxRe.Key.PREVIEW_CAPTURE, false);\n                Log.d(TAG, \"subscribe: capture: ......3333...\");\n\n                if (previewCapture) {\n                    mCaptureSession.capture(requestBuilder.build(), null, null);\n                    emitter.onNext(new FxResult());\n                    return;\n                }\n\n                if (!isAutoFocusSupported()) {\n                    Log.d(TAG, \"subscribe: no supported AF , capture\");\n                    emitter.onNext(new FxResult());\n                    return;\n                }\n\n                mCaptureSession.capture(requestBuilder.build(), new CameraCaptureSession.CaptureCallback() {\n\n                    void onCapture(CaptureResult result) {\n                        Integer afState = result.get(CaptureResult.CONTROL_AF_STATE);\n                        Log.d(TAG, \"onCapture: af state   \" + afState);\n                        if (afState == null) {\n                            Log.d(TAG, \"onCapture: .......next\");\n                            emitter.onNext(new FxResult());\n                        } else if (CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED == afState\n                                || CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED == afState){\n                            Integer aeState = result.get(CaptureResult.CONTROL_AE_STATE);\n                            Log.d(TAG, \"onCapture: .....ae state    \" + aeState);\n                            if (aeState == null || aeState == CaptureResult.CONTROL_AE_STATE_CONVERGED) {\n                                Log.d(TAG, \"onCapture: ..... next 1111\");\n                                emitter.onNext(new FxResult());\n                            }\n                        }\n                    }\n//                    @Override\n//                    public void onCaptureProgressed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureResult partialResult) {\n//                        onCapture(partialResult);\n//\n//                    }\n\n                    @Override\n                    public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {\n                        onCapture(result);\n                    }\n\n                    @Override\n                    public void onCaptureFailed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureFailure failure) {\n                        Log.d(TAG, \"onCaptureFailed: .....\");\n                    }\n                }, null);\n            }\n        });\n    }\n\n    @Override\n    public Observable<FxResult> onCaptureStillPicture(FxRequest request) {\n        Log.d(TAG, \"captureStillPicture: .......\");\n        final CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(FxRe.Key.REQUEST_BUILDER);\n        return Observable.create(new ObservableOnSubscribe<FxResult>() {\n            @Override\n            public void subscribe(final ObservableEmitter<FxResult> emitter) throws Exception {\n                mCaptureSession.stopRepeating();\n//                mCaptureSession.abortCaptures();\n                mCaptureSession.capture(requestBuilder.build(), new CameraCaptureSession.CaptureCallback() {\n                    @Override\n                    public void onCaptureCompleted(@NonNull CameraCaptureSession session,\n                                                   @NonNull CaptureRequest request,\n                                                   @NonNull TotalCaptureResult result) {\n                        emitter.onNext(new FxResult());\n                        Log.d(TAG, \"onCaptureCompleted: pic success .....\");\n                    }\n\n                    @Override\n                    public void onCaptureFailed(@NonNull CameraCaptureSession session,\n                                                @NonNull CaptureRequest request,\n                                                @NonNull CaptureFailure failure) {\n                        Log.d(TAG, \"onCaptureFailed: .........\" +failure);\n                    }\n                }, null);\n            }\n        });\n    }\n\n    @Override\n    public int createStillCaptureTemplate() {\n        return CameraDevice.TEMPLATE_STILL_CAPTURE;\n    }\n\n    @Override\n    public IBuilderPack getBuilderPack() {\n        return new PhotoBuilderPack(this);\n    }\n\n    @Override\n    public int createPreviewTemplate() {\n        return CameraDevice.TEMPLATE_PREVIEW;\n    }\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/camera/session/PhotoSession.java	(revision 5eac4a8b8dc2850ffbbcf1bf6640e9fce3d7ed4e)
++++ fx_lib_camera/src/main/java/com/cfox/camera/camera/session/PhotoSession.java	(date 1573471380000)
+@@ -7,6 +7,7 @@
+ import android.hardware.camera2.CaptureRequest;
+ import android.hardware.camera2.CaptureResult;
+ import android.hardware.camera2.TotalCaptureResult;
++import android.os.SystemClock;
+ import android.util.Log;
+ 
+ import androidx.annotation.NonNull;
+@@ -22,6 +23,11 @@
+ public class PhotoSession extends CameraSession implements IPhotoSession {
+     private static final String TAG = "PhotoSession";
+ 
++    private static final long PRECAPTURE_TIMEOUT_MS = 1000;
++    private final Object mCaptureLock = new Object();
++    private boolean mCaptured = false;
++    private long mCaptureTime;
++
+     public PhotoSession(Context context) {
+         super(context);
+     }
+@@ -60,6 +66,7 @@
+             public void subscribe(final ObservableEmitter<FxResult> emitter) throws Exception {
+                 boolean previewCapture = request.getBoolean(FxRe.Key.PREVIEW_CAPTURE, false);
+                 Log.d(TAG, "subscribe: capture: ......3333...");
++                mCaptured = false;
+ 
+                 if (previewCapture) {
+                     mCaptureSession.capture(requestBuilder.build(), null, null);
+@@ -67,35 +74,56 @@
+                     return;
+                 }
+ 
+-                if (!isAutoFocusSupported()) {
+-                    Log.d(TAG, "subscribe: no supported AF , capture");
+-                    emitter.onNext(new FxResult());
+-                    return;
+-                }
++                mCaptureTime = SystemClock.elapsedRealtime();
++                mCaptureSession.capture(requestBuilder.build(), new CameraCaptureSession.CaptureCallback() {
++
++                    void onCapture(CaptureResult result) {
++                        synchronized (mCaptureLock) {
++                            if (!isAutoFocusSupported() && !mCaptured) {
++                                Log.d(TAG, "subscribe: no supported AF , capture");
++                                mCaptured = true;
++                                emitter.onNext(new FxResult());
++                                return;
++                            }
+ 
+-                mCaptureSession.capture(requestBuilder.build(), new CameraCaptureSession.CaptureCallback() {
++                            boolean readyCapture;
+ 
+-                    void onCapture(CaptureResult result) {
+-                        Integer afState = result.get(CaptureResult.CONTROL_AF_STATE);
+-                        Log.d(TAG, "onCapture: af state   " + afState);
+-                        if (afState == null) {
+-                            Log.d(TAG, "onCapture: .......next");
+-                            emitter.onNext(new FxResult());
+-                        } else if (CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED == afState
+-                                || CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED == afState){
++                            Integer afState = result.get(CaptureResult.CONTROL_AF_STATE);
++                            Log.d(TAG, "onCapture: af state   " + afState);
++
++                            if (afState == null) return;
++
++                            readyCapture = CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED == afState
++                                    || CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED == afState;
++
++                            Log.d(TAG, "onCapture: readyCaptur11111e:" + readyCapture);
++
++
+                             Integer aeState = result.get(CaptureResult.CONTROL_AE_STATE);
+-                            Log.d(TAG, "onCapture: .....ae state    " + aeState);
+-                            if (aeState == null || aeState == CaptureResult.CONTROL_AE_STATE_CONVERGED) {
+-                                Log.d(TAG, "onCapture: ..... next 1111");
++                            Integer awbState = result.get(CaptureResult.CONTROL_AWB_STATE);
++
++                            readyCapture = readyCapture &&
++                                    aeState == CaptureResult.CONTROL_AE_STATE_CONVERGED /*&&
++                                    awbState == CaptureResult.CONTROL_AWB_STATE_CONVERGED*/;
++
++                            Log.d(TAG, "onCapture: readyCapture22222:" + readyCapture);
++
++                            if (!readyCapture && hitTimeoutLocked()) {
++                                Log.w(TAG, "Timed out waiting for pre-capture sequence to complete.");
++                                readyCapture = true;
++                            }
++
++                            if (readyCapture && !mCaptured) {
++                                mCaptured = true;
+                                 emitter.onNext(new FxResult());
+                             }
+                         }
+                     }
+-//                    @Override
+-//                    public void onCaptureProgressed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureResult partialResult) {
+-//                        onCapture(partialResult);
+-//
+-//                    }
++                    @Override
++                    public void onCaptureProgressed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureResult partialResult) {
++                        onCapture(partialResult);
++
++                    }
+ 
+                     @Override
+                     public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
+@@ -111,6 +139,10 @@
+         });
+     }
+ 
++    private boolean hitTimeoutLocked() {
++        return (SystemClock.elapsedRealtime() - mCaptureTime) > PRECAPTURE_TIMEOUT_MS;
++    }
++
+     @Override
+     public Observable<FxResult> onCaptureStillPicture(FxRequest request) {
+         Log.d(TAG, "captureStillPicture: .......");

@@ -1,10 +1,11 @@
-package com.cfox.camera.camera.session;
+package com.cfox.camera.camera.session.helper;
 
 import android.hardware.camera2.CaptureRequest;
 
 import com.cfox.camera.utils.EsRequest;
 
-public interface IBuilderPack {
+public interface IBuilderHelper  {
+
     void clear();
 
     void configBuilder(EsRequest request);
@@ -13,6 +14,4 @@ public interface IBuilderPack {
     void preCaptureBuilder(CaptureRequest.Builder builder);
     void captureBuilder(CaptureRequest.Builder builder);
     void previewCaptureBuilder(CaptureRequest.Builder builder);
-
-
 }

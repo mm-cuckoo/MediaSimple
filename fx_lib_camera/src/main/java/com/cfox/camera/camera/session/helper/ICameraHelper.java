@@ -14,7 +14,15 @@ public interface ICameraHelper {
     boolean isRawSupported();
     boolean isLegacyLocked();
     int getSensorOrientation();
+    int getValidAFMode(int targetMode);
+    int getValidAntiBandingMode(int targetMode);
+    boolean isMeteringSupport(boolean focusArea);
+    float getMinimumDistance();
+    boolean isFlashSupport();
+    boolean canTriggerAf();
     Size[] getPictureSize(int format);
     Size[] getPreviewSize(Class klass);
     Range<Integer> getEvRange();
+
+    IBuilderHelper getBuilderHelper();
 }

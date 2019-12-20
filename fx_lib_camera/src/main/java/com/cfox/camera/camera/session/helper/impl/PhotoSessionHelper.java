@@ -14,6 +14,7 @@ import androidx.annotation.NonNull;
 
 import com.cfox.camera.camera.session.ICameraSession;
 import com.cfox.camera.camera.session.ISessionManager;
+import com.cfox.camera.camera.session.helper.IBuilderHelper;
 import com.cfox.camera.camera.session.helper.IPhotoCameraHelper;
 import com.cfox.camera.camera.session.helper.IPhotoSessionHelper;
 import com.cfox.camera.log.EsLog;
@@ -35,11 +36,13 @@ public class PhotoSessionHelper extends AbsCameraSessionHelper implements IPhoto
 
     private ICameraSession mCameraSession;
     private IPhotoCameraHelper mPhotoCameraHelper;
+    private IBuilderHelper mBuilderHelper;
 
     public PhotoSessionHelper(ISessionManager sessionManager) {
         sessionManager.getCameraSession(1);
         mCameraSession = sessionManager.getCameraSession();
         mPhotoCameraHelper = new PhotoCameraHelper();
+        mBuilderHelper = mPhotoCameraHelper.getBuilderHelper();
     }
 
     @Override
@@ -49,16 +52,21 @@ public class PhotoSessionHelper extends AbsCameraSessionHelper implements IPhoto
 
     @Override
     public void applyPreviewRepeatingBuilder(EsRequest request) throws CameraAccessException {
+        mBuilderHelper.clear();
+        mBuilderHelper.configBuilder(request);
+
         ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(Es.Key.SURFACE_HELPER);
         mBuilder = mCameraSession.onCreateRequestBuilder(mPhotoCameraHelper.createPreviewTemplate());
-
         mBuilder.addTarget(surfaceHelper.getSurface());
+
+        mBuilderHelper.previewBuilder(mBuilder);
         request.put(Es.Key.REQUEST_BUILDER, mBuilder);
     }
 
 
     @Override
     public Observable<EsResult> onSendRepeatingRequest(EsRequest request) {
+        mBuilderHelper.repeatingRequestBuilder(request, mBuilder);
         request.put(Es.Key.REQUEST_BUILDER, mBuilder);
         return mCameraSession.onRepeatingRequest(request);
     }
@@ -127,7 +135,6 @@ public class PhotoSessionHelper extends AbsCameraSessionHelper implements IPhoto
             @Override
             public void subscribe(final ObservableEmitter<EsResult> emitter) throws Exception {
                 mCameraSession.stopRepeating();
-//                mCaptureSession.abortCaptures();
                 mCameraSession.capture(request, new CameraCaptureSession.CaptureCallback() {
                     @Override
                     public void onCaptureCompleted(@NonNull CameraCaptureSession session,
