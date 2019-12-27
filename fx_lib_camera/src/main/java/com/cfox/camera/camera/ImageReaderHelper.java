@@ -4,7 +4,6 @@ import android.graphics.ImageFormat;
 import android.media.Image;
 import android.media.ImageReader;
 import android.os.Handler;
-import android.util.Log;
 import android.util.Size;
 
 import com.cfox.camera.log.EsLog;
@@ -23,7 +22,6 @@ import java.util.List;
 import java.util.Locale;
 
 public class ImageReaderHelper implements IReaderHelper {
-    private static final String TAG = "ImageReaderHelper";
 
     private List<ImageReader> mImageReaders;
     private Handler mImageReaderHandler;

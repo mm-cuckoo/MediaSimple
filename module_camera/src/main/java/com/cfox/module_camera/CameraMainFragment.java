@@ -1,7 +1,6 @@
 package com.cfox.module_camera;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +12,7 @@ import androidx.annotation.Nullable;
 
 import com.alibaba.android.arouter.facade.annotation.Route;
 import com.cfox.camera.AutoFitTextureView;
+import com.cfox.camera.log.EsLog;
 import com.cfox.camera.surface.SurfaceHelper;
 import com.cfox.lib_common.arouter.RouterPath;
 import com.cfox.lib_common.base.BaseFragment;
@@ -137,14 +137,14 @@ public class CameraMainFragment extends BaseFragment {
     public void onResume() {
         super.onResume();
         mSurfaceHelper = new SurfaceHelper(mPreviewView);
-        Log.d(TAG, "onResume: .......");
+        EsLog.d("onResume: .......");
         mCameraController.backCamera(mSurfaceHelper);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        Log.d(TAG, "onPause: ........");
+        EsLog.d("onPause: ........");
         if (mCameraController == null) return;
         mCameraController.stopCamera();
     }

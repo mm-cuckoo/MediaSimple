@@ -20,13 +20,13 @@ public abstract class AbsCameraSessionHelper implements ICameraSessionHelper {
     }
 
     @Override
-    public Observable<EsResult> onCreatePreviewSession(EsRequest request) throws CameraAccessException {
-        applyPreviewRepeatingBuilder(request);
+    public Observable<EsResult> onCreatePreviewSession(EsRequest request) {
         return getCameraSession(request).onCreatePreviewSession(request);
     }
 
     @Override
-    public Observable<EsResult> onSendPreviewRepeatingRequest(EsRequest request) {
+    public Observable<EsResult> onSendPreviewRepeatingRequest(EsRequest request) throws CameraAccessException {
+        applyPreviewRepeatingBuilder(request);
         return getCameraSession(request).onRepeatingRequest(request);
     }
 

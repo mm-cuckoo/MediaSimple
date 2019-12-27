@@ -9,7 +9,7 @@ import com.cfox.camera.log.EsLog;
 import com.cfox.camera.utils.Es;
 import com.cfox.camera.utils.EsRequest;
 
-public class RequestBuilderManager implements IRequestBuilderManager {
+public abstract class RequestBuilderManager implements IRequestBuilderManager {
 
     private ICameraHelper mCameraHelper;
     private MeteringRectangle[] mFocusArea;

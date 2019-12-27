@@ -34,11 +34,13 @@ public interface Es {
         String IMAGE_FORMAT = "Image_format";
 
         String PREVIEW_SIZE = "preview_size";
+        String AF_CHANGE_STATE = "af_change_state";
 
         String CAMERA_CONFIG = "camera_config";
         String PREVIEW_CAPTURE = "preview_capture";
         String FIRST_FRAME_CALLBACK = "first_frame_callback";
-        String SESSION_CAPTURE_CALLBACK = "session_capture_callback";
+        String SESSION_CALLBACK = "session_callback";
+        String CAMERA_FLASH_VALUE = "camera_flash_value";
     }
 
     interface Value {

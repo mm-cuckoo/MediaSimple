@@ -4,7 +4,6 @@ import com.cfox.camera.EsCamera;
 import com.cfox.lib_common.base.BaseApplication;
 
 public class CameraApplication extends BaseApplication {
-    private static final String TAG = "CameraApplication";
 
     EsCamera mFxCamera;
     @Override

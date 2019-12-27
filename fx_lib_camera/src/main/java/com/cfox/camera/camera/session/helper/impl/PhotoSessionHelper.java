@@ -5,16 +5,16 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
-import android.util.Log;
 import android.util.Range;
 import android.util.Size;
 
 import androidx.annotation.NonNull;
 
 import com.cfox.camera.camera.session.ICameraSession;
+import com.cfox.camera.camera.session.IPhotoRequestBuilderManager;
 import com.cfox.camera.camera.session.ISessionManager;
-import com.cfox.camera.camera.session.helper.IBuilderHelper;
 import com.cfox.camera.camera.session.helper.IPhotoCameraHelper;
 import com.cfox.camera.camera.session.helper.IPhotoSessionHelper;
 import com.cfox.camera.log.EsLog;
@@ -24,25 +24,23 @@ import com.cfox.camera.utils.EsRequest;
 import com.cfox.camera.utils.EsResult;
 
 
-
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 
 public class PhotoSessionHelper extends AbsCameraSessionHelper implements IPhotoSessionHelper {
-    private static final String TAG = "PhotoSessionHelper";
 
-    private CaptureRequest.Builder mBuilder;
+    private CaptureRequest.Builder mPreviewBuilder;
 
     private ICameraSession mCameraSession;
     private IPhotoCameraHelper mPhotoCameraHelper;
-    private IBuilderHelper mBuilderHelper;
+    private IPhotoRequestBuilderManager mRequestBuilderManager;
 
     public PhotoSessionHelper(ISessionManager sessionManager) {
         sessionManager.getCameraSession(1);
         mCameraSession = sessionManager.getCameraSession();
         mPhotoCameraHelper = new PhotoCameraHelper();
-        mBuilderHelper = mPhotoCameraHelper.getBuilderHelper();
+        mRequestBuilderManager = (IPhotoRequestBuilderManager) mPhotoCameraHelper.getBuilderHelper();
     }
 
     @Override
@@ -52,22 +50,33 @@ public class PhotoSessionHelper extends AbsCameraSessionHelper implements IPhoto
 
     @Override
     public void applyPreviewRepeatingBuilder(EsRequest request) throws CameraAccessException {
-        mBuilderHelper.clear();
-        mBuilderHelper.configBuilder(request);
+        mPreviewBuilder = createPreviewBuilder(request);
+        applyBuilderSettings(request);
+        request.put(Es.Key.REQUEST_BUILDER, mPreviewBuilder);
+        request.put(Es.Key.SESSION_CALLBACK, mPreviewCallback.setType(CameraCaptureSessionCallback.TYPE_PREVIEW));
+    }
 
+    private CaptureRequest.Builder createPreviewBuilder(EsRequest request) throws CameraAccessException {
         ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(Es.Key.SURFACE_HELPER);
-        mBuilder = mCameraSession.onCreateRequestBuilder(mPhotoCameraHelper.createPreviewTemplate());
-        mBuilder.addTarget(surfaceHelper.getSurface());
+        CaptureRequest.Builder builder = mCameraSession.onCreateRequestBuilder(mPhotoCameraHelper.createPreviewTemplate());
+        builder.addTarget(surfaceHelper.getSurface());
+        return builder;
+    }
 
-        mBuilderHelper.previewBuilder(mBuilder);
-        request.put(Es.Key.REQUEST_BUILDER, mBuilder);
+    private void applyBuilderSettings(EsRequest request) {
+        int flashValue = request.getInt(Es.Key.CAMERA_FLASH_VALUE, Es.FLASH_TYPE.OFF);
+        mRequestBuilderManager.getFlashRequest(getPreviewBuilder(), flashValue);
+        mRequestBuilderManager.getPreviewRequest(getPreviewBuilder());
+    }
+
+    private CaptureRequest.Builder getPreviewBuilder() {
+        return mPreviewBuilder;
     }
 
 
     @Override
     public Observable<EsResult> onSendRepeatingRequest(EsRequest request) {
-        mBuilderHelper.repeatingRequestBuilder(request, mBuilder);
-        request.put(Es.Key.REQUEST_BUILDER, mBuilder);
+        request.put(Es.Key.REQUEST_BUILDER, mPreviewBuilder);
         return mCameraSession.onRepeatingRequest(request);
     }
 
@@ -107,7 +116,7 @@ public class PhotoSessionHelper extends AbsCameraSessionHelper implements IPhoto
 
     @Override
     public Observable<EsResult> capture(final EsRequest request) {
-        EsLog.d( "capture: ......3333...");
+        EsLog.d("capture: ......3333...");
         return Observable.create(new ObservableOnSubscribe<EsResult>() {
             @Override
             public void subscribe(final ObservableEmitter<EsResult> emitter) throws Exception {
@@ -130,7 +139,7 @@ public class PhotoSessionHelper extends AbsCameraSessionHelper implements IPhoto
 
     @Override
     public Observable<EsResult> captureStillPicture(final EsRequest request) {
-        EsLog.d( "captureStillPicture: .......");
+        EsLog.d("captureStillPicture: .......");
         return Observable.create(new ObservableOnSubscribe<EsResult>() {
             @Override
             public void subscribe(final ObservableEmitter<EsResult> emitter) throws Exception {
@@ -148,7 +157,7 @@ public class PhotoSessionHelper extends AbsCameraSessionHelper implements IPhoto
                     public void onCaptureFailed(@NonNull CameraCaptureSession session,
                                                 @NonNull CaptureRequest request,
                                                 @NonNull CaptureFailure failure) {
-                        Log.d(TAG, "onCaptureFailed: ........." +failure);
+                        EsLog.d("onCaptureFailed: ........." + failure);
                     }
                 });
             }
@@ -158,6 +167,71 @@ public class PhotoSessionHelper extends AbsCameraSessionHelper implements IPhoto
     @Override
     public ICameraSession getCameraSession(EsRequest request) {
         return mCameraSession;
+    }
+
+    private CameraCaptureSessionCallback mPreviewCallback = new CameraCaptureSessionCallback();
+
+    public class CameraCaptureSessionCallback extends CameraCaptureSession.CaptureCallback {
+
+        private static final int TYPE_PREVIEW = 1;
+        private static final int TYPE_REPEAT = 2;
+        private static final int TYPE_CAPTURE = 3;
+
+        private final Object mCaptureLock = new Object();
+
+        private ObservableEmitter<EsResult> mEmitter;
+        private int mType = 0;
+        private int mAFState = -1;
+        private boolean mFirstFrameCompleted = false;
+
+        CameraCaptureSessionCallback setType(int type) {
+            this.mType = type;
+            if (type == TYPE_PREVIEW) {
+                mFirstFrameCompleted = false;
+            } else if (type == TYPE_CAPTURE) {
+
+            }
+            return this;
+        }
+
+
+        public CameraCaptureSessionCallback setEmitter(ObservableEmitter<EsResult> emitter) {
+            this.mEmitter = emitter;
+            return this;
+        }
+
+
+        @Override
+        public void onCaptureProgressed(@NonNull CameraCaptureSession session,
+                                        @NonNull CaptureRequest request,
+                                        @NonNull CaptureResult partialResult) {
+            updateAFState(partialResult);
+        }
+
+        @Override
+        public void onCaptureCompleted(@NonNull CameraCaptureSession session,
+                                       @NonNull CaptureRequest request,
+                                       @NonNull TotalCaptureResult result) {
+            if (!mFirstFrameCompleted) {
+                mFirstFrameCompleted = true;
+                EsResult esResult = new EsResult();
+                esResult.put(Es.Key.FIRST_FRAME_CALLBACK, Es.Value.OK);
+                mEmitter.onNext(esResult);
+                EsLog.d("preview first frame call back");
+            }
+
+            updateAFState(result);
+        }
+
+        private void updateAFState(CaptureResult captureResult) {
+            Integer afState = captureResult.get(CaptureResult.CONTROL_AF_STATE);
+            if (afState != null && afState != mAFState) {
+                mAFState = afState;
+                EsResult result = new EsResult();
+                result.put(Es.Key.AF_CHANGE_STATE, afState);
+                mEmitter.onNext(result);
+            }
+        }
     }
 
 }

@@ -1,6 +1,5 @@
 package com.cfox.camera.model.module;
 
-import android.util.Log;
 import android.util.Size;
 
 import com.cfox.camera.camera.IReaderHelper;

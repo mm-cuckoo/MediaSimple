@@ -1,7 +1,6 @@
 package com.cfox.camera.model.module;
 
 
-import android.util.Log;
 import android.util.Range;
 import android.util.Size;
 
@@ -21,7 +20,6 @@ import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Function;
 
 public abstract class BaseModule implements IModule {
-    private static final String TAG = "BaseModule";
 
     private ICameraSessionHelper mCameraSessionHelper;
     private IBusiness mBusiness;
@@ -41,7 +39,7 @@ public abstract class BaseModule implements IModule {
                 new BiFunction<EsResult, EsResult, EsRequest>() {
                     @Override
                     public EsRequest apply(EsResult result1, EsResult result2) throws Exception {
-                        EsLog.d("apply: open camera device success .....");
+                        EsLog.d("open camera device success .....");
                         request.put(Es.Key.CAMERA_DEVICE, result2.getObj(Es.Key.CAMERA_DEVICE));
                         return request;
                     }
@@ -51,13 +49,13 @@ public abstract class BaseModule implements IModule {
                         Size pictureSizeForReq = (Size) request.getObj(Es.Key.PIC_SIZE);
                         Size pictureSize = getBusiness().getPictureSize(pictureSizeForReq, mCameraSessionHelper.getPictureSize(request));
                         request.put(Es.Key.PIC_SIZE, pictureSize);
-                        EsLog.d("apply: create  session ....." + request);
+                        EsLog.d("create session before ....." + request);
                         return mCameraSessionHelper.onCreatePreviewSession(request);
                     }
                 }).flatMap(new Function<EsResult, ObservableSource<EsResult>>() {
                     @Override
                     public ObservableSource<EsResult> apply(EsResult fxResult) throws Exception {
-                        EsLog.d("apply: onSendRepeatingRequest......");
+                        EsLog.d("onSendRepeatingRequest ......");
                         return mCameraSessionHelper.onSendPreviewRepeatingRequest(request);
                     }
                 }).subscribeOn(AndroidSchedulers.from(ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_CAMERA).getLooper()));

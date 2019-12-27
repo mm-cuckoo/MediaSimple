@@ -1,17 +1,16 @@
 package com.cfox.camera.camera.session.impl;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.cfox.camera.camera.session.ICameraSession;
 import com.cfox.camera.camera.session.ISessionManager;
+import com.cfox.camera.log.EsLog;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class CameraSessionManager implements ISessionManager {
-    private static final String TAG = "CameraSessionManager";
 
     private static ISessionManager mSessionManager;
     private List<ICameraSession> mCameraSessionList = new ArrayList<>();
@@ -36,24 +35,24 @@ public class CameraSessionManager implements ISessionManager {
 
     @Override
     public void getCameraSession(int count) {
-        Log.d(TAG, "getCameraSession: count:" + count  + "  session size:" + mCameraSessionList.size());
+        EsLog.d("getCameraSession: count:" + count  + "  session size:" + mCameraSessionList.size());
         mSessionIndex.set(0);
         for (int i = 0 ; i < count; i ++) {
             if (i < mCameraSessionList.size()) {
-                Log.d(TAG, "getCameraSession: get i:" + i);
+                EsLog.d("getCameraSession: get i:" + i);
                 mCameraSessionList.get(i).onClose();
             } else {
-                Log.d(TAG, "getCameraSession: create i:" + i);
+                EsLog.d( "getCameraSession: create i:" + i);
                 mCameraSessionList.add(createSession());
             }
         }
 
         for (int i = count;  i < mCameraSessionList.size() ; i ++) {
-            Log.d(TAG, "getCameraSession: remove i：" + i);
+            EsLog.d("getCameraSession: remove i：" + i);
             mCameraSessionList.remove(i).onClose();
         }
 
-        Log.d(TAG, "getCameraSession: end session size:" + mCameraSessionList.size());
+        EsLog.d("getCameraSession: end session size:" + mCameraSessionList.size());
     }
 
     @Override

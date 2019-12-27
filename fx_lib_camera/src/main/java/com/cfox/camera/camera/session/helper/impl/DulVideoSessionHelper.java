@@ -3,7 +3,6 @@ package com.cfox.camera.camera.session.helper.impl;
 import android.graphics.ImageFormat;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CaptureRequest;
-import android.util.Log;
 import android.util.Range;
 import android.util.Size;
 
@@ -12,6 +11,7 @@ import com.cfox.camera.camera.session.ICameraSession;
 import com.cfox.camera.camera.session.ISessionManager;
 import com.cfox.camera.camera.session.helper.ICameraHelper;
 import com.cfox.camera.camera.session.helper.IDulVideoSessionHelper;
+import com.cfox.camera.log.EsLog;
 import com.cfox.camera.surface.ISurfaceHelper;
 import com.cfox.camera.utils.Es;
 import com.cfox.camera.utils.EsRequest;
@@ -25,7 +25,6 @@ import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 
 public class DulVideoSessionHelper extends AbsCameraSessionHelper implements IDulVideoSessionHelper {
-    private static final String TAG = "DulVideoSessionHelper";
 
     private Map<String, ICameraInfo> mCameraInfoMap = new HashMap<>(2);
     private Map<String, ICameraHelper> mCameraHelperMap = new HashMap<>(2);
@@ -73,7 +72,7 @@ public class DulVideoSessionHelper extends AbsCameraSessionHelper implements IDu
     @Override
     public Size[] getPreviewSize(EsRequest request) {
         String cameraId = request.getString(Es.Key.CAMERA_ID);
-        Log.d(TAG, "getPreviewSize: camera id:" + cameraId);
+        EsLog.d("getPreviewSize: camera id:" + cameraId);
         Class klass = (Class) request.getObj(Es.Key.SURFACE_CLASS);
         return getCameraHelperForId(cameraId).getPreviewSize(klass);
     }
@@ -86,7 +85,7 @@ public class DulVideoSessionHelper extends AbsCameraSessionHelper implements IDu
 
     @Override
     public Observable<EsResult> close(EsRequest request) {
-        Log.d(TAG, "close: dul video close camera s");
+        EsLog.d("close: dul video close camera s");
         return Observable.create(new ObservableOnSubscribe<EsResult>() {
             @Override
             public void subscribe(ObservableEmitter<EsResult> emitter) throws Exception {

@@ -1,0 +1,764 @@
+Index: fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/impl/BuilderHelper.java
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/impl/BuilderHelper.java	(revision b7f17ac90b36b1c38672602fb3600cf0754486cb)
++++ fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/impl/BuilderHelper.java	(revision b7f17ac90b36b1c38672602fb3600cf0754486cb)
+@@ -1,150 +0,0 @@
+-package com.cfox.camera.camera.session.helper.impl;
+-
+-
+-import android.hardware.camera2.CameraMetadata;
+-import android.hardware.camera2.CaptureRequest;
+-import android.util.Range;
+-
+-import com.cfox.camera.CameraConfig;
+-import com.cfox.camera.camera.session.helper.IBuilderHelper;
+-import com.cfox.camera.camera.session.helper.ICameraHelper;
+-import com.cfox.camera.log.EsLog;
+-import com.cfox.camera.utils.Es;
+-import com.cfox.camera.utils.EsRequest;
+-
+-import java.util.HashMap;
+-import java.util.Map;
+-
+-public class BuilderHelper implements IBuilderHelper {
+-
+-    private ICameraHelper mCameraHelper;
+-    private Map<CaptureRequest.Key<Integer>, Integer> mConfigMap = new HashMap<>();
+-
+-    private int mEvValue = 0;
+-
+-    public BuilderHelper(ICameraHelper cameraHelper) {
+-        this.mCameraHelper = cameraHelper;
+-    }
+-
+-    @Override
+-    public void clear() {
+-        mConfigMap.clear();
+-    }
+-
+-    @Override
+-    public void configBuilder(EsRequest request) {
+-        setBuilder(request, null);
+-    }
+-
+-    @Override
+-    public void repeatingRequestBuilder(EsRequest request, CaptureRequest.Builder builder) {
+-        setBuilder(request, builder);
+-    }
+-
+-    @Override
+-    public void previewBuilder(CaptureRequest.Builder builder) {
+-        EsLog.d("previewBuilder: ");
+-        builder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO);
+-        if (mCameraHelper.isAutoFocusSupported()) {
+-            builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_IDLE);
+-        }
+-        builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+-        builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.FLASH_MODE_SINGLE);
+-        builder.set(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_AUTO);
+-
+-        setExposureValue(builder, mEvValue);
+-    }
+-
+-    @Override
+-    public void preCaptureBuilder(CaptureRequest.Builder builder) {
+-        setExposureValue(builder, mEvValue);
+-        if (mCameraHelper.isAutoFocusSupported()) {
+-            builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_START);
+-        }
+-
+-        if (!mCameraHelper.isLegacyLocked()) {
+-            builder.set(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER, CameraMetadata.CONTROL_AE_PRECAPTURE_TRIGGER_START);
+-        }
+-    }
+-
+-    @Override
+-    public void captureBuilder(CaptureRequest.Builder builder) {
+-        builder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+-        builder.set(CaptureRequest.CONTROL_AWB_MODE, CaptureRequest.CONTROL_AWB_MODE_AUTO);
+-        setExposureValue(builder, mEvValue);
+-    }
+-
+-    @Override
+-    public void previewCaptureBuilder(CaptureRequest.Builder builder) {
+-        if (mCameraHelper.isAutoFocusSupported()) {
+-            builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CameraMetadata.CONTROL_AF_TRIGGER_CANCEL);
+-        }
+-        if (!mCameraHelper.isLegacyLocked()) {
+-            builder.set(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER, CameraMetadata.CONTROL_AE_PRECAPTURE_TRIGGER_CANCEL);
+-        }
+-        setExposureValue(builder, mEvValue);
+-    }
+-
+-    private void setBuilder(EsRequest request, CaptureRequest.Builder builder) {
+-        CameraConfig cameraConfig = (CameraConfig) request.getObj(Es.Key.CAMERA_CONFIG);
+-        if (cameraConfig == null) return;
+-        for (Map.Entry<CaptureRequest.Key<Integer>, Integer> value : cameraConfig.getValue()) {
+-            EsLog.d("CaptureRequest: key:" + value.getKey()  + "   value:" + value.getValue());
+-            mConfigMap.put(value.getKey(), value.getValue());
+-            if (builder == null) return;
+-            if (CaptureRequest.FLASH_MODE.equals(value.getKey())) {
+-                if (value.getValue() == Es.FLASH_TYPE.OFF
+-                        || value.getValue() == Es.FLASH_TYPE.TORCH)
+-                    applyFlash(builder);
+-            } else if (CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION.equals(value.getKey())) {
+-                setExposureValue(builder, value.getValue());
+-            } else {
+-                builder.set(value.getKey(), value.getValue());
+-            }
+-        }
+-    }
+-
+-    private void setExposureValue(CaptureRequest.Builder builder, int value) {
+-        EsLog.d("setExposureValue: value:" + value);
+-
+-        if (value == mEvValue) return;
+-
+-        Range<Integer> evRange = mCameraHelper.getEvRange();
+-
+-        if (value >= evRange.getUpper()) {
+-            value = evRange.getUpper();
+-        } else if (value <= evRange.getLower()) {
+-            value = evRange.getLower();
+-        }
+-
+-        mEvValue = value;
+-        builder.set(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, value);
+-    }
+-
+-
+-    private void applyFlash(CaptureRequest.Builder builder) {
+-        int flashType = Es.FLASH_TYPE.OFF;
+-        if (mConfigMap.containsKey(CaptureRequest.FLASH_MODE)) {
+-            flashType =  mConfigMap.get(CaptureRequest.FLASH_MODE);
+-        }
+-        EsLog.d("applyFlash: flashType:" + flashType);
+-        switch (flashType) {
+-//            case Es.FLASH_TYPE.AUTO:
+-//                builder.set(CaptureRequest.CONTROL_AE_MODE,CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+-//                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
+-//                break;
+-//            case Es.FLASH_TYPE.ON:
+-//                builder.set(CaptureRequest.CONTROL_AE_MODE,CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH);
+-//                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
+-//                break;
+-            case Es.FLASH_TYPE.OFF:
+-                builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
+-                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
+-                break;
+-            case Es.FLASH_TYPE.TORCH:
+-                builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
+-                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
+-                break;
+-        }
+-    }
+-}
+Index: fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/IBuilderHelper.java
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/IBuilderHelper.java	(revision b7f17ac90b36b1c38672602fb3600cf0754486cb)
++++ fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/IBuilderHelper.java	(revision b7f17ac90b36b1c38672602fb3600cf0754486cb)
+@@ -1,17 +0,0 @@
+-package com.cfox.camera.camera.session.helper;
+-
+-import android.hardware.camera2.CaptureRequest;
+-
+-import com.cfox.camera.utils.EsRequest;
+-
+-public interface IBuilderHelper  {
+-
+-    void clear();
+-
+-    void configBuilder(EsRequest request);
+-    void repeatingRequestBuilder(EsRequest request , CaptureRequest.Builder builder);
+-    void previewBuilder(CaptureRequest.Builder builder);
+-    void preCaptureBuilder(CaptureRequest.Builder builder);
+-    void captureBuilder(CaptureRequest.Builder builder);
+-    void previewCaptureBuilder(CaptureRequest.Builder builder);
+-}
+Index: fx_lib_camera/src/main/java/com/cfox/camera/camera/session/IPhotoSession.java
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/camera/session/IPhotoSession.java	(revision b7f17ac90b36b1c38672602fb3600cf0754486cb)
++++ fx_lib_camera/src/main/java/com/cfox/camera/camera/session/IPhotoSession.java	(revision b7f17ac90b36b1c38672602fb3600cf0754486cb)
+@@ -1,13 +0,0 @@
+-package com.cfox.camera.camera.session;
+-
+-import com.cfox.camera.utils.EsRequest;
+-import com.cfox.camera.utils.EsResult;
+-
+-import io.reactivex.Observable;
+-
+-public interface IPhotoSession extends ICameraSession {
+-    Observable<EsResult> onSendRepeatingRequest(EsRequest request);
+-    Observable<EsResult> onCapture(EsRequest request);
+-    Observable<EsResult> onCaptureStillPicture(EsRequest request);
+-    int createStillCaptureTemplate();
+-}
+Index: fx_lib_camera/src/main/java/com/cfox/camera/camera/session/IVideoSession.java
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/camera/session/IVideoSession.java	(revision b7f17ac90b36b1c38672602fb3600cf0754486cb)
++++ fx_lib_camera/src/main/java/com/cfox/camera/camera/session/IVideoSession.java	(revision b7f17ac90b36b1c38672602fb3600cf0754486cb)
+@@ -1,4 +0,0 @@
+-package com.cfox.camera.camera.session;
+-
+-public interface IVideoSession extends ICameraSession {
+-}
+Index: fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/impl/PhotoSessionHelper.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.camera.session.helper.impl;\n\nimport android.graphics.ImageFormat;\nimport android.hardware.camera2.CameraAccessException;\nimport android.hardware.camera2.CameraCaptureSession;\nimport android.hardware.camera2.CaptureFailure;\nimport android.hardware.camera2.CaptureRequest;\nimport android.hardware.camera2.TotalCaptureResult;\nimport android.util.Log;\nimport android.util.Range;\nimport android.util.Size;\n\nimport androidx.annotation.NonNull;\n\nimport com.cfox.camera.camera.session.ICameraSession;\nimport com.cfox.camera.camera.session.ISessionManager;\nimport com.cfox.camera.camera.session.helper.IBuilderHelper;\nimport com.cfox.camera.camera.session.helper.IPhotoCameraHelper;\nimport com.cfox.camera.camera.session.helper.IPhotoSessionHelper;\nimport com.cfox.camera.log.EsLog;\nimport com.cfox.camera.surface.ISurfaceHelper;\nimport com.cfox.camera.utils.Es;\nimport com.cfox.camera.utils.EsRequest;\nimport com.cfox.camera.utils.EsResult;\n\n\n\nimport io.reactivex.Observable;\nimport io.reactivex.ObservableEmitter;\nimport io.reactivex.ObservableOnSubscribe;\n\npublic class PhotoSessionHelper extends AbsCameraSessionHelper implements IPhotoSessionHelper {\n    private static final String TAG = \"PhotoSessionHelper\";\n\n    private CaptureRequest.Builder mBuilder;\n\n    private ICameraSession mCameraSession;\n    private IPhotoCameraHelper mPhotoCameraHelper;\n    private IBuilderHelper mBuilderHelper;\n\n    public PhotoSessionHelper(ISessionManager sessionManager) {\n        sessionManager.getCameraSession(1);\n        mCameraSession = sessionManager.getCameraSession();\n        mPhotoCameraHelper = new PhotoCameraHelper();\n        mBuilderHelper = mPhotoCameraHelper.getBuilderHelper();\n    }\n\n    @Override\n    public void openCamera(EsRequest request) {\n        mCameraSession.onClose().subscribe();\n    }\n\n    @Override\n    public void applyPreviewRepeatingBuilder(EsRequest request) throws CameraAccessException {\n        mBuilderHelper.clear();\n        mBuilderHelper.configBuilder(request);\n\n        ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(Es.Key.SURFACE_HELPER);\n        mBuilder = mCameraSession.onCreateRequestBuilder(mPhotoCameraHelper.createPreviewTemplate());\n        mBuilder.addTarget(surfaceHelper.getSurface());\n\n        mBuilderHelper.previewBuilder(mBuilder);\n        request.put(Es.Key.REQUEST_BUILDER, mBuilder);\n    }\n\n\n    @Override\n    public Observable<EsResult> onSendRepeatingRequest(EsRequest request) {\n        mBuilderHelper.repeatingRequestBuilder(request, mBuilder);\n        request.put(Es.Key.REQUEST_BUILDER, mBuilder);\n        return mCameraSession.onRepeatingRequest(request);\n    }\n\n    @Override\n    public Size[] getPictureSize(EsRequest request) {\n        int imageFormat = request.getInt(Es.Key.IMAGE_FORMAT, ImageFormat.JPEG);\n        return mPhotoCameraHelper.getPictureSize(imageFormat);\n    }\n\n    @Override\n    public Size[] getPreviewSize(EsRequest request) {\n        String cameraId = request.getString(Es.Key.CAMERA_ID);\n        Class klass = (Class) request.getObj(Es.Key.SURFACE_CLASS);\n        mPhotoCameraHelper.initCameraInfo(getCameraInfo(cameraId));\n        return mPhotoCameraHelper.getPreviewSize(klass);\n    }\n\n    @Override\n    public int getSensorOrientation(EsRequest request) {\n        return mPhotoCameraHelper.getSensorOrientation();\n    }\n\n    @Override\n    public Observable<EsResult> close(EsRequest request) {\n        return Observable.create(new ObservableOnSubscribe<EsResult>() {\n            @Override\n            public void subscribe(ObservableEmitter<EsResult> emitter) throws Exception {\n                mCameraSession.onClose().subscribe();\n            }\n        });\n    }\n\n    @Override\n    public Range<Integer> getEvRange(EsRequest request) {\n        return mPhotoCameraHelper.getEvRange();\n    }\n\n    @Override\n    public Observable<EsResult> capture(final EsRequest request) {\n        EsLog.d( \"capture: ......3333...\");\n        return Observable.create(new ObservableOnSubscribe<EsResult>() {\n            @Override\n            public void subscribe(final ObservableEmitter<EsResult> emitter) throws Exception {\n                boolean previewCapture = request.getBoolean(Es.Key.PREVIEW_CAPTURE, false);\n                EsLog.d(\"subscribe: capture: ......3333...\");\n\n                if (previewCapture) {\n                    mCameraSession.capture(request, null);\n                    emitter.onNext(new EsResult());\n                    return;\n                }\n\n//                mCaptureTime = SystemClock.elapsedRealtime();\n//                mCaptureCallback.setEmitter(emitter, FLAG_CAPTURE);\n                // TODO: 19-12-1\n//                mCameraSession.capture(request,mCaptureCallback);\n            }\n        });\n    }\n\n    @Override\n    public Observable<EsResult> captureStillPicture(final EsRequest request) {\n        EsLog.d( \"captureStillPicture: .......\");\n        return Observable.create(new ObservableOnSubscribe<EsResult>() {\n            @Override\n            public void subscribe(final ObservableEmitter<EsResult> emitter) throws Exception {\n                mCameraSession.stopRepeating();\n                mCameraSession.capture(request, new CameraCaptureSession.CaptureCallback() {\n                    @Override\n                    public void onCaptureCompleted(@NonNull CameraCaptureSession session,\n                                                   @NonNull CaptureRequest request,\n                                                   @NonNull TotalCaptureResult result) {\n                        emitter.onNext(new EsResult());\n                        EsLog.d(\"onCaptureCompleted: pic success .....\");\n                    }\n\n                    @Override\n                    public void onCaptureFailed(@NonNull CameraCaptureSession session,\n                                                @NonNull CaptureRequest request,\n                                                @NonNull CaptureFailure failure) {\n                        Log.d(TAG, \"onCaptureFailed: .........\" +failure);\n                    }\n                });\n            }\n        });\n    }\n\n    @Override\n    public ICameraSession getCameraSession(EsRequest request) {\n        return mCameraSession;\n    }\n\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/impl/PhotoSessionHelper.java	(revision b7f17ac90b36b1c38672602fb3600cf0754486cb)
++++ fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/impl/PhotoSessionHelper.java	(date 1576938156000)
+@@ -6,15 +6,14 @@
+ import android.hardware.camera2.CaptureFailure;
+ import android.hardware.camera2.CaptureRequest;
+ import android.hardware.camera2.TotalCaptureResult;
+-import android.util.Log;
+ import android.util.Range;
+ import android.util.Size;
+ 
+ import androidx.annotation.NonNull;
+ 
+ import com.cfox.camera.camera.session.ICameraSession;
++import com.cfox.camera.camera.session.IPhotoRequestBuilderManager;
+ import com.cfox.camera.camera.session.ISessionManager;
+-import com.cfox.camera.camera.session.helper.IBuilderHelper;
+ import com.cfox.camera.camera.session.helper.IPhotoCameraHelper;
+ import com.cfox.camera.camera.session.helper.IPhotoSessionHelper;
+ import com.cfox.camera.log.EsLog;
+@@ -30,19 +29,18 @@
+ import io.reactivex.ObservableOnSubscribe;
+ 
+ public class PhotoSessionHelper extends AbsCameraSessionHelper implements IPhotoSessionHelper {
+-    private static final String TAG = "PhotoSessionHelper";
+ 
+-    private CaptureRequest.Builder mBuilder;
++    private CaptureRequest.Builder mPreviewBuilder;
+ 
+     private ICameraSession mCameraSession;
+     private IPhotoCameraHelper mPhotoCameraHelper;
+-    private IBuilderHelper mBuilderHelper;
++    private IPhotoRequestBuilderManager mRequestBuilderManager;
+ 
+     public PhotoSessionHelper(ISessionManager sessionManager) {
+         sessionManager.getCameraSession(1);
+         mCameraSession = sessionManager.getCameraSession();
+         mPhotoCameraHelper = new PhotoCameraHelper();
+-        mBuilderHelper = mPhotoCameraHelper.getBuilderHelper();
++        mRequestBuilderManager = (IPhotoRequestBuilderManager) mPhotoCameraHelper.getBuilderHelper();
+     }
+ 
+     @Override
+@@ -52,22 +50,26 @@
+ 
+     @Override
+     public void applyPreviewRepeatingBuilder(EsRequest request) throws CameraAccessException {
+-        mBuilderHelper.clear();
+-        mBuilderHelper.configBuilder(request);
++        mPreviewBuilder = createPreviewBuilder(request);
++        request.put(Es.Key.REQUEST_BUILDER, mPreviewBuilder);
++    }
+ 
++    private CaptureRequest.Builder createPreviewBuilder(EsRequest request) throws CameraAccessException {
+         ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(Es.Key.SURFACE_HELPER);
+-        mBuilder = mCameraSession.onCreateRequestBuilder(mPhotoCameraHelper.createPreviewTemplate());
+-        mBuilder.addTarget(surfaceHelper.getSurface());
++        CaptureRequest.Builder builder = mCameraSession.onCreateRequestBuilder(mPhotoCameraHelper.createPreviewTemplate());
++        builder.addTarget(surfaceHelper.getSurface());
++        return builder;
++    }
+ 
+-        mBuilderHelper.previewBuilder(mBuilder);
+-        request.put(Es.Key.REQUEST_BUILDER, mBuilder);
++    private CaptureRequest.Builder getPreviewBuilder() {
++        return mPreviewBuilder;
+     }
+ 
+ 
+     @Override
+     public Observable<EsResult> onSendRepeatingRequest(EsRequest request) {
+-        mBuilderHelper.repeatingRequestBuilder(request, mBuilder);
+-        request.put(Es.Key.REQUEST_BUILDER, mBuilder);
++
++        request.put(Es.Key.REQUEST_BUILDER, mPreviewBuilder);
+         return mCameraSession.onRepeatingRequest(request);
+     }
+ 
+@@ -148,7 +150,7 @@
+                     public void onCaptureFailed(@NonNull CameraCaptureSession session,
+                                                 @NonNull CaptureRequest request,
+                                                 @NonNull CaptureFailure failure) {
+-                        Log.d(TAG, "onCaptureFailed: ........." +failure);
++                        EsLog.d("onCaptureFailed: ........." +failure);
+                     }
+                 });
+             }
+Index: fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/impl/CameraHelper.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.camera.session.helper.impl;\n\nimport android.hardware.camera2.CameraCharacteristics;\nimport android.util.Log;\nimport android.util.Range;\nimport android.util.Rational;\nimport android.util.Size;\n\nimport com.cfox.camera.camera.ICameraInfo;\nimport com.cfox.camera.camera.session.helper.ICameraHelper;\nimport com.cfox.camera.log.EsLog;\n\npublic abstract class CameraHelper implements ICameraHelper {\n    private static final String TAG = \"CameraHelper\";\n\n    private ICameraInfo mCameraInfo;\n\n    @Override\n    public void initCameraInfo(ICameraInfo cameraInfo) {\n        mCameraInfo = cameraInfo;\n    }\n\n    @Override\n    public boolean isAutoFocusSupported() {\n        Float minFocusDist = getCharacteristics().get(CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE);\n        Log.d(TAG, \"isAutoFocusSupported: minFocusDist:\" + minFocusDist);\n        return minFocusDist != null && minFocusDist > 0;\n    }\n\n    @Override\n    public boolean isRawSupported() {\n        boolean rawSupported = false;\n        int[] modes = getCharacteristics().get(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES);\n        for (int mode : modes) {\n            if (mode == CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_RAW) {\n                rawSupported = true;\n                break;\n            }\n        }\n        return rawSupported;\n    }\n\n    @Override\n    public boolean isLegacyLocked() {\n        Integer level = getCharacteristics().get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL);\n        Log.d(TAG, \"isLegacyLocked: INFO_SUPPORTED_HARDWARE_LEVEL:\" + level);\n        return level != null && level == CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY;\n    }\n\n    @Override\n    public Size[] getPreviewSize(Class klass) {\n        return mCameraInfo.getPreviewSize(klass);\n    }\n\n    @Override\n    public Size[] getPictureSize(int format) {\n        return mCameraInfo.getPictureSize(format);\n    }\n\n    @Override\n    public int getSensorOrientation() {\n        return mCameraInfo.getSensorOrientation();\n    }\n\n    @Override\n    public int getValidAFMode(int targetMode) {\n        int[] allAFMode = getCharacteristics().get(CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES);\n        for (int mode : allAFMode) {\n            if (mode == targetMode) {\n                return targetMode;\n            }\n        }\n        EsLog.d(\"not support af mode:\" + targetMode + \" use mode:\" + allAFMode[0]);\n        return allAFMode[0];\n    }\n\n    @Override\n    public int getValidAntiBandingMode(int targetMode) {\n        int[] allABMode = getCharacteristics().get(\n                CameraCharacteristics.CONTROL_AE_AVAILABLE_ANTIBANDING_MODES);\n        for (int mode : allABMode) {\n            if (mode == targetMode) {\n                return targetMode;\n            }\n        }\n        EsLog.d(\"not support anti banding mode:\" + targetMode\n                + \" use mode:\" + allABMode[0]);\n        return allABMode[0];\n    }\n\n    @Override\n    public boolean isMeteringSupport(boolean focusArea) {\n        int regionNum;\n        if (focusArea) {\n            regionNum = getCharacteristics().get(CameraCharacteristics.CONTROL_MAX_REGIONS_AF);\n        } else {\n            regionNum = getCharacteristics().get(CameraCharacteristics.CONTROL_MAX_REGIONS_AE);\n        }\n        return regionNum > 0;\n    }\n\n    @Override\n    public float getMinimumDistance() {\n        Float distance = getCharacteristics().get(\n                CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE);\n        if (distance == null) {\n            return 0;\n        }\n        return distance;\n    }\n\n    @Override\n    public boolean isFlashSupport() {\n        Boolean support = getCharacteristics().get(CameraCharacteristics.FLASH_INFO_AVAILABLE);\n        return support != null && support;\n    }\n\n    @Override\n    public boolean canTriggerAf() {\n        int[] allAFMode = getCharacteristics().get(CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES);\n        return  allAFMode != null && allAFMode.length > 1;\n    }\n\n    @Override\n    public Range<Integer> getEvRange() {\n        return getCharacteristics().get(CameraCharacteristics.CONTROL_AE_COMPENSATION_RANGE);\n    }\n\n    public Rational getEvStep() {\n        return getCharacteristics().get(CameraCharacteristics.CONTROL_AE_COMPENSATION_STEP);\n    }\n\n    private CameraCharacteristics getCharacteristics() {\n        return mCameraInfo.getCharacteristics();\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/impl/CameraHelper.java	(revision b7f17ac90b36b1c38672602fb3600cf0754486cb)
++++ fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/impl/CameraHelper.java	(date 1576931915000)
+@@ -1,7 +1,6 @@
+ package com.cfox.camera.camera.session.helper.impl;
+ 
+ import android.hardware.camera2.CameraCharacteristics;
+-import android.util.Log;
+ import android.util.Range;
+ import android.util.Rational;
+ import android.util.Size;
+@@ -11,7 +10,6 @@
+ import com.cfox.camera.log.EsLog;
+ 
+ public abstract class CameraHelper implements ICameraHelper {
+-    private static final String TAG = "CameraHelper";
+ 
+     private ICameraInfo mCameraInfo;
+ 
+@@ -23,7 +21,7 @@
+     @Override
+     public boolean isAutoFocusSupported() {
+         Float minFocusDist = getCharacteristics().get(CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE);
+-        Log.d(TAG, "isAutoFocusSupported: minFocusDist:" + minFocusDist);
++        EsLog.d("isAutoFocusSupported: minFocusDist:" + minFocusDist);
+         return minFocusDist != null && minFocusDist > 0;
+     }
+ 
+@@ -43,7 +41,7 @@
+     @Override
+     public boolean isLegacyLocked() {
+         Integer level = getCharacteristics().get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL);
+-        Log.d(TAG, "isLegacyLocked: INFO_SUPPORTED_HARDWARE_LEVEL:" + level);
++        EsLog.d("isLegacyLocked: INFO_SUPPORTED_HARDWARE_LEVEL:" + level);
+         return level != null && level == CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY;
+     }
+ 
+Index: module_camera/src/main/java/com/cfox/module_camera/CameraMainFragment.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.module_camera;\n\nimport android.os.Bundle;\nimport android.util.Log;\nimport android.view.LayoutInflater;\nimport android.view.View;\nimport android.view.ViewGroup;\nimport android.widget.SeekBar;\nimport android.widget.Toast;\n\nimport androidx.annotation.NonNull;\nimport androidx.annotation.Nullable;\n\nimport com.alibaba.android.arouter.facade.annotation.Route;\nimport com.cfox.camera.AutoFitTextureView;\nimport com.cfox.camera.surface.SurfaceHelper;\nimport com.cfox.lib_common.arouter.RouterPath;\nimport com.cfox.lib_common.base.BaseFragment;\n\n\n@Route(path = RouterPath.MAIN_CAMERA_FG)\npublic class CameraMainFragment extends BaseFragment {\n    private static final String TAG = \"CameraMainFragment\";\n    private AutoFitTextureView mPreviewView;\n    private SurfaceHelper mSurfaceHelper;\n    private AutoFitTextureView mPreviewView2;\n    private EsyCameraController mCameraController;\n\n    @Override\n    public void onCreate(@Nullable Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n        mCameraController = new EsyCameraController();\n    }\n\n    @Nullable\n    @Override\n    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {\n        return inflater.inflate(R.layout.fragment_camera_main, container, false);\n    }\n\n    @Override\n    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {\n        super.onViewCreated(view, savedInstanceState);\n\n        mPreviewView = view.findViewById(R.id.preview_view);\n        mPreviewView2 = view.findViewById(R.id.preview_view_2);\n        view.findViewById(R.id.btn_torch_flash).setOnClickListener(new View.OnClickListener() {\n            @Override\n            public void onClick(View v) {\n                mCameraController.torchFlash();\n            }\n        });\n\n        view.findViewById(R.id.btn_close_flash).setOnClickListener(new View.OnClickListener() {\n            @Override\n            public void onClick(View v) {\n                mCameraController.closeFlash();\n            }\n        });\n\n        view.findViewById(R.id.btn_open_back).setOnClickListener(new View.OnClickListener() {\n            @Override\n            public void onClick(View v) {\n                mSurfaceHelper = new SurfaceHelper(mPreviewView);\n                mCameraController.backCamera(mSurfaceHelper);\n            }\n        });\n        view.findViewById(R.id.btn_open_font).setOnClickListener(new View.OnClickListener() {\n            @Override\n            public void onClick(View v) {\n                mSurfaceHelper = new SurfaceHelper(mPreviewView);\n                mCameraController.fontCamera(mSurfaceHelper);\n            }\n        });\n\n        view.findViewById(R.id.btn_photo).setOnClickListener(new View.OnClickListener() {\n            @Override\n            public void onClick(View v) {\n                mPreviewView2.setVisibility(View.GONE);\n                mCameraController.photoModule();\n                mSurfaceHelper = new SurfaceHelper(mPreviewView);\n                mCameraController.backCamera(mSurfaceHelper);\n            }\n        });\n\n        view.findViewById(R.id.btn_video).setOnClickListener(new View.OnClickListener() {\n            @Override\n            public void onClick(View v) {\n                mPreviewView2.setVisibility(View.GONE);\n                mCameraController.videoModule();\n                mSurfaceHelper = new SurfaceHelper(mPreviewView);\n                mCameraController.backCamera(mSurfaceHelper);\n            }\n        });\n\n        view.findViewById(R.id.btn_dul).setOnClickListener(new View.OnClickListener() {\n            @Override\n            public void onClick(View v) {\n                mPreviewView2.setVisibility(View.VISIBLE);\n                mCameraController.dulVideoModule();\n                mSurfaceHelper = new SurfaceHelper(mPreviewView);\n                mCameraController.backCamera(mSurfaceHelper);\n\n                mSurfaceHelper = new SurfaceHelper(mPreviewView2);\n                mCameraController.fontCamera(mSurfaceHelper);\n            }\n        });\n\n        view.findViewById(R.id.btn_capture).setOnClickListener(new View.OnClickListener() {\n            @Override\n            public void onClick(View v) {\n                mCameraController.capture();\n            }\n        });\n\n        ((SeekBar)view.findViewById(R.id.seek_ev)).setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {\n            @Override\n            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {\n                showMsg(\"ev :\" + progress);\n                mCameraController.setEv(progress);\n            }\n\n            @Override\n            public void onStartTrackingTouch(SeekBar seekBar) {\n\n            }\n\n            @Override\n            public void onStopTrackingTouch(SeekBar seekBar) {\n\n            }\n        });\n\n    }\n\n    @Override\n    public void onResume() {\n        super.onResume();\n        mSurfaceHelper = new SurfaceHelper(mPreviewView);\n        Log.d(TAG, \"onResume: .......\");\n        mCameraController.backCamera(mSurfaceHelper);\n    }\n\n    @Override\n    public void onPause() {\n        super.onPause();\n        Log.d(TAG, \"onPause: ........\");\n        if (mCameraController == null) return;\n        mCameraController.stopCamera();\n    }\n\n    private void showMsg(String msg) {\n        Toast.makeText(getContext(), \"\" + msg, Toast.LENGTH_SHORT).show();\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- module_camera/src/main/java/com/cfox/module_camera/CameraMainFragment.java	(revision b7f17ac90b36b1c38672602fb3600cf0754486cb)
++++ module_camera/src/main/java/com/cfox/module_camera/CameraMainFragment.java	(date 1576919387000)
+@@ -1,7 +1,6 @@
+ package com.cfox.module_camera;
+ 
+ import android.os.Bundle;
+-import android.util.Log;
+ import android.view.LayoutInflater;
+ import android.view.View;
+ import android.view.ViewGroup;
+@@ -13,6 +12,7 @@
+ 
+ import com.alibaba.android.arouter.facade.annotation.Route;
+ import com.cfox.camera.AutoFitTextureView;
++import com.cfox.camera.log.EsLog;
+ import com.cfox.camera.surface.SurfaceHelper;
+ import com.cfox.lib_common.arouter.RouterPath;
+ import com.cfox.lib_common.base.BaseFragment;
+@@ -137,14 +137,14 @@
+     public void onResume() {
+         super.onResume();
+         mSurfaceHelper = new SurfaceHelper(mPreviewView);
+-        Log.d(TAG, "onResume: .......");
++        EsLog.d("onResume: .......");
+         mCameraController.backCamera(mSurfaceHelper);
+     }
+ 
+     @Override
+     public void onPause() {
+         super.onPause();
+-        Log.d(TAG, "onPause: ........");
++        EsLog.d("onPause: ........");
+         if (mCameraController == null) return;
+         mCameraController.stopCamera();
+     }
+Index: fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/impl/PhotoCameraHelper.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.camera.session.helper.impl;\n\nimport android.hardware.camera2.CameraDevice;\n\nimport com.cfox.camera.camera.session.helper.IBuilderHelper;\nimport com.cfox.camera.camera.session.helper.IPhotoCameraHelper;\n\npublic class PhotoCameraHelper extends CameraHelper implements IPhotoCameraHelper {\n    @Override\n    public int createPreviewTemplate() {\n        return CameraDevice.TEMPLATE_PREVIEW;\n    }\n\n    @Override\n    public IBuilderHelper getBuilderHelper() {\n        return new BuilderHelper(this);\n    }\n\n    @Override\n    public int createStillCaptureTemplate() {\n        return CameraDevice.TEMPLATE_STILL_CAPTURE;\n    }\n\n\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/impl/PhotoCameraHelper.java	(revision b7f17ac90b36b1c38672602fb3600cf0754486cb)
++++ fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/impl/PhotoCameraHelper.java	(date 1576920504000)
+@@ -2,8 +2,9 @@
+ 
+ import android.hardware.camera2.CameraDevice;
+ 
+-import com.cfox.camera.camera.session.helper.IBuilderHelper;
++import com.cfox.camera.camera.session.IRequestBuilderManager;
+ import com.cfox.camera.camera.session.helper.IPhotoCameraHelper;
++import com.cfox.camera.camera.session.impl.PhtotoRequestBuilderManger;
+ 
+ public class PhotoCameraHelper extends CameraHelper implements IPhotoCameraHelper {
+     @Override
+@@ -12,8 +13,8 @@
+     }
+ 
+     @Override
+-    public IBuilderHelper getBuilderHelper() {
+-        return new BuilderHelper(this);
++    public IRequestBuilderManager getBuilderHelper() {
++        return new PhtotoRequestBuilderManger(this);
+     }
+ 
+     @Override
+Index: fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/impl/DulVideoCameraHelper.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.camera.session.helper.impl;\n\nimport android.hardware.camera2.CameraDevice;\n\nimport com.cfox.camera.camera.session.helper.ICameraSessionHelper;\nimport com.cfox.camera.camera.session.helper.IDulVideoCameraHelper;\nimport com.cfox.camera.camera.session.helper.IPhotoCameraHelper;\n\npublic class DulVideoCameraHelper extends CameraHelper implements IDulVideoCameraHelper {\n    @Override\n    public int createPreviewTemplate() {\n        return CameraDevice.TEMPLATE_PREVIEW;\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/impl/DulVideoCameraHelper.java	(revision b7f17ac90b36b1c38672602fb3600cf0754486cb)
++++ fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/impl/DulVideoCameraHelper.java	(date 1576919387000)
+@@ -2,9 +2,7 @@
+ 
+ import android.hardware.camera2.CameraDevice;
+ 
+-import com.cfox.camera.camera.session.helper.ICameraSessionHelper;
+ import com.cfox.camera.camera.session.helper.IDulVideoCameraHelper;
+-import com.cfox.camera.camera.session.helper.IPhotoCameraHelper;
+ 
+ public class DulVideoCameraHelper extends CameraHelper implements IDulVideoCameraHelper {
+     @Override
+Index: fx_lib_camera/src/main/java/com/cfox/camera/camera/ImageReaderHelper.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.camera;\n\nimport android.graphics.ImageFormat;\nimport android.media.Image;\nimport android.media.ImageReader;\nimport android.os.Handler;\nimport android.util.Log;\nimport android.util.Size;\n\nimport com.cfox.camera.log.EsLog;\nimport com.cfox.camera.utils.Es;\nimport com.cfox.camera.utils.EsRequest;\nimport com.cfox.camera.utils.ThreadHandlerManager;\n\nimport java.io.File;\nimport java.io.FileOutputStream;\nimport java.io.IOException;\nimport java.nio.ByteBuffer;\nimport java.text.SimpleDateFormat;\nimport java.util.ArrayList;\nimport java.util.Date;\nimport java.util.List;\nimport java.util.Locale;\n\npublic class ImageReaderHelper implements IReaderHelper {\n    private static final String TAG = \"ImageReaderHelper\";\n\n    private List<ImageReader> mImageReaders;\n    private Handler mImageReaderHandler;\n    public ImageReaderHelper() {\n        mImageReaders = new ArrayList<>();\n        mImageReaderHandler = ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_IMAGE_READER).getHandler();\n    }\n\n    @Override\n    public ImageReader createImageReader(EsRequest request) {\n        Size picSize = (Size) request.getObj(Es.Key.PIC_SIZE);\n        int imageFormat = request.getInt(Es.Key.IMAGE_FORMAT, ImageFormat.JPEG);\n        final String filePath = request.getString(Es.Key.PIC_FILE_PATH);\n        EsLog.d(\"createImageReader: pic width:\" + picSize.getWidth() + \"  pic height:\" + picSize.getHeight()  + \"   format:\" + imageFormat);\n        ImageReader imageReader = ImageReader.newInstance(picSize.getWidth(), picSize.getHeight(), imageFormat, 2);\n        mImageReaders.add(imageReader);\n        imageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {\n            @Override\n            public void onImageAvailable(ImageReader reader) {\n                SimpleDateFormat format = new SimpleDateFormat(\"'/PIC'_yyyyMMdd_HHmmss'.jpeg'\", Locale.getDefault());\n                String fileName = format.format(new Date());\n                EsLog.d(\"createImageReader: pic file path:\" + (filePath + fileName));\n                mImageReaderHandler.post(new ImageSaver(reader.acquireNextImage(), new File(filePath + fileName)));\n            }\n        }, mImageReaderHandler);\n        return imageReader;\n    }\n\n    @Override\n    public ImageReader createPreviewImageReader(EsRequest request) {\n        Size picSize = (Size) request.getObj(Es.Key.PREVIEW_SIZE);\n        int imageFormat = request.getInt(Es.Key.IMAGE_FORMAT, ImageFormat.JPEG);\n        EsLog.d(\"createImageReader: pic width:\" + picSize.getWidth() + \"  pic height:\" + picSize.getHeight()  + \"   format:\" + imageFormat);\n        ImageReader imageReader = ImageReader.newInstance(picSize.getWidth(), picSize.getHeight(), ImageFormat.YUV_420_888, 2);\n        mImageReaders.add(imageReader);\n        imageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {\n            @Override\n            public void onImageAvailable(ImageReader reader) {\n                EsLog.d(\"onImageAvailable: preview frame ....\");\n                Image image = reader.acquireNextImage();\n                if (image == null) return;\n                image.close();\n            }\n        }, mImageReaderHandler);\n        return imageReader;\n    }\n\n    @Override\n    public void closeImageReaders() {\n        for (ImageReader imageReader : mImageReaders) {\n            imageReader.close();\n        }\n        mImageReaders.clear();\n    }\n\n    private static class ImageSaver implements Runnable {\n\n        private final Image mImage;\n        private final File mFile;\n\n        ImageSaver(Image image, File file) {\n            mImage = image;\n            mFile = file;\n        }\n\n        @Override\n        public void run() {\n            ByteBuffer buffer = mImage.getPlanes()[0].getBuffer();\n            byte[] bytes = new byte[buffer.remaining()];\n            buffer.get(bytes);\n            FileOutputStream output = null;\n            try {\n                output = new FileOutputStream(mFile);\n                output.write(bytes);\n            } catch (IOException e) {\n                e.printStackTrace();\n            } finally {\n                mImage.close();\n                if (null != output) {\n                    try {\n                        output.close();\n                    } catch (IOException e) {\n                        e.printStackTrace();\n                    }\n                }\n            }\n        }\n\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/camera/ImageReaderHelper.java	(revision b7f17ac90b36b1c38672602fb3600cf0754486cb)
++++ fx_lib_camera/src/main/java/com/cfox/camera/camera/ImageReaderHelper.java	(date 1576919387000)
+@@ -4,7 +4,6 @@
+ import android.media.Image;
+ import android.media.ImageReader;
+ import android.os.Handler;
+-import android.util.Log;
+ import android.util.Size;
+ 
+ import com.cfox.camera.log.EsLog;
+@@ -23,7 +22,6 @@
+ import java.util.Locale;
+ 
+ public class ImageReaderHelper implements IReaderHelper {
+-    private static final String TAG = "ImageReaderHelper";
+ 
+     private List<ImageReader> mImageReaders;
+     private Handler mImageReaderHandler;
+Index: fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/IDulVideoSessionHelper.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.camera.session.helper;\n\npublic interface IDulVideoSessionHelper extends ICameraSessionHelper/*extends ISessionHelper */{\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/IDulVideoSessionHelper.java	(revision b7f17ac90b36b1c38672602fb3600cf0754486cb)
++++ fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/IDulVideoSessionHelper.java	(date 1576919387000)
+@@ -1,4 +1,4 @@
+ package com.cfox.camera.camera.session.helper;
+ 
+-public interface IDulVideoSessionHelper extends ICameraSessionHelper/*extends ISessionHelper */{
++public interface IDulVideoSessionHelper extends ICameraSessionHelper {
+ }
+Index: fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/impl/DulVideoSessionHelper.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.camera.session.helper.impl;\n\nimport android.graphics.ImageFormat;\nimport android.hardware.camera2.CameraAccessException;\nimport android.hardware.camera2.CaptureRequest;\nimport android.util.Log;\nimport android.util.Range;\nimport android.util.Size;\n\nimport com.cfox.camera.camera.ICameraInfo;\nimport com.cfox.camera.camera.session.ICameraSession;\nimport com.cfox.camera.camera.session.ISessionManager;\nimport com.cfox.camera.camera.session.helper.ICameraHelper;\nimport com.cfox.camera.camera.session.helper.IDulVideoSessionHelper;\nimport com.cfox.camera.surface.ISurfaceHelper;\nimport com.cfox.camera.utils.Es;\nimport com.cfox.camera.utils.EsRequest;\nimport com.cfox.camera.utils.EsResult;\n\nimport java.util.HashMap;\nimport java.util.Map;\n\nimport io.reactivex.Observable;\nimport io.reactivex.ObservableEmitter;\nimport io.reactivex.ObservableOnSubscribe;\n\npublic class DulVideoSessionHelper extends AbsCameraSessionHelper implements IDulVideoSessionHelper {\n    private static final String TAG = \"DulVideoSessionHelper\";\n\n    private Map<String, ICameraInfo> mCameraInfoMap = new HashMap<>(2);\n    private Map<String, ICameraHelper> mCameraHelperMap = new HashMap<>(2);\n    private Map<String, CaptureRequest.Builder> mPreviewBuilderMap = new HashMap<>(2);\n    private Map<String, ICameraSession> mCameraSessionMap = new HashMap<>(2);\n    private ISessionManager mCameraSessionManager;\n\n    public DulVideoSessionHelper(ISessionManager cameraSessionManager) {\n        this.mCameraSessionManager = cameraSessionManager;\n        cameraSessionManager.getCameraSession(2);\n    }\n\n    @Override\n    public void applyPreviewRepeatingBuilder(EsRequest request) throws CameraAccessException {\n        String cameraId = request.getString(Es.Key.CAMERA_ID);\n        ICameraHelper cameraHelper = getCameraHelperForId(cameraId);\n        ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(Es.Key.SURFACE_HELPER);\n        CaptureRequest.Builder builder = getCameraSessionForId(cameraId).onCreateRequestBuilder(cameraHelper.createPreviewTemplate());\n        mPreviewBuilderMap.put(cameraId, builder);\n        builder.addTarget(surfaceHelper.getSurface());\n        request.put(Es.Key.REQUEST_BUILDER, builder);\n    }\n\n    @Override\n    public ICameraSession getCameraSession(EsRequest request) {\n        String cameraId = request.getString(Es.Key.CAMERA_ID);\n        // TODO: 19-12-5 check camera id\n        return getCameraSessionForId(cameraId);\n    }\n\n    @Override\n    public Observable<EsResult> onSendRepeatingRequest(EsRequest request) {\n        String cameraId = request.getString(Es.Key.CAMERA_ID);\n        request.put(Es.Key.REQUEST_BUILDER, mPreviewBuilderMap.get(cameraId));\n        return getCameraSessionForId(cameraId).onRepeatingRequest(request);\n    }\n\n    @Override\n    public Size[] getPictureSize(EsRequest request) {\n        String cameraId = request.getString(Es.Key.CAMERA_ID);\n        int imageFormat = request.getInt(Es.Key.IMAGE_FORMAT, ImageFormat.JPEG);\n        return getCameraHelperForId(cameraId).getPictureSize(imageFormat);\n    }\n\n    @Override\n    public Size[] getPreviewSize(EsRequest request) {\n        String cameraId = request.getString(Es.Key.CAMERA_ID);\n        Log.d(TAG, \"getPreviewSize: camera id:\" + cameraId);\n        Class klass = (Class) request.getObj(Es.Key.SURFACE_CLASS);\n        return getCameraHelperForId(cameraId).getPreviewSize(klass);\n    }\n\n    @Override\n    public int getSensorOrientation(EsRequest request) {\n        String cameraId = request.getString(Es.Key.CAMERA_ID);\n        return getCameraHelperForId(cameraId).getSensorOrientation();\n    }\n\n    @Override\n    public Observable<EsResult> close(EsRequest request) {\n        Log.d(TAG, \"close: dul video close camera s\");\n        return Observable.create(new ObservableOnSubscribe<EsResult>() {\n            @Override\n            public void subscribe(ObservableEmitter<EsResult> emitter) throws Exception {\n                for (ICameraSession cameraSession : mCameraSessionMap.values()) {\n                    cameraSession.onClose();\n                }\n            }\n        });\n    }\n\n    @Override\n    public Range<Integer> getEvRange(EsRequest request) {\n        String cameraId = request.getString(Es.Key.CAMERA_ID);\n        return getCameraHelperForId(cameraId).getEvRange();\n    }\n\n    private ICameraSession getCameraSessionForId(String cameraId) {\n        ICameraSession cameraSession;\n        if (mCameraSessionMap.containsKey(cameraId)) {\n            cameraSession = mCameraSessionMap.get(cameraId);\n        } else {\n            cameraSession = mCameraSessionManager.getCameraSession();\n            mCameraSessionMap.put(cameraId, cameraSession);\n        }\n        return cameraSession;\n    }\n\n    private ICameraHelper getCameraHelperForId(String cameraId) {\n        ICameraHelper cameraHelper;\n        if (mCameraHelperMap.containsKey(cameraId)) {\n            cameraHelper = mCameraHelperMap.get(cameraId);\n        } else {\n            cameraHelper = new DulVideoCameraHelper();\n            cameraHelper.initCameraInfo(getCameraInfoForId(cameraId));\n            mCameraHelperMap.put(cameraId, cameraHelper);\n        }\n\n        return cameraHelper;\n    }\n\n    private ICameraInfo getCameraInfoForId(String cameraId) {\n        ICameraInfo cameraInfo;\n        if (mCameraInfoMap.containsKey(cameraId)) {\n            cameraInfo = mCameraInfoMap.get(cameraId);\n        } else {\n            cameraInfo = getCameraInfo(cameraId);\n            mCameraInfoMap.put(cameraId, cameraInfo);\n        }\n\n        return cameraInfo;\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/impl/DulVideoSessionHelper.java	(revision b7f17ac90b36b1c38672602fb3600cf0754486cb)
++++ fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/impl/DulVideoSessionHelper.java	(date 1576919387000)
+@@ -3,7 +3,6 @@
+ import android.graphics.ImageFormat;
+ import android.hardware.camera2.CameraAccessException;
+ import android.hardware.camera2.CaptureRequest;
+-import android.util.Log;
+ import android.util.Range;
+ import android.util.Size;
+ 
+@@ -12,6 +11,7 @@
+ import com.cfox.camera.camera.session.ISessionManager;
+ import com.cfox.camera.camera.session.helper.ICameraHelper;
+ import com.cfox.camera.camera.session.helper.IDulVideoSessionHelper;
++import com.cfox.camera.log.EsLog;
+ import com.cfox.camera.surface.ISurfaceHelper;
+ import com.cfox.camera.utils.Es;
+ import com.cfox.camera.utils.EsRequest;
+@@ -25,7 +25,6 @@
+ import io.reactivex.ObservableOnSubscribe;
+ 
+ public class DulVideoSessionHelper extends AbsCameraSessionHelper implements IDulVideoSessionHelper {
+-    private static final String TAG = "DulVideoSessionHelper";
+ 
+     private Map<String, ICameraInfo> mCameraInfoMap = new HashMap<>(2);
+     private Map<String, ICameraHelper> mCameraHelperMap = new HashMap<>(2);
+@@ -73,7 +72,7 @@
+     @Override
+     public Size[] getPreviewSize(EsRequest request) {
+         String cameraId = request.getString(Es.Key.CAMERA_ID);
+-        Log.d(TAG, "getPreviewSize: camera id:" + cameraId);
++        EsLog.d("getPreviewSize: camera id:" + cameraId);
+         Class klass = (Class) request.getObj(Es.Key.SURFACE_CLASS);
+         return getCameraHelperForId(cameraId).getPreviewSize(klass);
+     }
+@@ -86,7 +85,7 @@
+ 
+     @Override
+     public Observable<EsResult> close(EsRequest request) {
+-        Log.d(TAG, "close: dul video close camera s");
++        EsLog.d("close: dul video close camera s");
+         return Observable.create(new ObservableOnSubscribe<EsResult>() {
+             @Override
+             public void subscribe(ObservableEmitter<EsResult> emitter) throws Exception {
+Index: .idea/misc.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project version=\"4\">\n  <component name=\"ProjectRootManager\" version=\"2\" languageLevel=\"JDK_1_7\" project-jdk-name=\"JDK\" project-jdk-type=\"JavaSDK\">\n    <output url=\"file://$PROJECT_DIR$/build/classes\" />\n  </component>\n  <component name=\"ProjectType\">\n    <option name=\"id\" value=\"Android\" />\n  </component>\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/misc.xml	(revision b7f17ac90b36b1c38672602fb3600cf0754486cb)
++++ .idea/misc.xml	(date 1576919387000)
+@@ -1,6 +1,6 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
+-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_7" project-jdk-name="JDK" project-jdk-type="JavaSDK">
++  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_7" project-jdk-name="1.8" project-jdk-type="JavaSDK">
+     <output url="file://$PROJECT_DIR$/build/classes" />
+   </component>
+   <component name="ProjectType">
+Index: module_camera/src/main/java/debug/CameraApplication.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package debug;\n\nimport com.cfox.camera.EsCamera;\nimport com.cfox.lib_common.base.BaseApplication;\n\npublic class CameraApplication extends BaseApplication {\n    private static final String TAG = \"CameraApplication\";\n\n    EsCamera mFxCamera;\n    @Override\n    public void onCreate() {\n        super.onCreate();\n        mFxCamera = EsCamera.init(this);\n//        mFxCamera.setConfig(new IConfig() {\n//            @Override\n//            public Size getPreviewSize(Size size, Size[] supportSizes) {\n//                Log.d(TAG, \"getPreviewSize: ......\"+ size);\n//                return size;\n//            }\n//\n//            @Override\n//            public Size getPictureSize(Size size, Size[] supportSizes) {\n//                Log.d(TAG, \"getPictureSize: .........\" + size);\n//                return size;\n//            }\n//        });\n    }\n\n    @Override\n    public void onTerminate() {\n        super.onTerminate();\n        mFxCamera.release();\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- module_camera/src/main/java/debug/CameraApplication.java	(revision b7f17ac90b36b1c38672602fb3600cf0754486cb)
++++ module_camera/src/main/java/debug/CameraApplication.java	(date 1576919387000)
+@@ -4,7 +4,6 @@
+ import com.cfox.lib_common.base.BaseApplication;
+ 
+ public class CameraApplication extends BaseApplication {
+-    private static final String TAG = "CameraApplication";
+ 
+     EsCamera mFxCamera;
+     @Override
+Index: fx_lib_camera/src/main/java/com/cfox/camera/camera/session/IPhotoRequestBuilderManager.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/camera/session/IPhotoRequestBuilderManager.java	(date 1576919851000)
++++ fx_lib_camera/src/main/java/com/cfox/camera/camera/session/IPhotoRequestBuilderManager.java	(date 1576919851000)
+@@ -0,0 +1,4 @@
++package com.cfox.camera.camera.session;
++
++public interface IPhotoRequestBuilderManager extends IRequestBuilderManager {
++}
+Index: fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/IPhotoSessionHelper.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.camera.session.helper;\n\n\nimport com.cfox.camera.utils.EsRequest;\nimport com.cfox.camera.utils.EsResult;\n\nimport io.reactivex.Observable;\n\npublic interface IPhotoSessionHelper extends ICameraSessionHelper/*extends ISessionHelper*/ {\n    Observable<EsResult> capture(EsRequest request);\n    Observable<EsResult> captureStillPicture(EsRequest request);\n\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/IPhotoSessionHelper.java	(revision b7f17ac90b36b1c38672602fb3600cf0754486cb)
++++ fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/IPhotoSessionHelper.java	(date 1576919387000)
+@@ -6,7 +6,7 @@
+ 
+ import io.reactivex.Observable;
+ 
+-public interface IPhotoSessionHelper extends ICameraSessionHelper/*extends ISessionHelper*/ {
++public interface IPhotoSessionHelper extends ICameraSessionHelper {
+     Observable<EsResult> capture(EsRequest request);
+     Observable<EsResult> captureStillPicture(EsRequest request);
+ 
+Index: fx_lib_camera/src/main/java/com/cfox/camera/camera/session/impl/CameraSessionManager.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.camera.session.impl;\n\nimport android.content.Context;\nimport android.util.Log;\n\nimport com.cfox.camera.camera.session.ICameraSession;\nimport com.cfox.camera.camera.session.ISessionManager;\n\nimport java.util.ArrayList;\nimport java.util.List;\nimport java.util.concurrent.atomic.AtomicInteger;\n\npublic class CameraSessionManager implements ISessionManager {\n    private static final String TAG = \"CameraSessionManager\";\n\n    private static ISessionManager mSessionManager;\n    private List<ICameraSession> mCameraSessionList = new ArrayList<>();\n    private Context mContext;\n    private AtomicInteger mSessionIndex = new AtomicInteger(0);\n\n\n    private CameraSessionManager(Context context) {\n        this.mContext = context.getApplicationContext();\n    }\n\n    public static ISessionManager getInstance(Context context) {\n        if (mSessionManager == null) {\n            synchronized (CameraSessionManager.class) {\n                if (mSessionManager == null) {\n                    mSessionManager = new CameraSessionManager(context);\n                }\n            }\n        }\n        return mSessionManager;\n    }\n\n    @Override\n    public void getCameraSession(int count) {\n        Log.d(TAG, \"getCameraSession: count:\" + count  + \"  session size:\" + mCameraSessionList.size());\n        mSessionIndex.set(0);\n        for (int i = 0 ; i < count; i ++) {\n            if (i < mCameraSessionList.size()) {\n                Log.d(TAG, \"getCameraSession: get i:\" + i);\n                mCameraSessionList.get(i).onClose();\n            } else {\n                Log.d(TAG, \"getCameraSession: create i:\" + i);\n                mCameraSessionList.add(createSession());\n            }\n        }\n\n        for (int i = count;  i < mCameraSessionList.size() ; i ++) {\n            Log.d(TAG, \"getCameraSession: remove i：\" + i);\n            mCameraSessionList.remove(i).onClose();\n        }\n\n        Log.d(TAG, \"getCameraSession: end session size:\" + mCameraSessionList.size());\n    }\n\n    @Override\n    public boolean hasSession() {\n        return mSessionIndex.get() < mCameraSessionList.size();\n    }\n\n    @Override\n    public ICameraSession getCameraSession() {\n        if (!hasSession()) {\n            throw new RuntimeException(\"don`t have camera session , create size :\" + mCameraSessionList.size()  + \"  current session count :\" + (mSessionIndex.get() + 1) );\n        }\n        return mCameraSessionList.get(mSessionIndex.get());\n    }\n\n    private ICameraSession createSession() {\n        return new CameraSession(mContext);\n    }\n\n\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/camera/session/impl/CameraSessionManager.java	(revision b7f17ac90b36b1c38672602fb3600cf0754486cb)
++++ fx_lib_camera/src/main/java/com/cfox/camera/camera/session/impl/CameraSessionManager.java	(date 1576919387000)
+@@ -1,17 +1,16 @@
+ package com.cfox.camera.camera.session.impl;
+ 
+ import android.content.Context;
+-import android.util.Log;
+ 
+ import com.cfox.camera.camera.session.ICameraSession;
+ import com.cfox.camera.camera.session.ISessionManager;
++import com.cfox.camera.log.EsLog;
+ 
+ import java.util.ArrayList;
+ import java.util.List;
+ import java.util.concurrent.atomic.AtomicInteger;
+ 
+ public class CameraSessionManager implements ISessionManager {
+-    private static final String TAG = "CameraSessionManager";
+ 
+     private static ISessionManager mSessionManager;
+     private List<ICameraSession> mCameraSessionList = new ArrayList<>();
+@@ -36,24 +35,24 @@
+ 
+     @Override
+     public void getCameraSession(int count) {
+-        Log.d(TAG, "getCameraSession: count:" + count  + "  session size:" + mCameraSessionList.size());
++        EsLog.d("getCameraSession: count:" + count  + "  session size:" + mCameraSessionList.size());
+         mSessionIndex.set(0);
+         for (int i = 0 ; i < count; i ++) {
+             if (i < mCameraSessionList.size()) {
+-                Log.d(TAG, "getCameraSession: get i:" + i);
++                EsLog.d("getCameraSession: get i:" + i);
+                 mCameraSessionList.get(i).onClose();
+             } else {
+-                Log.d(TAG, "getCameraSession: create i:" + i);
++                EsLog.d( "getCameraSession: create i:" + i);
+                 mCameraSessionList.add(createSession());
+             }
+         }
+ 
+         for (int i = count;  i < mCameraSessionList.size() ; i ++) {
+-            Log.d(TAG, "getCameraSession: remove i：" + i);
++            EsLog.d("getCameraSession: remove i：" + i);
+             mCameraSessionList.remove(i).onClose();
+         }
+ 
+-        Log.d(TAG, "getCameraSession: end session size:" + mCameraSessionList.size());
++        EsLog.d("getCameraSession: end session size:" + mCameraSessionList.size());
+     }
+ 
+     @Override
+Index: fx_lib_camera/src/main/java/com/cfox/camera/camera/session/impl/CameraSession.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.camera.session.impl;\n\nimport android.content.Context;\nimport android.hardware.camera2.CameraAccessException;\nimport android.hardware.camera2.CameraCaptureSession;\nimport android.hardware.camera2.CameraDevice;\nimport android.hardware.camera2.CaptureRequest;\n\nimport androidx.annotation.NonNull;\n\nimport com.cfox.camera.EsException;\nimport com.cfox.camera.camera.CameraInfoHelper;\nimport com.cfox.camera.camera.ICameraInfo;\nimport com.cfox.camera.camera.device.EsCameraDevice;\nimport com.cfox.camera.camera.device.IEsCameraDevice;\nimport com.cfox.camera.camera.session.ICameraSession;\nimport com.cfox.camera.log.EsLog;\nimport com.cfox.camera.surface.ISurfaceHelper;\nimport com.cfox.camera.utils.EasyError;\nimport com.cfox.camera.utils.Es;\nimport com.cfox.camera.utils.EsRequest;\nimport com.cfox.camera.utils.EsResult;\nimport com.cfox.camera.utils.ThreadHandlerManager;\n\nimport io.reactivex.Observable;\nimport io.reactivex.ObservableEmitter;\nimport io.reactivex.ObservableOnSubscribe;\nimport io.reactivex.functions.Consumer;\nimport io.reactivex.functions.Function;\n\npublic class CameraSession implements ICameraSession {\n    private static final String TAG = \"CameraSession\";\n    private CameraCaptureSession mCaptureSession;\n    private IEsCameraDevice mEsCameraDevice;\n    private CameraDevice mCameraDevice;\n    private String mCameraId;\n\n    public CameraSession(Context context) {\n        mEsCameraDevice = EsCameraDevice.getsInstance(context);\n    }\n\n    @Override\n    public Observable<EsResult> onOpenCamera(final EsRequest request) {\n        // TODO: 19-12-1 check camera id\n        mCameraId = request.getString(Es.Key.CAMERA_ID);\n        return mEsCameraDevice.openCameraDevice(request).map(new Function<EsResult, EsResult>() {\n            @Override\n            public EsResult apply(EsResult result) throws Exception {\n                mCameraDevice = (CameraDevice) result.getObj(Es.Key.CAMERA_DEVICE);\n                ICameraInfo cameraInfo = CameraInfoHelper.getInstance().getCameraInfo(mCameraDevice.getId());\n                request.put(Es.Key.CAMERA_INFO, cameraInfo);\n                return result;\n            }\n        });\n    }\n\n    @Override\n    public CaptureRequest.Builder onCreateRequestBuilder(int templateType) throws CameraAccessException {\n        return mCameraDevice.createCaptureRequest(templateType);\n    }\n\n    public Observable<EsResult> onCreatePreviewSession(EsRequest request) {\n        final ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(Es.Key.SURFACE_HELPER);\n        EsLog.d(\"onCreatePreviewSession: ---->\" + surfaceHelper.getSurfaces().size());\n        // TODO: 19-11-29 check  mCaptureSession is null\n        return Observable.create(new ObservableOnSubscribe<EsResult>() {\n            @Override\n            public void subscribe(final ObservableEmitter<EsResult> emitter) throws Exception {\n                mCameraDevice.createCaptureSession(surfaceHelper.getSurfaces(), new CameraCaptureSession.StateCallback() {\n                    @Override\n                    public void onConfigured(@NonNull CameraCaptureSession session) {\n                        EsLog.d(\"onConfigured: create session success .....\");\n                        mCaptureSession = session;\n                        emitter.onNext(new EsResult());\n                    }\n\n                    @Override\n                    public void onConfigureFailed(@NonNull CameraCaptureSession session) {\n                        emitter.onError(new EsException(\"Create Preview Session failed  \", EasyError.ERROR_CODE_CREATE_PREVIEW_SESSION));\n                    }\n                }, ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_CAMERA).getHandler());\n            }\n        });\n    }\n\n    @Override\n    public Observable<EsResult> onRepeatingRequest(EsRequest request) {\n        final CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(Es.Key.REQUEST_BUILDER);\n        final CameraCaptureSession.CaptureCallback captureCallback  = (CameraCaptureSession.CaptureCallback) request.getObj(Es.Key.SESSION_CAPTURE_CALLBACK);\n        return Observable.create(new ObservableOnSubscribe<EsResult>() {\n            @Override\n            public void subscribe(ObservableEmitter<EsResult> emitter) throws Exception {\n                mCaptureSession.setRepeatingRequest(requestBuilder.build(), captureCallback,\n                        ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_CAMERA).getHandler());\n            }\n        });\n    }\n\n    @Override\n    public Observable<EsResult> onClose() {\n        EsLog.d(\"onClose: camera id:\" + mCameraId);\n        return mEsCameraDevice.closeCameraDevice(mCameraId).doOnNext(new Consumer<EsResult>() {\n            @Override\n            public void accept(EsResult result) throws Exception {\n                EsLog.d(\"onClose: closeSession: .......\");\n                if (mCaptureSession != null) {\n                    mCaptureSession.close();\n                    mCaptureSession = null;\n                }\n            }\n        });\n    }\n\n    @Override\n    public void capture(EsRequest request, CameraCaptureSession.CaptureCallback captureCallback) throws CameraAccessException {\n        CaptureRequest.Builder requestBuilder =\n                (CaptureRequest.Builder) request.getObj(Es.Key.REQUEST_BUILDER);\n        mCaptureSession.capture(requestBuilder.build(), captureCallback, null);\n    }\n\n    @Override\n    public void stopRepeating() throws CameraAccessException {\n        mCaptureSession.stopRepeating();\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/camera/session/impl/CameraSession.java	(revision b7f17ac90b36b1c38672602fb3600cf0754486cb)
++++ fx_lib_camera/src/main/java/com/cfox/camera/camera/session/impl/CameraSession.java	(date 1576919387000)
+@@ -29,7 +29,6 @@
+ import io.reactivex.functions.Function;
+ 
+ public class CameraSession implements ICameraSession {
+-    private static final String TAG = "CameraSession";
+     private CameraCaptureSession mCaptureSession;
+     private IEsCameraDevice mEsCameraDevice;
+     private CameraDevice mCameraDevice;
+Index: fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/IVideoSessionHelper.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.camera.session.helper;\n\npublic interface IVideoSessionHelper extends ICameraSessionHelper/*extends ISessionHelper */{\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/IVideoSessionHelper.java	(revision b7f17ac90b36b1c38672602fb3600cf0754486cb)
++++ fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/IVideoSessionHelper.java	(date 1576919387000)
+@@ -1,4 +1,4 @@
+ package com.cfox.camera.camera.session.helper;
+ 
+-public interface IVideoSessionHelper extends ICameraSessionHelper/*extends ISessionHelper */{
++public interface IVideoSessionHelper extends ICameraSessionHelper {
+ }
+Index: fx_lib_camera/src/main/java/com/cfox/camera/camera/session/impl/PhtotoRequestBuilderManger.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/camera/session/impl/PhtotoRequestBuilderManger.java	(date 1576919981000)
++++ fx_lib_camera/src/main/java/com/cfox/camera/camera/session/impl/PhtotoRequestBuilderManger.java	(date 1576919981000)
+@@ -0,0 +1,10 @@
++package com.cfox.camera.camera.session.impl;
++
++import com.cfox.camera.camera.session.IPhotoRequestBuilderManager;
++import com.cfox.camera.camera.session.helper.ICameraHelper;
++
++public class PhtotoRequestBuilderManger extends RequestBuilderManager implements IPhotoRequestBuilderManager {
++    public PhtotoRequestBuilderManger(ICameraHelper cameraHelper) {
++        super(cameraHelper);
++    }
++}
+Index: fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/ICameraHelper.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.camera.session.helper;\n\nimport android.util.Range;\nimport android.util.Size;\n\nimport com.cfox.camera.camera.ICameraInfo;\n\npublic interface ICameraHelper {\n\n    void initCameraInfo(ICameraInfo cameraInfo);\n    //    IBuilderPack getBuilderPack();\n    int createPreviewTemplate();\n    boolean isAutoFocusSupported();\n    boolean isRawSupported();\n    boolean isLegacyLocked();\n    int getSensorOrientation();\n    int getValidAFMode(int targetMode);\n    int getValidAntiBandingMode(int targetMode);\n    boolean isMeteringSupport(boolean focusArea);\n    float getMinimumDistance();\n    boolean isFlashSupport();\n    boolean canTriggerAf();\n    Size[] getPictureSize(int format);\n    Size[] getPreviewSize(Class klass);\n    Range<Integer> getEvRange();\n\n    IBuilderHelper getBuilderHelper();\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/ICameraHelper.java	(revision b7f17ac90b36b1c38672602fb3600cf0754486cb)
++++ fx_lib_camera/src/main/java/com/cfox/camera/camera/session/helper/ICameraHelper.java	(date 1576920504000)
+@@ -4,25 +4,39 @@
+ import android.util.Size;
+ 
+ import com.cfox.camera.camera.ICameraInfo;
++import com.cfox.camera.camera.session.IRequestBuilderManager;
+ 
+ public interface ICameraHelper {
+ 
+     void initCameraInfo(ICameraInfo cameraInfo);
+-    //    IBuilderPack getBuilderPack();
++
+     int createPreviewTemplate();
++
+     boolean isAutoFocusSupported();
++
+     boolean isRawSupported();
++
+     boolean isLegacyLocked();
++
+     int getSensorOrientation();
++
+     int getValidAFMode(int targetMode);
++
+     int getValidAntiBandingMode(int targetMode);
++
+     boolean isMeteringSupport(boolean focusArea);
++
+     float getMinimumDistance();
++
+     boolean isFlashSupport();
++
+     boolean canTriggerAf();
++
+     Size[] getPictureSize(int format);
++
+     Size[] getPreviewSize(Class klass);
++
+     Range<Integer> getEvRange();
+ 
+-    IBuilderHelper getBuilderHelper();
++    IRequestBuilderManager getBuilderHelper();
+ }
+Index: fx_lib_camera/src/main/java/com/cfox/camera/camera/session/impl/RequestBuilderManager.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.cfox.camera.camera.session.impl;\n\nimport android.hardware.camera2.CaptureRequest;\nimport android.hardware.camera2.params.MeteringRectangle;\n\nimport com.cfox.camera.camera.session.IRequestBuilderManager;\nimport com.cfox.camera.camera.session.helper.ICameraHelper;\nimport com.cfox.camera.log.EsLog;\nimport com.cfox.camera.utils.Es;\nimport com.cfox.camera.utils.EsRequest;\n\npublic class RequestBuilderManager implements IRequestBuilderManager {\n\n    private ICameraHelper mCameraHelper;\n    private MeteringRectangle[] mFocusArea;\n    private MeteringRectangle[] mMeteringArea;\n    // for reset AE/AF metering area\n    private MeteringRectangle[] mResetRect = new MeteringRectangle[] {\n            new MeteringRectangle(0, 0, 0, 0, 0)\n    };\n\n    public RequestBuilderManager(ICameraHelper cameraHelper) {\n        this.mCameraHelper = cameraHelper;\n    }\n\n\n    public void getPreviewRequest(CaptureRequest.Builder builder) {\n        int afMode = mCameraHelper.getValidAFMode(CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);\n        int antiBMode = mCameraHelper.getValidAntiBandingMode(CaptureRequest.CONTROL_AE_ANTIBANDING_MODE_AUTO);\n        builder.set(CaptureRequest.CONTROL_AF_MODE, afMode);\n        builder.set(CaptureRequest.CONTROL_AE_ANTIBANDING_MODE, antiBMode);\n        builder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO);\n        builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CaptureRequest.CONTROL_AF_TRIGGER_IDLE);\n    }\n\n    public void getTouch2FocusRequest(CaptureRequest.Builder builder,\n                                                MeteringRectangle focus, MeteringRectangle metering) {\n        int afMode = mCameraHelper.getValidAFMode(CaptureRequest.CONTROL_AF_MODE_AUTO);\n        builder.set(CaptureRequest.CONTROL_AF_MODE, afMode);\n        builder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO);\n        if (mFocusArea == null) {\n            mFocusArea = new MeteringRectangle[] {focus};\n        } else {\n            mFocusArea[0] = focus;\n        }\n        if (mMeteringArea == null) {\n            mMeteringArea = new MeteringRectangle[] {metering};\n        } else {\n            mMeteringArea[0] = metering;\n        }\n        if (mCameraHelper.isMeteringSupport(true)) {\n            builder.set(CaptureRequest.CONTROL_AF_REGIONS, mFocusArea);\n        }\n        if (mCameraHelper.isMeteringSupport(false)) {\n            builder.set(CaptureRequest.CONTROL_AE_REGIONS, mMeteringArea);\n        }\n        builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CaptureRequest.CONTROL_AF_TRIGGER_IDLE);\n    }\n\n    public void getFocusModeRequest(CaptureRequest.Builder builder, int focusMode) {\n        int afMode = mCameraHelper.getValidAFMode(focusMode);\n        builder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO);\n        builder.set(CaptureRequest.CONTROL_AF_MODE, afMode);\n        builder.set(CaptureRequest.CONTROL_AF_REGIONS, mResetRect);\n        builder.set(CaptureRequest.CONTROL_AE_REGIONS, mResetRect);\n        // cancel af trigger\n        builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CaptureRequest.CONTROL_AF_TRIGGER_IDLE);\n    }\n\n    public void getStillPictureRequest(CaptureRequest.Builder builder, int rotation) {\n        builder.set(CaptureRequest.JPEG_ORIENTATION, rotation);\n    }\n\n    public void getFocusDistanceRequest(CaptureRequest.Builder builder, float distance) {\n        int afMode = mCameraHelper.getValidAFMode(CaptureRequest.CONTROL_AF_MODE_OFF);\n        // preview\n        builder.set(CaptureRequest.CONTROL_AF_MODE, afMode);\n        float miniDistance = mCameraHelper.getMinimumDistance();\n        if (miniDistance > 0) {\n            builder.set(CaptureRequest.LENS_FOCUS_DISTANCE, miniDistance * distance);\n        }\n    }\n\n    public void getFlashRequest(CaptureRequest.Builder builder, int value) {\n        if (!mCameraHelper.isFlashSupport()) {\n            EsLog.w(\" not support flash\");\n            return ;\n        }\n        switch (value) {\n            case Es.FLASH_TYPE.ON:\n                builder.set(CaptureRequest.CONTROL_AE_MODE,\n                        CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH);\n                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);\n                break;\n            case Es.FLASH_TYPE.OFF:\n                builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);\n                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);\n                break;\n            case Es.FLASH_TYPE.AUTO:\n                builder.set(CaptureRequest.CONTROL_AE_MODE,\n                        CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);\n                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);\n                break;\n            case Es.FLASH_TYPE.TORCH:\n                builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);\n                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);\n                break;\n            default:\n                EsLog.e(\"error value for flash mode\");\n                break;\n        }\n        builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CaptureRequest.CONTROL_AF_TRIGGER_IDLE);\n    }\n\n    public void applyFlashRequest(CaptureRequest.Builder builder, int value) {\n        if (!mCameraHelper.isFlashSupport()) {\n            EsLog.w(\" not support flash\");\n            return ;\n        }\n        switch (value) {\n            case Es.FLASH_TYPE.ON:\n                builder.set(CaptureRequest.CONTROL_AE_MODE,\n                        CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH);\n                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);\n                break;\n            case Es.FLASH_TYPE.OFF:\n                builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);\n                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);\n                break;\n            case Es.FLASH_TYPE.AUTO:\n                builder.set(CaptureRequest.CONTROL_AE_MODE,\n                        CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);\n                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);\n                break;\n            case Es.FLASH_TYPE.TORCH:\n                builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);\n                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);\n                break;\n            default:\n                EsLog.e(\"error value for flash mode\");\n                break;\n        }\n    }\n\n    private CaptureRequest.Builder getRequestBuilder(EsRequest request) {\n\n        CaptureRequest.Builder builder = (CaptureRequest.Builder) request.getObj(Es.Key.REQUEST_BUILDER);\n        if (builder == null) {\n\n        }\n\n        return builder;\n\n    }\n\n\n\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- fx_lib_camera/src/main/java/com/cfox/camera/camera/session/impl/RequestBuilderManager.java	(revision b7f17ac90b36b1c38672602fb3600cf0754486cb)
++++ fx_lib_camera/src/main/java/com/cfox/camera/camera/session/impl/RequestBuilderManager.java	(date 1576919981000)
+@@ -9,7 +9,7 @@
+ import com.cfox.camera.utils.Es;
+ import com.cfox.camera.utils.EsRequest;
+ 
+-public class RequestBuilderManager implements IRequestBuilderManager {
++public abstract class RequestBuilderManager implements IRequestBuilderManager {
+ 
+     private ICameraHelper mCameraHelper;
+     private MeteringRectangle[] mFocusArea;

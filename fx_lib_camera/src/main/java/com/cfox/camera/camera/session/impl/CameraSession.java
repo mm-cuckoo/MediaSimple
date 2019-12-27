@@ -14,6 +14,7 @@ import com.cfox.camera.camera.ICameraInfo;
 import com.cfox.camera.camera.device.EsCameraDevice;
 import com.cfox.camera.camera.device.IEsCameraDevice;
 import com.cfox.camera.camera.session.ICameraSession;
+import com.cfox.camera.camera.session.helper.impl.PhotoSessionHelper;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.surface.ISurfaceHelper;
 import com.cfox.camera.utils.EasyError;
@@ -29,7 +30,6 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 
 public class CameraSession implements ICameraSession {
-    private static final String TAG = "CameraSession";
     private CameraCaptureSession mCaptureSession;
     private IEsCameraDevice mEsCameraDevice;
     private CameraDevice mCameraDevice;
@@ -86,10 +86,12 @@ public class CameraSession implements ICameraSession {
     @Override
     public Observable<EsResult> onRepeatingRequest(EsRequest request) {
         final CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(Es.Key.REQUEST_BUILDER);
-        final CameraCaptureSession.CaptureCallback captureCallback  = (CameraCaptureSession.CaptureCallback) request.getObj(Es.Key.SESSION_CAPTURE_CALLBACK);
+        final PhotoSessionHelper.CameraCaptureSessionCallback captureCallback  =
+                (PhotoSessionHelper.CameraCaptureSessionCallback) request.getObj(Es.Key.SESSION_CALLBACK);
         return Observable.create(new ObservableOnSubscribe<EsResult>() {
             @Override
             public void subscribe(ObservableEmitter<EsResult> emitter) throws Exception {
+                captureCallback.setEmitter(emitter);
                 mCaptureSession.setRepeatingRequest(requestBuilder.build(), captureCallback,
                         ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_CAMERA).getHandler());
             }
