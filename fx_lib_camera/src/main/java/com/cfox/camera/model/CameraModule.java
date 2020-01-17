@@ -31,7 +31,7 @@ import java.util.Map;
 import io.reactivex.Observable;
 
 public class CameraModule implements ICameraModule {
-    private static ICameraModule sCameraModule;
+    private volatile static ICameraModule sCameraModule;
     private Map<ModuleFlag, IModule> mModuleMap = new HashMap<>(ModuleFlag.values().length);
     private IModule mCurrentModule;
 

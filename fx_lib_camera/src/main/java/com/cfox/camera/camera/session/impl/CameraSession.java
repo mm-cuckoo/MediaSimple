@@ -114,9 +114,9 @@ public class CameraSession implements ICameraSession {
     }
 
     @Override
-    public void capture(EsRequest request, CameraCaptureSession.CaptureCallback captureCallback) throws CameraAccessException {
-        CaptureRequest.Builder requestBuilder =
-                (CaptureRequest.Builder) request.getObj(Es.Key.REQUEST_BUILDER);
+    public void capture(EsRequest request) throws CameraAccessException {
+        CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(Es.Key.REQUEST_BUILDER);
+        CameraCaptureSession.CaptureCallback captureCallback = (CameraCaptureSession.CaptureCallback) request.getObj(Es.Key.CAPTURE_CALLBACK);
         mCaptureSession.capture(requestBuilder.build(), captureCallback, null);
     }
 

@@ -59,6 +59,7 @@ public class PhotoSessionHelper extends AbsCameraSessionHelper implements IPhoto
     private CaptureRequest.Builder createPreviewBuilder(EsRequest request) throws CameraAccessException {
         ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(Es.Key.SURFACE_HELPER);
         CaptureRequest.Builder builder = mCameraSession.onCreateRequestBuilder(mPhotoCameraHelper.createPreviewTemplate());
+        // TODO: 2020-01-11 adjust add more target
         builder.addTarget(surfaceHelper.getSurface());
         return builder;
     }
@@ -124,7 +125,7 @@ public class PhotoSessionHelper extends AbsCameraSessionHelper implements IPhoto
                 EsLog.d("subscribe: capture: ......3333...");
 
                 if (previewCapture) {
-                    mCameraSession.capture(request, null);
+                    mCameraSession.capture(request);
                     emitter.onNext(new EsResult());
                     return;
                 }
@@ -144,22 +145,7 @@ public class PhotoSessionHelper extends AbsCameraSessionHelper implements IPhoto
             @Override
             public void subscribe(final ObservableEmitter<EsResult> emitter) throws Exception {
                 mCameraSession.stopRepeating();
-                mCameraSession.capture(request, new CameraCaptureSession.CaptureCallback() {
-                    @Override
-                    public void onCaptureCompleted(@NonNull CameraCaptureSession session,
-                                                   @NonNull CaptureRequest request,
-                                                   @NonNull TotalCaptureResult result) {
-                        emitter.onNext(new EsResult());
-                        EsLog.d("onCaptureCompleted: pic success .....");
-                    }
-
-                    @Override
-                    public void onCaptureFailed(@NonNull CameraCaptureSession session,
-                                                @NonNull CaptureRequest request,
-                                                @NonNull CaptureFailure failure) {
-                        EsLog.d("onCaptureFailed: ........." + failure);
-                    }
-                });
+                mCameraSession.capture(request);
             }
         });
     }

@@ -17,7 +17,7 @@ public interface ICameraSession {
     CaptureRequest.Builder onCreateRequestBuilder(int templateType) throws CameraAccessException;
     Observable<EsResult> onRepeatingRequest(EsRequest request);
     Observable<EsResult> onClose();
-    void capture(EsRequest request, CameraCaptureSession.CaptureCallback captureCallback) throws CameraAccessException;
+    void capture(EsRequest request) throws CameraAccessException;
     void stopRepeating() throws CameraAccessException;
 //    IBuilderPack getBuilderPack();
 //    int createPreviewTemplate();

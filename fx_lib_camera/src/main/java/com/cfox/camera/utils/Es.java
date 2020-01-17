@@ -40,6 +40,7 @@ public interface Es {
         String PREVIEW_CAPTURE = "preview_capture";
         String FIRST_FRAME_CALLBACK = "first_frame_callback";
         String SESSION_CALLBACK = "session_callback";
+        String CAPTURE_CALLBACK = "capture_callback";
         String CAMERA_FLASH_VALUE = "camera_flash_value";
     }
 

@@ -4,7 +4,7 @@ import android.hardware.camera2.CameraDevice;
 
 import com.cfox.camera.camera.session.IRequestBuilderManager;
 import com.cfox.camera.camera.session.helper.IPhotoCameraHelper;
-import com.cfox.camera.camera.session.impl.PhtotoRequestBuilderManger;
+import com.cfox.camera.camera.session.impl.PhotoRequestBuilderManger;
 
 public class PhotoCameraHelper extends CameraHelper implements IPhotoCameraHelper {
     @Override
@@ -14,7 +14,7 @@ public class PhotoCameraHelper extends CameraHelper implements IPhotoCameraHelpe
 
     @Override
     public IRequestBuilderManager getBuilderHelper() {
-        return new PhtotoRequestBuilderManger(this);
+        return new PhotoRequestBuilderManger(this);
     }
 
     @Override

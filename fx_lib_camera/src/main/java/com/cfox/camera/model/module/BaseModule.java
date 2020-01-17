@@ -46,9 +46,6 @@ public abstract class BaseModule implements IModule {
                 }).flatMap(new Function<EsRequest, ObservableSource<EsResult>>() {
                     @Override
                     public ObservableSource<EsResult> apply(EsRequest fxRequest) throws Exception {
-                        Size pictureSizeForReq = (Size) request.getObj(Es.Key.PIC_SIZE);
-                        Size pictureSize = getBusiness().getPictureSize(pictureSizeForReq, mCameraSessionHelper.getPictureSize(request));
-                        request.put(Es.Key.PIC_SIZE, pictureSize);
                         EsLog.d("create session before ....." + request);
                         return mCameraSessionHelper.onCreatePreviewSession(request);
                     }

@@ -1,7 +1,6 @@
 package com.cfox.camera.controller;
 
 
-import android.util.Log;
 import android.util.Range;
 
 import com.cfox.camera.log.EsLog;
@@ -11,7 +10,6 @@ import com.cfox.camera.utils.EsRequest;
 import com.cfox.camera.utils.EsResult;
 
 public class PhotoController extends CameraController {
-    private static final String TAG = "PhotoController";
 
     private ICameraModule mCameraModule;
 
