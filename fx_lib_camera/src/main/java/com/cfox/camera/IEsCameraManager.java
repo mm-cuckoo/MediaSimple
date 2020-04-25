@@ -9,6 +9,8 @@ import com.cfox.camera.controller.IVideoController;
 public interface IEsCameraManager {
 
     ICameraController photoModule();
+
     ICameraController videoModule();
+
     ICameraController dulVideoModule();
 }

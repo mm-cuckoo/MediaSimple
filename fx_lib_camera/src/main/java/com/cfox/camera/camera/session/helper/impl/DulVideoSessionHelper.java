@@ -21,8 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.functions.Consumer;
 
 public class DulVideoSessionHelper extends AbsCameraSessionHelper implements IDulVideoSessionHelper {
 
@@ -34,7 +33,19 @@ public class DulVideoSessionHelper extends AbsCameraSessionHelper implements IDu
 
     public DulVideoSessionHelper(ISessionManager cameraSessionManager) {
         this.mCameraSessionManager = cameraSessionManager;
-        cameraSessionManager.getCameraSession(2);
+
+    }
+
+    @Override
+    public void init() {
+        EsLog.d("init .....");
+        mCameraSessionManager.setSessionCount(2);
+    }
+
+    @Override
+    Observable<EsResult> beforeOpenCamera(EsRequest request) {
+        EsLog.d("beforeOpenCamera....");
+        return mCameraSessionManager.closeSessionIfNeed();
     }
 
     @Override
@@ -46,6 +57,10 @@ public class DulVideoSessionHelper extends AbsCameraSessionHelper implements IDu
         mPreviewBuilderMap.put(cameraId, builder);
         builder.addTarget(surfaceHelper.getSurface());
         request.put(Es.Key.REQUEST_BUILDER, builder);
+
+        request.put(Es.Key.SESSION_CALLBACK, mPreviewCallback1.setType(PhotoSessionHelper.CameraCaptureSessionCallback.TYPE_PREVIEW));
+
+
     }
 
     @Override
@@ -86,12 +101,14 @@ public class DulVideoSessionHelper extends AbsCameraSessionHelper implements IDu
     @Override
     public Observable<EsResult> close(EsRequest request) {
         EsLog.d("close: dul video close camera s");
-        return Observable.create(new ObservableOnSubscribe<EsResult>() {
+
+        return mCameraSessionManager.closeSession().doOnNext(new Consumer<EsResult>() {
             @Override
-            public void subscribe(ObservableEmitter<EsResult> emitter) throws Exception {
-                for (ICameraSession cameraSession : mCameraSessionMap.values()) {
-                    cameraSession.onClose();
-                }
+            public void accept(EsResult esResult) throws Exception {
+                mCameraInfoMap.clear();
+                mCameraHelperMap.clear();
+                mPreviewBuilderMap.clear();
+                mCameraSessionMap.clear();
             }
         });
     }
@@ -107,7 +124,7 @@ public class DulVideoSessionHelper extends AbsCameraSessionHelper implements IDu
         if (mCameraSessionMap.containsKey(cameraId)) {
             cameraSession = mCameraSessionMap.get(cameraId);
         } else {
-            cameraSession = mCameraSessionManager.getCameraSession();
+            cameraSession = mCameraSessionManager.getSessionAndKeepLive();
             mCameraSessionMap.put(cameraId, cameraSession);
         }
         return cameraSession;
@@ -137,4 +154,6 @@ public class DulVideoSessionHelper extends AbsCameraSessionHelper implements IDu
 
         return cameraInfo;
     }
+
+    private PhotoSessionHelper.CameraCaptureSessionCallback mPreviewCallback1 = new PhotoSessionHelper.CameraCaptureSessionCallback();
 }

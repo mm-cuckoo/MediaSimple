@@ -8,6 +8,7 @@ import io.reactivex.Observable;
 public interface IEsCameraDevice {
 
     Observable<EsResult> openCameraDevice(EsRequest fxRequest);
+
     Observable<EsResult> closeCameraDevice(String cameraId);
 
 }

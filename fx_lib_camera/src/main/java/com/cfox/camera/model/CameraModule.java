@@ -63,6 +63,7 @@ public class CameraModule implements ICameraModule {
         EsLog.d("initModule: module flag:" + moduleFlag);
         mCurrentModule = mModuleMap.get(moduleFlag);
         assert mCurrentModule != null;
+        mCurrentModule.init();
     }
 
     @Override

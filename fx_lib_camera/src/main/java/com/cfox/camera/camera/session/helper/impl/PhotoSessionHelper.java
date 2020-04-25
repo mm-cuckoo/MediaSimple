@@ -36,16 +36,22 @@ public class PhotoSessionHelper extends AbsCameraSessionHelper implements IPhoto
     private IPhotoCameraHelper mPhotoCameraHelper;
     private IPhotoRequestBuilderManager mRequestBuilderManager;
 
+    private ISessionManager mCameraSessionManager;
+
     public PhotoSessionHelper(ISessionManager sessionManager) {
-        sessionManager.getCameraSession(1);
-        mCameraSession = sessionManager.getCameraSession();
+        mCameraSessionManager = sessionManager;
         mPhotoCameraHelper = new PhotoCameraHelper();
         mRequestBuilderManager = (IPhotoRequestBuilderManager) mPhotoCameraHelper.getBuilderHelper();
     }
 
     @Override
-    public void openCamera(EsRequest request) {
-        mCameraSession.onClose().subscribe();
+    public void init() {
+
+    }
+
+    @Override
+    Observable<EsResult> beforeOpenCamera(EsRequest request) {
+        return mCameraSessionManager.closeSession();
     }
 
     @Override
@@ -102,12 +108,7 @@ public class PhotoSessionHelper extends AbsCameraSessionHelper implements IPhoto
 
     @Override
     public Observable<EsResult> close(EsRequest request) {
-        return Observable.create(new ObservableOnSubscribe<EsResult>() {
-            @Override
-            public void subscribe(ObservableEmitter<EsResult> emitter) throws Exception {
-                mCameraSession.onClose().subscribe();
-            }
-        });
+        return mCameraSessionManager.closeSession();
     }
 
     @Override
@@ -152,14 +153,14 @@ public class PhotoSessionHelper extends AbsCameraSessionHelper implements IPhoto
 
     @Override
     public ICameraSession getCameraSession(EsRequest request) {
-        return mCameraSession;
+        return mCameraSession = mCameraSessionManager.getSingleSession();
     }
 
     private CameraCaptureSessionCallback mPreviewCallback = new CameraCaptureSessionCallback();
 
-    public class CameraCaptureSessionCallback extends CameraCaptureSession.CaptureCallback {
+    public static class CameraCaptureSessionCallback extends CameraCaptureSession.CaptureCallback {
 
-        private static final int TYPE_PREVIEW = 1;
+        public static final int TYPE_PREVIEW = 1;
         private static final int TYPE_REPEAT = 2;
         private static final int TYPE_CAPTURE = 3;
 

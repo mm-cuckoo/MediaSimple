@@ -10,10 +10,16 @@ import io.reactivex.Observable;
 
 public interface IModule {
 
+    void init();
+
     Observable<EsResult> requestPreview(EsRequest request);
+
     Observable<EsResult> requestStop(EsRequest request);
+
     Observable<EsResult> requestCameraConfig(EsRequest request);
+
     Observable<EsResult> requestCapture(EsRequest request);
+
     Range<Integer> getEvRange(EsRequest request);
 
 }

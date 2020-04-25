@@ -21,13 +21,18 @@ public class VideoSessionHelper extends AbsCameraSessionHelper implements IVideo
     private ICameraSession mCameraSession;
 
     public VideoSessionHelper(ISessionManager sessionManager) {
-        sessionManager.getCameraSession(1);
-        mCameraSession = sessionManager.getCameraSession();
+        mCameraSessionManager = sessionManager;
+
+    }
+
+    @Override
+    public void init() {
+
     }
 
     @Override
     public ICameraSession getCameraSession(EsRequest request) {
-        return mCameraSession;
+        return mCameraSession = mCameraSessionManager.getSingleSession();
     }
 
     @Override
@@ -38,6 +43,11 @@ public class VideoSessionHelper extends AbsCameraSessionHelper implements IVideo
     @Override
     public Observable<EsResult> onSendPreviewRepeatingRequest(EsRequest request) {
         return null;
+    }
+
+    @Override
+    Observable<EsResult> beforeOpenCamera(EsRequest request) {
+        return mCameraSessionManager.closeSession();
     }
 
     @Override

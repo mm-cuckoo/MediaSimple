@@ -48,10 +48,11 @@ public class EsCameraDevice implements IEsCameraDevice {
     @Override
     public Observable<EsResult> openCameraDevice(final EsRequest request) {
         final String cameraId = request.getString(Es.Key.CAMERA_ID);
-        EsLog.d( "open camera start .....camera id:" + cameraId);
         return Observable.create(new ObservableOnSubscribe<EsResult>() {
             @Override
             public void subscribe(final ObservableEmitter<EsResult> emitter) throws Exception {
+                EsLog.d( "open camera start .....camera id:" + cameraId);
+
                 try {
                     if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
                         throw new RuntimeException("Time out waiting to lock camera opening.");
@@ -94,12 +95,11 @@ public class EsCameraDevice implements IEsCameraDevice {
 
     @Override
     public Observable<EsResult> closeCameraDevice(final String cameraId) {
-        EsLog.d( "close  Camera   id:" + cameraId);
-
         return Observable.create(new ObservableOnSubscribe<EsResult>() {
             @Override
             public void subscribe(ObservableEmitter<EsResult> emitter) throws Exception {
                 try {
+                    EsLog.d("start close camera id " + cameraId);
                     if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
                         throw new RuntimeException("Time out waiting to lock camera opening.");
                     }
@@ -118,6 +118,7 @@ public class EsCameraDevice implements IEsCameraDevice {
                     EsResult result = new EsResult();
                     emitter.onNext(result);
                     emitter.onComplete();
+                    EsLog.d("close camera id:" + cameraId + "  end");
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 } finally {

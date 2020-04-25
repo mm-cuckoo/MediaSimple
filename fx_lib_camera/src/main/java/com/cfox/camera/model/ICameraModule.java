@@ -12,8 +12,12 @@ public interface ICameraModule {
     Observable<EsResult> startPreview(EsRequest request);
 
     void initModule(CameraModule.ModuleFlag moduleFlag);
+
     Observable<EsResult> sendCameraConfig(EsRequest request);
+
     Observable<EsResult> capture(EsRequest request);
+
     Observable<EsResult> stop(EsRequest request);
+
     Range<Integer> getEvRange(EsRequest request);
 }

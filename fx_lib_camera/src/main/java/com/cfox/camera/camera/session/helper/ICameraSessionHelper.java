@@ -11,14 +11,24 @@ import io.reactivex.Observable;
 
 public interface ICameraSessionHelper {
 
+    void init();
+
     Observable<EsResult> onOpenCamera(EsRequest request);
+
     Observable<EsResult> onCreatePreviewSession(EsRequest request) throws CameraAccessException;
+
     Observable<EsResult> onSendRepeatingRequest(EsRequest request);
+
     Observable<EsResult> onSendPreviewRepeatingRequest(EsRequest request) throws CameraAccessException;
+
     Size[] getPictureSize(EsRequest request);
+
     Size[] getPreviewSize(EsRequest request);
+
     int getSensorOrientation(EsRequest request);
+
     Observable<EsResult> close(EsRequest request);
+
     Range<Integer> getEvRange(EsRequest request);
 
 }

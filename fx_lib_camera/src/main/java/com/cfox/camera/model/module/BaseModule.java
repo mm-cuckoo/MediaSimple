@@ -29,6 +29,11 @@ public abstract class BaseModule implements IModule {
         this.mBusiness = business;
     }
 
+    @Override
+    public void init() {
+        mCameraSessionHelper.init();
+    }
+
     IBusiness getBusiness() {
         return mBusiness;
     }

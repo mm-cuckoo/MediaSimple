@@ -11,9 +11,14 @@ import io.reactivex.Observable;
 
 public interface ISurfaceHelper {
     Surface getSurface();
+
     Observable<EsResult> isAvailable();
+
     List<Surface> getSurfaces();
+
     void addSurface(Surface surface);
+
     Class getSurfaceClass();
+
     void setAspectRatio(Size size);
 }

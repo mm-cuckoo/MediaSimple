@@ -35,7 +35,7 @@ public class CameraSession implements ICameraSession {
     private CameraDevice mCameraDevice;
     private String mCameraId;
 
-    public CameraSession(Context context) {
+    CameraSession(Context context) {
         mEsCameraDevice = EsCameraDevice.getsInstance(context);
     }
 
@@ -100,11 +100,10 @@ public class CameraSession implements ICameraSession {
 
     @Override
     public Observable<EsResult> onClose() {
-        EsLog.d("onClose: camera id:" + mCameraId);
         return mEsCameraDevice.closeCameraDevice(mCameraId).doOnNext(new Consumer<EsResult>() {
             @Override
             public void accept(EsResult result) throws Exception {
-                EsLog.d("onClose: closeSession: .......");
+                EsLog.d("onClose: closeSession: .......id:" + mCameraId);
                 if (mCaptureSession != null) {
                     mCaptureSession.close();
                     mCaptureSession = null;

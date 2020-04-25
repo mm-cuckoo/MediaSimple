@@ -11,12 +11,21 @@ import com.cfox.camera.utils.EsRequest;
 import com.cfox.camera.utils.EsResult;
 
 import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.functions.BiFunction;
+import io.reactivex.functions.Function;
 
 public abstract class AbsCameraSessionHelper implements ICameraSessionHelper {
     @Override
-    public Observable<EsResult> onOpenCamera(EsRequest request) {
-        openCamera(request);
-        return getCameraSession(request).onOpenCamera(request);
+    public Observable<EsResult> onOpenCamera(final EsRequest request) {
+        return Observable.combineLatest(
+                beforeOpenCamera(request),
+                getCameraSession(request).onOpenCamera(request), new BiFunction<EsResult, EsResult, EsResult>() {
+                    @Override
+                    public EsResult apply(EsResult esResult, EsResult esResult2) throws Exception {
+                        return esResult2;
+                    }
+                });
     }
 
     @Override
@@ -30,7 +39,7 @@ public abstract class AbsCameraSessionHelper implements ICameraSessionHelper {
         return getCameraSession(request).onRepeatingRequest(request);
     }
 
-    public void openCamera(EsRequest request) { }
+    abstract Observable<EsResult> beforeOpenCamera(EsRequest request);
 
     public void applyPreviewRepeatingBuilder(EsRequest request) throws CameraAccessException {}
 
