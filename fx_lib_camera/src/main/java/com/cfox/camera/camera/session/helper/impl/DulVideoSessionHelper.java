@@ -1,15 +1,14 @@
 package com.cfox.camera.camera.session.helper.impl;
 
-import android.graphics.ImageFormat;
 import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCaptureSession;
+import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
-import android.util.Range;
-import android.util.Size;
 
-import com.cfox.camera.camera.ICameraInfo;
-import com.cfox.camera.camera.session.ICameraSession;
+import com.cfox.camera.camera.info.CameraInfo;
+import com.cfox.camera.camera.device.session.DeviceSession;
 import com.cfox.camera.camera.session.ISessionManager;
-import com.cfox.camera.camera.session.helper.ICameraHelper;
+import com.cfox.camera.camera.info.CameraInfoManager;
 import com.cfox.camera.camera.session.helper.IDulVideoSessionHelper;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.surface.ISurfaceHelper;
@@ -21,15 +20,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.Consumer;
 
 public class DulVideoSessionHelper extends AbsCameraSessionHelper implements IDulVideoSessionHelper {
 
-    private Map<String, ICameraInfo> mCameraInfoMap = new HashMap<>(2);
-    private Map<String, ICameraHelper> mCameraHelperMap = new HashMap<>(2);
-    private Map<String, CaptureRequest.Builder> mPreviewBuilderMap = new HashMap<>(2);
-    private Map<String, ICameraSession> mCameraSessionMap = new HashMap<>(2);
-    private ISessionManager mCameraSessionManager;
+    private final Map<String, CameraInfo> mCameraInfoMap = new HashMap<>(2);
+    private final Map<String, CameraInfoManager> mCameraHelperMap = new HashMap<>(2);
+    private final Map<String, CaptureRequest.Builder> mPreviewBuilderMap = new HashMap<>(2);
+    private final Map<String, DeviceSession> mCameraSessionMap = new HashMap<>(2);
+    private final Map<String, CameraCaptureSession.CaptureCallback> mCameraSessionCallbackMap = new HashMap<>(2);
+    private final ISessionManager mCameraSessionManager;
 
     public DulVideoSessionHelper(ISessionManager cameraSessionManager) {
         this.mCameraSessionManager = cameraSessionManager;
@@ -39,32 +42,37 @@ public class DulVideoSessionHelper extends AbsCameraSessionHelper implements IDu
     @Override
     public void init() {
         EsLog.d("init .....");
-        mCameraSessionManager.setSessionCount(2);
+        mCameraSessionManager.closeSession().subscribe();
     }
 
     @Override
     Observable<EsResult> beforeOpenCamera(EsRequest request) {
         EsLog.d("beforeOpenCamera....");
-        return mCameraSessionManager.closeSessionIfNeed();
+        return Observable.create(new ObservableOnSubscribe<EsResult>() {
+            @Override
+            public void subscribe(@NonNull ObservableEmitter<EsResult> emitter) throws Exception {
+                emitter.onNext(new EsResult());
+            }
+        });
     }
 
     @Override
     public void applyPreviewRepeatingBuilder(EsRequest request) throws CameraAccessException {
         String cameraId = request.getString(Es.Key.CAMERA_ID);
-        ICameraHelper cameraHelper = getCameraHelperForId(cameraId);
+//        CameraInfoManager cameraHelper = getCameraHelperForId(cameraId);
         ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(Es.Key.SURFACE_HELPER);
-        CaptureRequest.Builder builder = getCameraSessionForId(cameraId).onCreateRequestBuilder(cameraHelper.createPreviewTemplate());
+        CaptureRequest.Builder builder = getCameraSessionForId(cameraId).onCreateRequestBuilder(CameraDevice.TEMPLATE_PREVIEW);
         mPreviewBuilderMap.put(cameraId, builder);
         builder.addTarget(surfaceHelper.getSurface());
         request.put(Es.Key.REQUEST_BUILDER, builder);
-
-        request.put(Es.Key.SESSION_CALLBACK, mPreviewCallback1.setType(PhotoSessionHelper.CameraCaptureSessionCallback.TYPE_PREVIEW));
+//        CaptureSessionCallback mPreviewCallback1 = new CaptureSessionCallback();
+//        request.put(Es.Key.SESSION_CALLBACK, mPreviewCallback1.setType(ImageSessionHelperImpl.CaptureSessionCallback.TYPE_PREVIEW));
 
 
     }
 
     @Override
-    public ICameraSession getCameraSession(EsRequest request) {
+    public DeviceSession getCameraSession(EsRequest request) {
         String cameraId = request.getString(Es.Key.CAMERA_ID);
         // TODO: 19-12-5 check camera id
         return getCameraSessionForId(cameraId);
@@ -75,27 +83,6 @@ public class DulVideoSessionHelper extends AbsCameraSessionHelper implements IDu
         String cameraId = request.getString(Es.Key.CAMERA_ID);
         request.put(Es.Key.REQUEST_BUILDER, mPreviewBuilderMap.get(cameraId));
         return getCameraSessionForId(cameraId).onRepeatingRequest(request);
-    }
-
-    @Override
-    public Size[] getPictureSize(EsRequest request) {
-        String cameraId = request.getString(Es.Key.CAMERA_ID);
-        int imageFormat = request.getInt(Es.Key.IMAGE_FORMAT, ImageFormat.JPEG);
-        return getCameraHelperForId(cameraId).getPictureSize(imageFormat);
-    }
-
-    @Override
-    public Size[] getPreviewSize(EsRequest request) {
-        String cameraId = request.getString(Es.Key.CAMERA_ID);
-        EsLog.d("getPreviewSize: camera id:" + cameraId);
-        Class klass = (Class) request.getObj(Es.Key.SURFACE_CLASS);
-        return getCameraHelperForId(cameraId).getPreviewSize(klass);
-    }
-
-    @Override
-    public int getSensorOrientation(EsRequest request) {
-        String cameraId = request.getString(Es.Key.CAMERA_ID);
-        return getCameraHelperForId(cameraId).getSensorOrientation();
     }
 
     @Override
@@ -113,47 +100,40 @@ public class DulVideoSessionHelper extends AbsCameraSessionHelper implements IDu
         });
     }
 
-    @Override
-    public Range<Integer> getEvRange(EsRequest request) {
-        String cameraId = request.getString(Es.Key.CAMERA_ID);
-        return getCameraHelperForId(cameraId).getEvRange();
-    }
 
-    private ICameraSession getCameraSessionForId(String cameraId) {
-        ICameraSession cameraSession;
+    private DeviceSession getCameraSessionForId(String cameraId) {
+        DeviceSession deviceSession;
         if (mCameraSessionMap.containsKey(cameraId)) {
-            cameraSession = mCameraSessionMap.get(cameraId);
+            deviceSession = mCameraSessionMap.get(cameraId);
         } else {
-            cameraSession = mCameraSessionManager.getSessionAndKeepLive();
-            mCameraSessionMap.put(cameraId, cameraSession);
+            deviceSession = mCameraSessionManager.createSession();
+            mCameraSessionMap.put(cameraId, deviceSession);
         }
-        return cameraSession;
+        return deviceSession;
     }
 
-    private ICameraHelper getCameraHelperForId(String cameraId) {
-        ICameraHelper cameraHelper;
-        if (mCameraHelperMap.containsKey(cameraId)) {
-            cameraHelper = mCameraHelperMap.get(cameraId);
-        } else {
-            cameraHelper = new DulVideoCameraHelper();
-            cameraHelper.initCameraInfo(getCameraInfoForId(cameraId));
-            mCameraHelperMap.put(cameraId, cameraHelper);
-        }
+//    private CameraInfoManager getCameraHelperForId(String cameraId) {
+//        CameraInfoManager cameraHelper;
+//        if (mCameraHelperMap.containsKey(cameraId)) {
+//            cameraHelper = mCameraHelperMap.get(cameraId);
+//        } else {
+//            cameraHelper = new DulVideoCameraHelper();
+//            cameraHelper.initCameraInfo(getCameraInfoForId(cameraId));
+//            mCameraHelperMap.put(cameraId, cameraHelper);
+//        }
+//
+//        return cameraHelper;
+//    }
 
-        return cameraHelper;
-    }
-
-    private ICameraInfo getCameraInfoForId(String cameraId) {
-        ICameraInfo cameraInfo;
-        if (mCameraInfoMap.containsKey(cameraId)) {
-            cameraInfo = mCameraInfoMap.get(cameraId);
-        } else {
-            cameraInfo = getCameraInfo(cameraId);
-            mCameraInfoMap.put(cameraId, cameraInfo);
-        }
-
-        return cameraInfo;
-    }
-
-    private PhotoSessionHelper.CameraCaptureSessionCallback mPreviewCallback1 = new PhotoSessionHelper.CameraCaptureSessionCallback();
+//    private CameraInfo getCameraInfoForId(String cameraId) {
+//        CameraInfo cameraInfo;
+//        if (mCameraInfoMap.containsKey(cameraId)) {
+//            cameraInfo = mCameraInfoMap.get(cameraId);
+//        } else {
+//            cameraInfo = getCameraInfo(cameraId);
+//            mCameraInfoMap.put(cameraId, cameraInfo);
+//        }
+//
+//        return cameraInfo;
+//    }
 }

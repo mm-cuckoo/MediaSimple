@@ -1,19 +1,17 @@
 package com.cfox.camera.camera.session;
 
 
+import com.cfox.camera.camera.device.session.DeviceSession;
 import com.cfox.camera.utils.EsResult;
 
 import io.reactivex.Observable;
 
 public interface ISessionManager  {
 
-    void setSessionCount(int count);
 
-    ICameraSession getSingleSession();
+    DeviceSession createSession();
 
-    ICameraSession getSessionAndKeepLive();
+    DeviceSession createSession(String sessionId);
 
     Observable<EsResult> closeSession();
-
-    Observable<EsResult> closeSessionIfNeed();
 }

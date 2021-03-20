@@ -2,18 +2,17 @@ package com.cfox.camera;
 
 public class ConfigWrapper implements IConfigWrapper {
 
-    private IConfig mConfig;
+    private IConfig mConfig = new DefaultConfig();
 
-    @Override
-    public void setConfig(IConfig config) {
-        this.mConfig = config;
+
+    public ConfigWrapper(IConfig config) {
+        if (config != null) {
+            mConfig = config;
+        }
     }
 
     @Override
     public IConfig getConfig() {
-        if (mConfig == null) {
-            mConfig = new DefaultConfig();
-        }
         return mConfig;
     }
 }

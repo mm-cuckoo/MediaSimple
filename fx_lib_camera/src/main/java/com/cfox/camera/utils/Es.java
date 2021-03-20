@@ -46,7 +46,8 @@ public interface Es {
 
     interface Value {
         String OK = "ok";
-        String OPEN_SUCCESS = "open_success";
-        String OPEN_FAIL = "open_fail";
+        String CAMERA_OPEN_SUCCESS = "camera_open_success";
+        String CAMERA_DISCONNECTED = "camera_disconnected";
+        String CAMERA_OPEN_FAIL = "camera_open_fail";
     }
 }

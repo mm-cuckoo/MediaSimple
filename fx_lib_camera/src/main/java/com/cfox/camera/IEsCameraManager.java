@@ -1,16 +1,13 @@
 package com.cfox.camera;
 
 
-import com.cfox.camera.controller.ICameraController;
-import com.cfox.camera.controller.IDulVideoController;
-import com.cfox.camera.controller.IPhotoController;
-import com.cfox.camera.controller.IVideoController;
+import com.cfox.camera.capture.BaseCapture;
 
 public interface IEsCameraManager {
 
-    ICameraController photoModule();
+    BaseCapture photoModule();
 
-    ICameraController videoModule();
+    BaseCapture videoModule();
 
-    ICameraController dulVideoModule();
+    BaseCapture dulVideoModule();
 }

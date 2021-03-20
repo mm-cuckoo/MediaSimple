@@ -21,14 +21,6 @@ public interface ICameraSessionHelper {
 
     Observable<EsResult> onSendPreviewRepeatingRequest(EsRequest request) throws CameraAccessException;
 
-    Size[] getPictureSize(EsRequest request);
-
-    Size[] getPreviewSize(EsRequest request);
-
-    int getSensorOrientation(EsRequest request);
-
     Observable<EsResult> close(EsRequest request);
-
-    Range<Integer> getEvRange(EsRequest request);
 
 }

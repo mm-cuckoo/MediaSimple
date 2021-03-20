@@ -1,39 +1,40 @@
 package com.cfox.module_camera;
 
 
+import android.content.Context;
 import android.hardware.camera2.CaptureRequest;
 import android.os.Environment;
 import android.util.Range;
 import android.util.Size;
 
 import com.cfox.camera.CameraConfig;
-import com.cfox.camera.EsCamera;
 import com.cfox.camera.EsCameraManager;
-import com.cfox.camera.controller.ICameraController;
+import com.cfox.camera.capture.BaseCapture;
+import com.cfox.camera.capture.ImageCapture;
 import com.cfox.camera.surface.SurfaceHelper;
 import com.cfox.camera.utils.Es;
 import com.cfox.camera.utils.EsRequest;
 
 class EsyCameraController {
-    private EsCameraManager mFxCameraManager;
-    private ICameraController mCameraController;
+    private final EsCameraManager mFxCameraManager;
+    private BaseCapture mCameraCapture;
 
-    public EsyCameraController() {
-        mFxCameraManager = EsCamera.getInstance().getCameraManager();
-        mCameraController = mFxCameraManager.photoModule();
+    public EsyCameraController(Context context) {
+        mFxCameraManager = new EsCameraManager(context);
+        mCameraCapture = mFxCameraManager.photoModule();
     }
 
     void photoModule() {
-        mCameraController = mFxCameraManager.photoModule();
+        mCameraCapture = mFxCameraManager.photoModule();
     }
 
     void videoModule() {
-        mCameraController = mFxCameraManager.videoModule();
+        mCameraCapture = mFxCameraManager.videoModule();
     }
 
 
     void dulVideoModule() {
-        mCameraController = mFxCameraManager.dulVideoModule();
+        mCameraCapture = mFxCameraManager.dulVideoModule();
     }
 
     void backCamera(SurfaceHelper helper) {
@@ -45,20 +46,20 @@ class EsyCameraController {
         cameraConfig.push(CaptureRequest.FLASH_MODE, Es.FLASH_TYPE.OFF);
         request.put(Es.Key.CAMERA_CONFIG, cameraConfig);
 
-        mCameraController.onStartPreview(request);
+        mCameraCapture.onStartPreview(request);
     }
 
     void fontCamera(SurfaceHelper helper) {
         EsRequest request = getRequest();
         request.put(Es.Key.CAMERA_ID, Es.Camera.ID.FONT.id);
         request.put(Es.Key.SURFACE_HELPER, helper);
-        mCameraController.onStartPreview(request);
+        mCameraCapture.onStartPreview(request);
     }
 
 
     void stopCamera() {
         EsRequest request = new EsRequest();
-        mCameraController.onStop(request);
+        mCameraCapture.onStop(request);
     }
 
 
@@ -86,7 +87,7 @@ class EsyCameraController {
         cameraConfig.push(CaptureRequest.FLASH_MODE, Es.FLASH_TYPE.TORCH);
         EsRequest request = new EsRequest();
         request.put(Es.Key.CAMERA_CONFIG, cameraConfig);
-        mCameraController.onCameraConfig(request);
+        mCameraCapture.onCameraConfig(request);
     }
 
 //    void autoFlash() {
@@ -102,7 +103,7 @@ class EsyCameraController {
         cameraConfig.push(CaptureRequest.FLASH_MODE, Es.FLASH_TYPE.OFF);
         EsRequest request = new EsRequest();
         request.put(Es.Key.CAMERA_CONFIG, cameraConfig);
-        mCameraController.onCameraConfig(request);
+        mCameraCapture.onCameraConfig(request);
     }
 
     void setEv(int value) {
@@ -110,16 +111,19 @@ class EsyCameraController {
         cameraConfig.push(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, value);
         EsRequest request = new EsRequest();
         request.put(Es.Key.CAMERA_CONFIG, cameraConfig);
-        mCameraController.onCameraConfig(request);
+        mCameraCapture.onCameraConfig(request);
     }
 
     void capture() {
-//        FxRequest request = new FxRequest();
-//        mCameraController.onCapture(request);
+        if (mCameraCapture instanceof ImageCapture) {
+            EsRequest request = new EsRequest();
+            ((ImageCapture) mCameraCapture).onCapture(request);
+
+        }
     }
 
     Range<Integer> getEvRange() {
         EsRequest request = new EsRequest();
-        return mCameraController.getEvRange(request);
-    }
+        return mCameraCapture.getEvRange(request);
+    }// 重新设计代码
 }

@@ -29,7 +29,7 @@ public class CameraMainFragment extends BaseFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mCameraController = new EsyCameraController();
+        mCameraController = new EsyCameraController(getActivity());
     }
 
     @Nullable

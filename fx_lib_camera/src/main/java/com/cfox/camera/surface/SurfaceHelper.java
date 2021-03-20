@@ -61,6 +61,7 @@ public class SurfaceHelper implements ISurfaceHelper {
                 EsLog.d("SurfaceTexture isAvailable width:" + mTextureView.getWidth()  + "  height:" + mTextureView.getHeight());
                 mSurfaces.add(getSurface());
                 emitter.onNext(new EsResult());
+                emitter.onComplete();
             }
         }).subscribeOn(AndroidSchedulers.from(ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_OTHER).getLooper()));
     }

@@ -2,42 +2,44 @@ package com.cfox.camera;
 
 import android.content.Context;
 
-import com.cfox.camera.controller.DulVideoController;
-import com.cfox.camera.controller.PhotoController;
-import com.cfox.camera.controller.VideoController;
-import com.cfox.camera.controller.ICameraController;
-import com.cfox.camera.model.CameraModule;
-import com.cfox.camera.model.ICameraModule;
+import com.cfox.camera.capture.impl.DulVideoCaptureImpl;
+import com.cfox.camera.capture.impl.ImageCaptureImpl;
+import com.cfox.camera.capture.impl.VideoCaptureImpl;
+import com.cfox.camera.capture.BaseCapture;
+import com.cfox.camera.mode.CameraModeManager;
+import com.cfox.camera.mode.DulVideoMode;
+import com.cfox.camera.mode.ImageMode;
+import com.cfox.camera.mode.VideoMode;
 
 public class EsCameraManager implements IEsCameraManager {
 
-    private ICameraModule mCameraModule;
-    private ConfigWrapper mConfigWrapper;
+    private final CameraModeManager mCameraModule;
+    private final ConfigWrapper mConfigWrapper;
 
-    EsCameraManager(Context context) {
-        mConfigWrapper = new ConfigWrapper();
-        mCameraModule = CameraModule.getInstance(context, mConfigWrapper);
+    public EsCameraManager(Context context) {
+        this(context, null);
+    }
+
+    public EsCameraManager(Context context, IConfig config) {
+        mConfigWrapper = new ConfigWrapper(config);
+        mCameraModule = CameraModeManager.getInstance(context.getApplicationContext());
     }
 
     @Override
-    public ICameraController photoModule() {
-        mCameraModule.initModule(CameraModule.ModuleFlag.MODULE_PHOTO);
-        return new PhotoController(mCameraModule);
+    public BaseCapture photoModule() {
+        ImageMode imageMode = mCameraModule.initModule(CameraModeManager.ModuleFlag.MODULE_PHOTO);
+        return new ImageCaptureImpl(imageMode, mConfigWrapper);
     }
 
     @Override
-    public ICameraController videoModule() {
-        mCameraModule.initModule(CameraModule.ModuleFlag.MODULE_VIDEO);
-        return new VideoController(mCameraModule);
+    public BaseCapture videoModule() {
+        VideoMode videoMode = mCameraModule.initModule(CameraModeManager.ModuleFlag.MODULE_VIDEO);
+        return new VideoCaptureImpl(videoMode);
     }
 
     @Override
-    public ICameraController dulVideoModule() {
-        mCameraModule.initModule(CameraModule.ModuleFlag.MODULE_DUL_VIDEO);
-        return new DulVideoController(mCameraModule);
-    }
-
-    void setConfig(IConfig config) {
-        mConfigWrapper.setConfig(config);
+    public BaseCapture dulVideoModule() {
+        DulVideoMode dulVideoMode = mCameraModule.initModule(CameraModeManager.ModuleFlag.MODULE_DUL_VIDEO);
+        return new DulVideoCaptureImpl(dulVideoMode);
     }
 }

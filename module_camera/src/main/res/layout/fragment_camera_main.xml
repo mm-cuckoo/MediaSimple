@@ -10,6 +10,7 @@
 
     <com.cfox.camera.AutoFitTextureView
         android:id="@+id/preview_view_2"
+        android:visibility="gone"
         android:layout_width="540px"
         android:layout_height="960px" />
 
