@@ -13,6 +13,7 @@ public interface Es {
     }
 
     interface FLASH_TYPE {
+        int NONE        = 0;
         int TORCH       = 1;
         int OFF         = 2;
         int AUTO        = 3;
@@ -36,7 +37,6 @@ public interface Es {
         String PREVIEW_SIZE = "preview_size";
         String AF_CHANGE_STATE = "af_change_state";
 
-        String CAMERA_CONFIG = "camera_config";
         String PREVIEW_CAPTURE = "preview_capture";
         String FIRST_FRAME_CALLBACK = "first_frame_callback";
         String SESSION_CALLBACK = "session_callback";

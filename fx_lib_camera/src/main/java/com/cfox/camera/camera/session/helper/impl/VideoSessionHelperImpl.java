@@ -39,11 +39,6 @@ public class VideoSessionHelperImpl extends AbsCameraSessionHelper implements Vi
     }
 
     @Override
-    public Observable<EsResult> onSendPreviewRepeatingRequest(EsRequest request) {
-        return null;
-    }
-
-    @Override
     Observable<EsResult> beforeOpenCamera(EsRequest request) {
         mDeviceSession = null;
         return mCameraSessionManager.closeSession();

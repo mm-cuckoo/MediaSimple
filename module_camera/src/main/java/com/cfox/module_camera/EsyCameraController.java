@@ -7,7 +7,6 @@ import android.os.Environment;
 import android.util.Range;
 import android.util.Size;
 
-import com.cfox.camera.CameraConfig;
 import com.cfox.camera.EsCameraManager;
 import com.cfox.camera.capture.Capture;
 import com.cfox.camera.capture.PhotoCapture;
@@ -42,9 +41,7 @@ class EsyCameraController {
         EsRequest request = getRequest();
         request.put(Es.Key.CAMERA_ID, Es.Camera.ID.BACK.id);
         request.put(Es.Key.SURFACE_HELPER, helper);
-        CameraConfig cameraConfig = CameraConfig.getInstance();
-        cameraConfig.push(CaptureRequest.FLASH_MODE, Es.FLASH_TYPE.OFF);
-        request.put(Es.Key.CAMERA_CONFIG, cameraConfig);
+        request.put(Es.Key.CAMERA_FLASH_VALUE, Es.FLASH_TYPE.OFF);
 
         mCameraCapture.onStartPreview(request);
     }
@@ -83,10 +80,8 @@ class EsyCameraController {
 
 
     void torchFlash() {
-        CameraConfig cameraConfig = CameraConfig.getInstance();
-        cameraConfig.push(CaptureRequest.FLASH_MODE, Es.FLASH_TYPE.TORCH);
         EsRequest request = new EsRequest();
-        request.put(Es.Key.CAMERA_CONFIG, cameraConfig);
+        request.put(Es.Key.CAMERA_FLASH_VALUE, Es.FLASH_TYPE.TORCH);
         mCameraCapture.onCameraConfig(request);
     }
 
@@ -99,18 +94,13 @@ class EsyCameraController {
 //    }
 
     void closeFlash() {
-        CameraConfig cameraConfig = CameraConfig.getInstance();
-        cameraConfig.push(CaptureRequest.FLASH_MODE, Es.FLASH_TYPE.OFF);
         EsRequest request = new EsRequest();
-        request.put(Es.Key.CAMERA_CONFIG, cameraConfig);
+        request.put(Es.Key.CAMERA_FLASH_VALUE, Es.FLASH_TYPE.OFF);
         mCameraCapture.onCameraConfig(request);
     }
 
     void setEv(int value) {
-        CameraConfig cameraConfig = CameraConfig.getInstance();
-        cameraConfig.push(CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION, value);
         EsRequest request = new EsRequest();
-        request.put(Es.Key.CAMERA_CONFIG, cameraConfig);
         mCameraCapture.onCameraConfig(request);
     }
 

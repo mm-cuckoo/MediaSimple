@@ -41,6 +41,7 @@ public abstract class BaseMode implements IMode {
                     @Override
                     public ObservableSource<EsResult> apply(EsRequest fxRequest) throws Exception {
                         EsLog.d("create session before ....." + request);
+                        // 创建 camera session
                         return mCameraSessionHelper.onCreatePreviewSession(request);
                     }
                 }).flatMap(new Function<EsResult, ObservableSource<EsResult>>() {

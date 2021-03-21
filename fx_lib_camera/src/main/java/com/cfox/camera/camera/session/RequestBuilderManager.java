@@ -30,6 +30,10 @@ public class RequestBuilderManager {
         mApplyMap.clear();
     }
 
+    public int getFlashType() {
+        return 0;
+    }
+
     private void apply(CaptureRequest.Builder builder, CaptureRequest.Key<Integer> key , int value) {
         mApplyMap.put(key, value);
         builder.set(key, value);
