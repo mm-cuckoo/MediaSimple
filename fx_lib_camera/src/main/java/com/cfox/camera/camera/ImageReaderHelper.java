@@ -60,7 +60,7 @@ public class ImageReaderHelper implements IReaderHelper {
         imageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
             @Override
             public void onImageAvailable(ImageReader reader) {
-                EsLog.d("onImageAvailable: preview frame ....");
+//                EsLog.d("onImageAvailable: preview frame ....");
                 Image image = reader.acquireNextImage();
                 if (image == null) return;
                 image.close();
@@ -96,7 +96,7 @@ public class ImageReaderHelper implements IReaderHelper {
         private final Image mImage;
         private final File mFile;
 
-        ImageSaver(Image image, File file) {
+          ImageSaver(Image image, File file) {
             mImage = image;
             mFile = file;
         }

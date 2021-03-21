@@ -52,41 +52,42 @@ public class PhotoModeImpl extends BaseMode implements PhotoMode {
 //        mBuilderPack.preCaptureBuilder(mBuilder);
 //        request.put(FxRe.Key.REQUEST_BUILDER, mBuilder);
 //        final int picOrientation = request.getInt(FxRe.Key.PIC_ORIENTATION);
-        return mPhotoSessionHelper.capture(request).flatMap(new Function<EsResult, ObservableSource<EsResult>>() {
-            @Override
-            public ObservableSource<EsResult> apply(EsResult fxResult) throws Exception {
-//                Log.d(TAG, "apply: .....222..111......"  + mImageReaders.size()  +  "   picOrientation:" + picOrientation );
-                EsRequest stRequest = new EsRequest();
-//                CaptureRequest.Builder captureBuilder = mCameraSession.onCreateRequestBuilder(mPhotoCameraHelper.createStillCaptureTemplate());
-//                for (ImageReader reader : mImageReaders) {
-//                    Log.d(TAG, "apply:add target:width:"  + reader.getWidth()  + "  height: " + reader.getHeight()  + "  ImageFormat:" + reader.getImageFormat());
-//                    captureBuilder.addTarget(reader.getSurface());
-//                }
-////                mBuilderPack.captureBuilder(captureBuilder);
-//                captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, picOrientation);
-//
-//                stRequest.put(FxRe.Key.REQUEST_BUILDER, captureBuilder);
-                return mPhotoSessionHelper.captureStillPicture(stRequest);
-            }
-        }).flatMap(new Function<EsResult, ObservableSource<EsResult>>() {
-            @Override
-            public ObservableSource<EsResult> apply(EsResult fxResult) throws Exception {
-                EsLog.d("apply: re requestCapture ");
-//                mBuilderPack.previewCaptureBuilder(mBuilder);
-                EsRequest previewRequest = new EsRequest();
+        return mPhotoSessionHelper.capture(request);
+//                .flatMap(new Function<EsResult, ObservableSource<EsResult>>() {
+//            @Override
+//            public ObservableSource<EsResult> apply(EsResult fxResult) throws Exception {
+////                Log.d(TAG, "apply: .....222..111......"  + mImageReaders.size()  +  "   picOrientation:" + picOrientation );
+//                EsRequest stRequest = new EsRequest();
+////                CaptureRequest.Builder captureBuilder = mCameraSession.onCreateRequestBuilder(mPhotoCameraHelper.createStillCaptureTemplate());
+////                for (ImageReader reader : mImageReaders) {
+////                    Log.d(TAG, "apply:add target:width:"  + reader.getWidth()  + "  height: " + reader.getHeight()  + "  ImageFormat:" + reader.getImageFormat());
+////                    captureBuilder.addTarget(reader.getSurface());
+////                }
+//////                mBuilderPack.captureBuilder(captureBuilder);
+////                captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, picOrientation);
+////
+////                stRequest.put(FxRe.Key.REQUEST_BUILDER, captureBuilder);
+//                return mPhotoSessionHelper.captureStillPicture(stRequest);
+//            }
+//        }).flatMap(new Function<EsResult, ObservableSource<EsResult>>() {
+//            @Override
+//            public ObservableSource<EsResult> apply(EsResult fxResult) throws Exception {
+//                EsLog.d("apply: re requestCapture ");
+////                mBuilderPack.previewCaptureBuilder(mBuilder);
+//                EsRequest previewRequest = new EsRequest();
+////                previewRequest.put(FxRe.Key.REQUEST_BUILDER, mBuilder);
+//                previewRequest.put(Es.Key.PREVIEW_CAPTURE, true);
+//                return mPhotoSessionHelper.capture(previewRequest);
+//            }
+//        })/*.flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
+//            @Override
+//            public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
+//                Log.d(TAG, "apply: re onSendRepeatingRequest");
+//                FxRequest previewRequest = new FxRequest();
+////                mBuilderPack.previewBuilder(mBuilder);
 //                previewRequest.put(FxRe.Key.REQUEST_BUILDER, mBuilder);
-                previewRequest.put(Es.Key.PREVIEW_CAPTURE, true);
-                return mPhotoSessionHelper.capture(previewRequest);
-            }
-        })/*.flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
-            @Override
-            public ObservableSource<FxResult> apply(FxResult fxResult) throws Exception {
-                Log.d(TAG, "apply: re onSendRepeatingRequest");
-                FxRequest previewRequest = new FxRequest();
-//                mBuilderPack.previewBuilder(mBuilder);
-                previewRequest.put(FxRe.Key.REQUEST_BUILDER, mBuilder);
-                return onSendPreviewRepeatingRequest(previewRequest);
-            }
-        })*/;
+//                return onSendPreviewRepeatingRequest(previewRequest);
+//            }
+//        })*/;
     }
 }

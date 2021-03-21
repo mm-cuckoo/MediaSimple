@@ -117,6 +117,7 @@ public class AbsDeviceSession implements DeviceSession {
 
     @Override
     public void capture(EsRequest request) throws CameraAccessException {
+        EsLog.d("capture ==>" + request);
         CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(Es.Key.REQUEST_BUILDER);
         CameraCaptureSession.CaptureCallback captureCallback = (CameraCaptureSession.CaptureCallback) request.getObj(Es.Key.CAPTURE_CALLBACK);
         mCaptureSession.capture(requestBuilder.build(), captureCallback, null);
@@ -125,5 +126,6 @@ public class AbsDeviceSession implements DeviceSession {
     @Override
     public void stopRepeating() throws CameraAccessException {
         mCaptureSession.stopRepeating();
+//        mCaptureSession.abortCaptures();
     }
 }

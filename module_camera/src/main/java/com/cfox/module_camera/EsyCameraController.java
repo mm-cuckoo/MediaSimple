@@ -81,7 +81,7 @@ class EsyCameraController {
 
     void torchFlash() {
         EsRequest request = new EsRequest();
-        request.put(Es.Key.CAMERA_FLASH_VALUE, Es.FLASH_TYPE.TORCH);
+        request.put(Es.Key.CAMERA_FLASH_VALUE, Es.FLASH_TYPE.ON);
         mCameraCapture.onCameraConfig(request);
     }
 

@@ -6,6 +6,7 @@ import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
+import android.util.Log;
 import android.view.Surface;
 
 import androidx.annotation.NonNull;
@@ -36,8 +37,9 @@ import io.reactivex.ObservableOnSubscribe;
 public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements PhotoSessionHelper {
 
     private CaptureRequest.Builder mPreviewBuilder;
+    private CaptureRequest.Builder mCaptureBuilder;
 
-    private DeviceSession mImageSession;
+    private DeviceSession mPhotoSession;
     private final RequestBuilderManager mRequestBuilderManager;
     private final CameraInfoManager mCameraInfoManager = CameraInfoManagerImpl.CAMERA_INFO_MANAGER;
     private final ISessionManager mCameraSessionManager;
@@ -55,7 +57,9 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
 
     @Override
     Observable<EsResult> beforeOpenCamera(EsRequest request) {
-        mImageSession = null;
+        mPhotoSession = null;
+        mPreviewBuilder = null;
+        mCaptureBuilder = null;
         return mCameraSessionManager.closeSession();
     }
 
@@ -79,6 +83,13 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
         return mPreviewBuilder;
     }
 
+    private CaptureRequest.Builder getCaptureBuilder() {
+        if (mCaptureBuilder == null) {
+            mCaptureBuilder = createCaptureBuilder(mSurfaceHelper.getSurfaces());
+        }
+        return mCaptureBuilder;
+    }
+
     private CaptureRequest.Builder createCaptureBuilder(List<Surface> surfaceList) {
         return createBuilder(CameraDevice.TEMPLATE_STILL_CAPTURE, surfaceList);
     }
@@ -92,7 +103,7 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
     private CaptureRequest.Builder createBuilder(int templateType, List<Surface> surfaceList) {
         CaptureRequest.Builder captureBuilder = null;
         try {
-             captureBuilder = mImageSession.onCreateRequestBuilder(templateType);
+             captureBuilder = mPhotoSession.onCreateRequestBuilder(templateType);
              for (Surface surface : surfaceList) {
                  captureBuilder.addTarget(surface);
              }
@@ -103,7 +114,7 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
     }
 
     private boolean isFlashOn() {
-        return false;
+        return true;
     }
 
     @Override
@@ -116,7 +127,7 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
         }
         request.put(Es.Key.REQUEST_BUILDER, mPreviewBuilder);
         request.put(Es.Key.SESSION_CALLBACK, mPreviewCallback);
-        return mImageSession.onRepeatingRequest(request);
+        return mPhotoSession.onRepeatingRequest(request);
     }
 
 
@@ -125,9 +136,11 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
         return mCameraSessionManager.closeSession();
     }
 
+    private int picRotation = 0;
     @Override
     public Observable<EsResult> capture(final EsRequest request) {
-        EsLog.d("capture: ......3333...");
+        picRotation = request.getInt(Es.Key.PIC_ORIENTATION, -1);
+        EsLog.d("capture: ......3333..."  + picRotation);
 //        request.put(Es.Key.REQUEST_BUILDER, getCaptureBuilder(request));
         return Observable.create(new ObservableOnSubscribe<EsResult>() {
             @Override
@@ -138,43 +151,74 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
                 } else {
                     sendStillPictureRequest();
                 }
-
-
-//                mCaptureTime = SystemClock.elapsedRealtime();
-                mPreviewCallback.setType(CaptureSessionCallback.STATE_CAPTURE);
-                mPreviewCallback.setEmitter(emitter);
-                mImageSession.capture(request);
             }
         });
     }
 
-    private void triggerAFCaptureSequence() {
+    private void triggerAFCaptureSequence() throws CameraAccessException {
+        EsLog.d("triggerAFCaptureSequence===>");
         CaptureRequest.Builder builder = getPreviewBuilder();
         builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CaptureRequest.CONTROL_AF_TRIGGER_START);
-//        mState = STATE_WAITING_LOCK;
-//        sendCaptureRequest(builder.build(), mPreviewCallback, mMainHandler);
+        mPreviewCallback.setType(CaptureSessionCallback.STATE_WAITING_LOCK);
+        EsRequest request = new EsRequest();
+        request.put(Es.Key.REQUEST_BUILDER, mPreviewBuilder);
+        request.put(Es.Key.SESSION_CALLBACK, mPreviewCallback);
+        mPhotoSession.capture(request);
     }
 
     private void sendStillPictureRequest() {
-//        int jpegRotation = CameraUtil.getJpgRotation(characteristics, mDeviceRotation);
-//        CaptureRequest.Builder builder = getCaptureBuilder(false, mImageReader.getSurface());
-//        Integer aeFlash = getPreviewBuilder().get(CaptureRequest.CONTROL_AE_MODE);
-//        Integer afMode = getPreviewBuilder().get(CaptureRequest.CONTROL_AF_MODE);
-//        Integer flashMode = getPreviewBuilder().get(CaptureRequest.FLASH_MODE);
-//        builder.set(CaptureRequest.CONTROL_AE_MODE, aeFlash);
-//        builder.set(CaptureRequest.CONTROL_AF_MODE, afMode);
-//        builder.set(CaptureRequest.FLASH_MODE, flashMode);
-//        CaptureRequest request = mRequestMgr.getStillPictureRequest(
-//                getCaptureBuilder(false, mImageReader.getSurface()), jpegRotation);
-//        sendCaptureRequestWithStop(request, mCaptureCallback, mMainHandler);
+        EsLog.d("sendStillPictureRequest===>");
+
+        CaptureRequest.Builder builder = getCaptureBuilder();
+        Integer aeFlash = getPreviewBuilder().get(CaptureRequest.CONTROL_AE_MODE);
+        Integer afMode = getPreviewBuilder().get(CaptureRequest.CONTROL_AF_MODE);
+        Integer flashMode = getPreviewBuilder().get(CaptureRequest.FLASH_MODE);
+        builder.set(CaptureRequest.CONTROL_AE_MODE, aeFlash);
+        builder.set(CaptureRequest.CONTROL_AF_MODE, afMode);
+        builder.set(CaptureRequest.FLASH_MODE, flashMode);
+        builder.set(CaptureRequest.JPEG_ORIENTATION, picRotation);
+        EsRequest request = new EsRequest();
+        request.put(Es.Key.REQUEST_BUILDER, builder);
+        request.put(Es.Key.SESSION_CALLBACK, mCaptureCallback);
+        try {
+//            mPhotoSession.stopRepeating();
+            mPhotoSession.capture(request);
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
     }
 
     private void triggerAECaptureSequence() {
+        EsLog.d("triggerAECaptureSequence===>");
         CaptureRequest.Builder builder = getPreviewBuilder();
-        builder.set(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER,
-                CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER_START);
-//        mState = STATE_WAITING_PRE_CAPTURE;
-//        sendCaptureRequest(builder.build(), mPreviewCallback, mMainHandler);
+        builder.set(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER, CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER_START);
+        mPreviewCallback.setType(CaptureSessionCallback.STATE_WAITING_PRE_CAPTURE);
+        EsRequest request = new EsRequest();
+        request.put(Es.Key.REQUEST_BUILDER, mPreviewBuilder);
+        request.put(Es.Key.SESSION_CALLBACK, mPreviewCallback);
+        try {
+            mPhotoSession.capture(request);
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void resetTriggerState() {
+        EsLog.d("resetTriggerState===>");
+
+        mPreviewCallback.setType(CaptureSessionCallback.STATE_PREVIEW);
+        CaptureRequest.Builder builder = getPreviewBuilder();
+        builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CaptureRequest.CONTROL_AF_TRIGGER_IDLE);
+        builder.set(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER, CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER_IDLE);
+        EsRequest request = new EsRequest();
+        request.put(Es.Key.REQUEST_BUILDER, mPreviewBuilder);
+        request.put(Es.Key.SESSION_CALLBACK, mPreviewCallback);
+        try {
+            mPhotoSession.onRepeatingRequest(request);
+            mPhotoSession.capture(request);
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -183,24 +227,33 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
         return Observable.create(new ObservableOnSubscribe<EsResult>() {
             @Override
             public void subscribe(final ObservableEmitter<EsResult> emitter) throws Exception {
-                mImageSession.stopRepeating();
-                mImageSession.capture(request);
+                mPhotoSession.stopRepeating();
+                mPhotoSession.capture(request);
             }
         });
     }
 
     @Override
     public DeviceSession getCameraSession(EsRequest request) {
-        if (mImageSession == null) {
-            mImageSession = mCameraSessionManager.createSession();
+        if (mPhotoSession == null) {
+            mPhotoSession = mCameraSessionManager.createSession();
         }
-        return mImageSession;
+        return mPhotoSession;
     }
 
     private CameraCaptureSession.CaptureCallback mCaptureCallback = new CameraCaptureSession.CaptureCallback() {
         @Override
-        public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
+        public void onCaptureProgressed(@NonNull CameraCaptureSession session, @NonNull
+                CaptureRequest request, @NonNull CaptureResult partialResult) {
+            super.onCaptureProgressed(session, request, partialResult);
+        }
+
+        @Override
+        public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull
+                CaptureRequest request, @NonNull TotalCaptureResult result) {
             super.onCaptureCompleted(session, request, result);
+            EsLog.d("onCaptureCompleted====>");
+            resetTriggerState();
         }
     };
 
@@ -213,6 +266,7 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
         private static final int STATE_CAPTURE = 3;
         private static final int STATE_WAITING_LOCK = 4;
         private static final int STATE_WAITING_PRE_CAPTURE = 5;
+        private static final int STATE_WAITING_NON_PRE_CAPTURE = 6;
 
         private final Object mCaptureLock = new Object();
 
@@ -223,6 +277,7 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
         private boolean mCaptured = false;
 
         public void setType(int type) {
+            EsLog.d("setType  mState:" + type);
             this.mState = type;
             if (type == STATE_PREVIEW) {
                 mFirstFrameCompleted = false;
@@ -242,7 +297,8 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
         public void onCaptureProgressed(@NonNull CameraCaptureSession session,
                                         @NonNull CaptureRequest request,
                                         @NonNull CaptureResult partialResult) {
-            updateAFState(partialResult);
+//            updateAFState(partialResult);
+            processPreCapture(partialResult);
         }
 
         @Override
@@ -257,58 +313,70 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
                 EsLog.d("preview first frame call back");
             }
 
-            updateAFState(result);
+//            updateAFState(result);
+            processPreCapture(result);
+        }
+
+        private void processPreCapture(CaptureResult result) {
+            switch (mState) {
+                case STATE_PREVIEW: {
+                    // We have nothing to do when the camera preview is working normally.
+                    break;
+                }
+                case STATE_WAITING_LOCK: {
+                    Integer afState = result.get(CaptureResult.CONTROL_AF_STATE);
+                    EsLog.d("STATE_WAITING_LOCK===>afState:" + afState);
+
+                    if (afState == null) {
+                        sendStillPictureRequest();
+                    } else if (CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED == afState ||
+                            CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED == afState) {
+                        // CONTROL_AE_STATE can be null on some devices
+                        Integer aeState = result.get(CaptureResult.CONTROL_AE_STATE);
+                        EsLog.d("STATE_WAITING_LOCK===>aeState:" + aeState);
+                        if (aeState == null ||
+                                aeState == CaptureResult.CONTROL_AE_STATE_CONVERGED) {
+                            setType(STATE_CAPTURE);
+                            sendStillPictureRequest();
+                        } else {
+                            triggerAECaptureSequence();
+                        }
+                    }
+                    break;
+                }
+                case STATE_WAITING_PRE_CAPTURE: {
+                    // CONTROL_AE_STATE can be null on some devices
+                    Integer aeState = result.get(CaptureResult.CONTROL_AE_STATE);
+                    EsLog.d("STATE_WAITING_LOCK===>aeState:" + aeState);
+                    if (aeState == null ||
+                            aeState == CaptureResult.CONTROL_AE_STATE_PRECAPTURE ||
+                            aeState == CaptureRequest.CONTROL_AE_STATE_FLASH_REQUIRED) {
+                        setType(STATE_WAITING_NON_PRE_CAPTURE);
+                    }
+                    break;
+                }
+                case STATE_WAITING_NON_PRE_CAPTURE: {
+                    // CONTROL_AE_STATE can be null on some devices
+                    Integer aeState = result.get(CaptureResult.CONTROL_AE_STATE);
+                    EsLog.d("STATE_WAITING_LOCK===>aeState:" + aeState);
+                    if (aeState == null || aeState != CaptureResult.CONTROL_AE_STATE_PRECAPTURE) {
+                        setType(STATE_CAPTURE);
+                        sendStillPictureRequest();
+                    }
+                    break;
+                }
+            }
         }
 
         private void updateAFState(CaptureResult captureResult) {
-//            Integer afState = captureResult.get(CaptureResult.CONTROL_AF_STATE);
-//            if (afState != null && afState != mAFState) {
-//                mAFState = afState;
-//                EsResult result = new EsResult();
-//                result.put(Es.Key.AF_CHANGE_STATE, afState);
-//                mEmitter.onNext(result);
-//            }
-
-            synchronized (mCaptureLock) {
-                if (mState != STATE_CAPTURE) return;
-
-                boolean readyCapture = true;
-                if (mCameraInfoManager.isAutoFocusSupported()) {
-                    Integer afState = captureResult.get(CaptureResult.CONTROL_AF_STATE);
-                    EsLog.d("onCapture: af state   " + afState);
-
-                    if (afState == null) return;
-
-                    readyCapture = CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED == afState
-                            || CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED == afState;
-                }
-//
-                if (!mCameraInfoManager.isLegacyLocked()) {
-                    Integer aeState = captureResult.get(CaptureResult.CONTROL_AE_STATE);
-                    Integer awbState = captureResult.get(CaptureResult.CONTROL_AWB_STATE);
-                    EsLog.d("onCapture: ae  :" + aeState  + "   awb:" + awbState);
-                    if (aeState == null || awbState == null) {
-                        return;
-                    }
-
-                    readyCapture = readyCapture &&
-                            aeState == CaptureResult.CONTROL_AE_STATE_CONVERGED &&
-                            awbState == CaptureResult.CONTROL_AWB_STATE_CONVERGED;
-                }
-//
-                EsLog.d( "onCapture: readyCapture:" + readyCapture);
-
-//                if (!readyCapture && hitTimeoutLocked()) {
-//                    Log.w(TAG, "Timed out waiting for pre-capture sequence to complete.");
-//                    readyCapture = true;
-//                }
-                EsLog.d("onCapture: mFlag:" + mState + "   readyCapture:" + readyCapture  + "   mCaptured"  + mCaptured);
-                if (readyCapture && !mCaptured) {
-                    mCaptured = true;
-                    mState = 0;
-                    mEmitter.onNext(new EsResult());
-                }
+            Integer afState = captureResult.get(CaptureResult.CONTROL_AF_STATE);
+            if (afState != null && afState != mAFState) {
+                mAFState = afState;
+                EsResult result = new EsResult();
+                result.put(Es.Key.AF_CHANGE_STATE, afState);
+                mEmitter.onNext(result);
             }
+
         }
     }
 
