@@ -3,6 +3,6 @@ package com.cfox.camera.capture;
 
 import com.cfox.camera.utils.EsRequest;
 
-public interface ImageCapture extends BaseCapture {
+public interface PhotoCapture extends Capture {
     void onCapture(EsRequest request);
 }

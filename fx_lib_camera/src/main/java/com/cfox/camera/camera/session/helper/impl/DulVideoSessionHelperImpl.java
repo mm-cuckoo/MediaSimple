@@ -9,7 +9,7 @@ import com.cfox.camera.camera.info.CameraInfo;
 import com.cfox.camera.camera.device.session.DeviceSession;
 import com.cfox.camera.camera.session.ISessionManager;
 import com.cfox.camera.camera.info.CameraInfoManager;
-import com.cfox.camera.camera.session.helper.IDulVideoSessionHelper;
+import com.cfox.camera.camera.session.helper.DulVideoSessionHelper;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.surface.ISurfaceHelper;
 import com.cfox.camera.utils.Es;
@@ -25,7 +25,7 @@ import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.Consumer;
 
-public class DulVideoSessionHelper extends AbsCameraSessionHelper implements IDulVideoSessionHelper {
+public class DulVideoSessionHelperImpl extends AbsCameraSessionHelper implements DulVideoSessionHelper {
 
     private final Map<String, CameraInfo> mCameraInfoMap = new HashMap<>(2);
     private final Map<String, CameraInfoManager> mCameraHelperMap = new HashMap<>(2);
@@ -34,7 +34,7 @@ public class DulVideoSessionHelper extends AbsCameraSessionHelper implements IDu
     private final Map<String, CameraCaptureSession.CaptureCallback> mCameraSessionCallbackMap = new HashMap<>(2);
     private final ISessionManager mCameraSessionManager;
 
-    public DulVideoSessionHelper(ISessionManager cameraSessionManager) {
+    public DulVideoSessionHelperImpl(ISessionManager cameraSessionManager) {
         this.mCameraSessionManager = cameraSessionManager;
 
     }

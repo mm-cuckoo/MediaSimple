@@ -2,13 +2,13 @@ package com.cfox.camera.camera.session.helper.impl;
 
 import com.cfox.camera.camera.device.session.DeviceSession;
 import com.cfox.camera.camera.session.ISessionManager;
-import com.cfox.camera.camera.session.helper.IVideoSessionHelper;
+import com.cfox.camera.camera.session.helper.VideoSessionHelper;
 import com.cfox.camera.utils.EsRequest;
 import com.cfox.camera.utils.EsResult;
 
 import io.reactivex.Observable;
 
-public class VideoSessionHelperImpl extends AbsCameraSessionHelper implements IVideoSessionHelper {
+public class VideoSessionHelperImpl extends AbsCameraSessionHelper implements VideoSessionHelper {
 
 
 

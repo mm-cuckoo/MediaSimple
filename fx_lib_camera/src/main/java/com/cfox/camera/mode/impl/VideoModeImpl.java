@@ -4,7 +4,7 @@ import android.util.Size;
 
 import com.cfox.camera.camera.IReaderHelper;
 import com.cfox.camera.camera.ImageReaderHelper;
-import com.cfox.camera.camera.session.helper.IVideoSessionHelper;
+import com.cfox.camera.camera.session.helper.VideoSessionHelper;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.mode.VideoMode;
 import com.cfox.camera.mode.BaseMode;
@@ -16,9 +16,9 @@ import com.cfox.camera.utils.EsResult;
 import io.reactivex.Observable;
 
 public class VideoModeImpl extends BaseMode implements VideoMode {
-    private final IVideoSessionHelper mVideoSessionHelper;
+    private final VideoSessionHelper mVideoSessionHelper;
     private final IReaderHelper mImageReaderHelper;
-    public VideoModeImpl(IVideoSessionHelper videoSessionHelper) {
+    public VideoModeImpl(VideoSessionHelper videoSessionHelper) {
         super(videoSessionHelper);
         mVideoSessionHelper = videoSessionHelper;
         mImageReaderHelper = new ImageReaderHelper();

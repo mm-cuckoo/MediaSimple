@@ -5,13 +5,13 @@ import android.util.Size;
 import com.cfox.camera.IConfigWrapper;
 import com.cfox.camera.capture.business.BaseBusiness;
 
-public class VideoBusiness extends BaseBusiness {
-    public VideoBusiness(IConfigWrapper configWrapper) {
+public class DulVideoBusinessImpl extends BaseBusiness {
+    public DulVideoBusinessImpl(IConfigWrapper configWrapper) {
         super(configWrapper);
     }
 
     @Override
     public Size getPreviewSize(Size size, Size[] supportSizes) {
-        return getConfig().getVideoPreviewSize(size, supportSizes);
+        return getConfig().getPhotoPreviewSize(size, supportSizes);
     }
 }

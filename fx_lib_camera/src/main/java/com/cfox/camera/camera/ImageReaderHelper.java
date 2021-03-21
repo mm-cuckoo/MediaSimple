@@ -69,6 +69,20 @@ public class ImageReaderHelper implements IReaderHelper {
         return imageReader;
     }
 
+    byte[] getByteFromReader(ImageReader reader) {
+        Image image = reader.acquireLatestImage();
+        int totalSize = 0;
+        for (Image.Plane plane : image.getPlanes()) {
+            totalSize += plane.getBuffer().remaining();
+        }
+        ByteBuffer totalBuffer = ByteBuffer.allocate(totalSize);
+        for (Image.Plane plane : image.getPlanes()) {
+            totalBuffer.put(plane.getBuffer());
+        }
+        image.close();
+        return totalBuffer.array();
+    }
+
     @Override
     public void closeImageReaders() {
         for (ImageReader imageReader : mImageReaders) {

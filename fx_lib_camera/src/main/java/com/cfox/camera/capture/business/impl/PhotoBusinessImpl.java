@@ -5,8 +5,8 @@ import android.util.Size;
 import com.cfox.camera.IConfigWrapper;
 import com.cfox.camera.capture.business.BaseBusiness;
 
-public class DulVideoBusiness extends BaseBusiness {
-    public DulVideoBusiness(IConfigWrapper configWrapper) {
+public class PhotoBusinessImpl extends BaseBusiness {
+    public PhotoBusinessImpl(IConfigWrapper configWrapper) {
         super(configWrapper);
     }
 

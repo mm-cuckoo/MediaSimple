@@ -2,7 +2,7 @@ package com.cfox.camera.mode.impl;
 
 import android.util.Size;
 
-import com.cfox.camera.camera.session.helper.IDulVideoSessionHelper;
+import com.cfox.camera.camera.session.helper.DulVideoSessionHelper;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.mode.BaseMode;
 import com.cfox.camera.mode.DulVideoMode;
@@ -15,8 +15,8 @@ import io.reactivex.Observable;
 
 public class DulVideoModeImpl extends BaseMode implements DulVideoMode {
     private static final String TAG = "DulVideoModule";
-    private final IDulVideoSessionHelper mDulVideoSessionHelper;
-    public DulVideoModeImpl(IDulVideoSessionHelper cameraSessionHelper) {
+    private final DulVideoSessionHelper mDulVideoSessionHelper;
+    public DulVideoModeImpl(DulVideoSessionHelper cameraSessionHelper) {
         super(cameraSessionHelper);
         mDulVideoSessionHelper = cameraSessionHelper;
     }

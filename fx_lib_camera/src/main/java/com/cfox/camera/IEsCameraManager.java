@@ -1,13 +1,13 @@
 package com.cfox.camera;
 
 
-import com.cfox.camera.capture.BaseCapture;
+import com.cfox.camera.capture.Capture;
 
 public interface IEsCameraManager {
 
-    BaseCapture photoModule();
+    Capture photoModule();
 
-    BaseCapture videoModule();
+    Capture videoModule();
 
-    BaseCapture dulVideoModule();
+    Capture dulVideoModule();
 }

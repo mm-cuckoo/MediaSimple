@@ -3,16 +3,16 @@ package com.cfox.camera.mode;
 import android.content.Context;
 import android.util.Log;
 
-import com.cfox.camera.camera.session.helper.IDulVideoSessionHelper;
-import com.cfox.camera.camera.session.helper.impl.DulVideoSessionHelper;
+import com.cfox.camera.camera.session.helper.DulVideoSessionHelper;
+import com.cfox.camera.camera.session.helper.impl.DulVideoSessionHelperImpl;
 import com.cfox.camera.camera.device.session.DeviceSessionManager;
 import com.cfox.camera.camera.session.ISessionManager;
-import com.cfox.camera.camera.session.helper.ImageSessionHelper;
-import com.cfox.camera.camera.session.helper.IVideoSessionHelper;
-import com.cfox.camera.camera.session.helper.impl.ImageSessionHelperImpl;
+import com.cfox.camera.camera.session.helper.PhotoSessionHelper;
+import com.cfox.camera.camera.session.helper.VideoSessionHelper;
+import com.cfox.camera.camera.session.helper.impl.PhotoSessionHelperImpl;
 import com.cfox.camera.camera.session.helper.impl.VideoSessionHelperImpl;
 import com.cfox.camera.mode.impl.DulVideoModeImpl;
-import com.cfox.camera.mode.impl.ImageModeImpl;
+import com.cfox.camera.mode.impl.PhotoModeImpl;
 import com.cfox.camera.mode.impl.VideoModeImpl;
 
 import java.util.HashMap;
@@ -53,15 +53,15 @@ public class CameraModeManager {
     private CameraModeManager(Context context) {
         ISessionManager sessionManager = DeviceSessionManager.getInstance(context);
 
-        ImageSessionHelper photoSessionHelper = new ImageSessionHelperImpl(sessionManager);
-        mModuleMap.put(ModuleFlag.MODULE_PHOTO, new ImageModeImpl(photoSessionHelper));
+        PhotoSessionHelper photoSessionHelper = new PhotoSessionHelperImpl(sessionManager);
+        mModuleMap.put(ModuleFlag.MODULE_PHOTO, new PhotoModeImpl(photoSessionHelper));
 
 
-        IVideoSessionHelper videoSessionHelper = new VideoSessionHelperImpl(sessionManager);
+        VideoSessionHelper videoSessionHelper = new VideoSessionHelperImpl(sessionManager);
         mModuleMap.put(ModuleFlag.MODULE_VIDEO, new VideoModeImpl(videoSessionHelper));
 
 
-        IDulVideoSessionHelper dulVideoSessionHelper = new DulVideoSessionHelper(sessionManager);
+        DulVideoSessionHelper dulVideoSessionHelper = new DulVideoSessionHelperImpl(sessionManager);
         mModuleMap.put(ModuleFlag.MODULE_DUL_VIDEO, new DulVideoModeImpl(dulVideoSessionHelper));
     }
 

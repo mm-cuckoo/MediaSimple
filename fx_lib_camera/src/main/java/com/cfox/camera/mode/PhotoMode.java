@@ -7,6 +7,6 @@ import com.cfox.camera.utils.EsResult;
 
 import io.reactivex.Observable;
 
-public interface ImageMode extends IMode {
+public interface PhotoMode extends IMode {
     Observable<EsResult> requestCapture(EsRequest request);
 }

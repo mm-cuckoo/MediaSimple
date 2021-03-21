@@ -2,9 +2,9 @@ package com.cfox.camera.mode.impl;
 
 import com.cfox.camera.camera.IReaderHelper;
 import com.cfox.camera.camera.ImageReaderHelper;
-import com.cfox.camera.camera.session.helper.ImageSessionHelper;
+import com.cfox.camera.camera.session.helper.PhotoSessionHelper;
 import com.cfox.camera.log.EsLog;
-import com.cfox.camera.mode.ImageMode;
+import com.cfox.camera.mode.PhotoMode;
 import com.cfox.camera.mode.BaseMode;
 import com.cfox.camera.surface.ISurfaceHelper;
 import com.cfox.camera.utils.Es;
@@ -18,12 +18,12 @@ import io.reactivex.functions.Function;
 /**
  * 整理 request 和 surface 。 返回数据整理
  */
-public class ImageModeImpl extends BaseMode implements ImageMode {
-    private final ImageSessionHelper mImageSessionHelper;
+public class PhotoModeImpl extends BaseMode implements PhotoMode {
+    private final PhotoSessionHelper mPhotoSessionHelper;
     private final IReaderHelper mImageReaderHelper;
-    public ImageModeImpl(ImageSessionHelper imageSessionHelper) {
-        super(imageSessionHelper);
-        mImageSessionHelper = imageSessionHelper;
+    public PhotoModeImpl(PhotoSessionHelper photoSessionHelper) {
+        super(photoSessionHelper);
+        mPhotoSessionHelper = photoSessionHelper;
         mImageReaderHelper = new ImageReaderHelper();
     }
 
@@ -52,7 +52,7 @@ public class ImageModeImpl extends BaseMode implements ImageMode {
 //        mBuilderPack.preCaptureBuilder(mBuilder);
 //        request.put(FxRe.Key.REQUEST_BUILDER, mBuilder);
 //        final int picOrientation = request.getInt(FxRe.Key.PIC_ORIENTATION);
-        return mImageSessionHelper.capture(request).flatMap(new Function<EsResult, ObservableSource<EsResult>>() {
+        return mPhotoSessionHelper.capture(request).flatMap(new Function<EsResult, ObservableSource<EsResult>>() {
             @Override
             public ObservableSource<EsResult> apply(EsResult fxResult) throws Exception {
 //                Log.d(TAG, "apply: .....222..111......"  + mImageReaders.size()  +  "   picOrientation:" + picOrientation );
@@ -66,7 +66,7 @@ public class ImageModeImpl extends BaseMode implements ImageMode {
 //                captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, picOrientation);
 //
 //                stRequest.put(FxRe.Key.REQUEST_BUILDER, captureBuilder);
-                return mImageSessionHelper.captureStillPicture(stRequest);
+                return mPhotoSessionHelper.captureStillPicture(stRequest);
             }
         }).flatMap(new Function<EsResult, ObservableSource<EsResult>>() {
             @Override
@@ -76,7 +76,7 @@ public class ImageModeImpl extends BaseMode implements ImageMode {
                 EsRequest previewRequest = new EsRequest();
 //                previewRequest.put(FxRe.Key.REQUEST_BUILDER, mBuilder);
                 previewRequest.put(Es.Key.PREVIEW_CAPTURE, true);
-                return mImageSessionHelper.capture(previewRequest);
+                return mPhotoSessionHelper.capture(previewRequest);
             }
         })/*.flatMap(new Function<FxResult, ObservableSource<FxResult>>() {
             @Override

@@ -2,6 +2,6 @@ package com.cfox.camera.capture;
 
 
 
-public interface DulVideoCapture extends BaseCapture {
+public interface DulVideoCapture extends Capture {
 
 }

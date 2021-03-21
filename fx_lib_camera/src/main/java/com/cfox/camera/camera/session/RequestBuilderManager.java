@@ -1,17 +1,18 @@
-package com.cfox.camera.camera.session.builder;
+package com.cfox.camera.camera.session;
 
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.MeteringRectangle;
 
-import com.cfox.camera.camera.info.CameraInfo;
-import com.cfox.camera.camera.info.CameraInfoHelper;
-import com.cfox.camera.camera.session.IRequestBuilderManager;
 import com.cfox.camera.camera.info.CameraInfoManager;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.utils.Es;
-import com.cfox.camera.utils.EsRequest;
 
-public abstract class RequestBuilderManager implements IRequestBuilderManager {
+import java.util.HashMap;
+import java.util.Map;
+
+public class RequestBuilderManager {
+
+    private final Map<CaptureRequest.Key<Integer>, Integer> mApplyMap = new HashMap<>();
 
     private final CameraInfoManager mCameraHelper;
     private MeteringRectangle[] mFocusArea;
@@ -25,13 +26,22 @@ public abstract class RequestBuilderManager implements IRequestBuilderManager {
         this.mCameraHelper = cameraHelper;
     }
 
-    public void getPreviewRequest(CaptureRequest.Builder builder) {
+    public void resetApply() {
+        mApplyMap.clear();
+    }
+
+    private void apply(CaptureRequest.Builder builder, CaptureRequest.Key<Integer> key , int value) {
+        mApplyMap.put(key, value);
+        builder.set(key, value);
+    }
+
+    public void applyPreviewRequest(CaptureRequest.Builder builder) {
         int afMode = mCameraHelper.getValidAFMode(CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
         int antiBMode = mCameraHelper.getValidAntiBandingMode(CaptureRequest.CONTROL_AE_ANTIBANDING_MODE_AUTO);
-        builder.set(CaptureRequest.CONTROL_AF_MODE, afMode);
-        builder.set(CaptureRequest.CONTROL_AE_ANTIBANDING_MODE, antiBMode);
-        builder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO);
-        builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CaptureRequest.CONTROL_AF_TRIGGER_IDLE);
+        apply(builder,CaptureRequest.CONTROL_AF_MODE, afMode);
+        apply(builder,CaptureRequest.CONTROL_AE_ANTIBANDING_MODE, antiBMode);
+        apply(builder,CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO);
+        apply(builder,CaptureRequest.CONTROL_AF_TRIGGER, CaptureRequest.CONTROL_AF_TRIGGER_IDLE);
     }
 
     public void getTouch2FocusRequest(CaptureRequest.Builder builder,
@@ -89,8 +99,7 @@ public abstract class RequestBuilderManager implements IRequestBuilderManager {
         }
         switch (value) {
             case Es.FLASH_TYPE.ON:
-                builder.set(CaptureRequest.CONTROL_AE_MODE,
-                        CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH);
+                builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH);
                 builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
                 break;
             case Es.FLASH_TYPE.OFF:
@@ -120,8 +129,7 @@ public abstract class RequestBuilderManager implements IRequestBuilderManager {
         }
         switch (value) {
             case Es.FLASH_TYPE.ON:
-                builder.set(CaptureRequest.CONTROL_AE_MODE,
-                        CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH);
+                builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH);
                 builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
                 break;
             case Es.FLASH_TYPE.OFF:
@@ -142,18 +150,5 @@ public abstract class RequestBuilderManager implements IRequestBuilderManager {
                 break;
         }
     }
-
-    private CaptureRequest.Builder getRequestBuilder(EsRequest request) {
-
-        CaptureRequest.Builder builder = (CaptureRequest.Builder) request.getObj(Es.Key.REQUEST_BUILDER);
-        if (builder == null) {
-
-        }
-
-        return builder;
-
-    }
-
-
 
 }

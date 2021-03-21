@@ -4,7 +4,7 @@ import android.util.Range;
 
 import com.cfox.camera.utils.EsRequest;
 
-public interface BaseCapture {
+public interface Capture {
 
     void onStartPreview(EsRequest request);
 

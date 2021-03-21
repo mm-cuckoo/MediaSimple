@@ -9,7 +9,7 @@ import com.cfox.camera.utils.EsResult;
 
 import io.reactivex.Observable;
 
-public interface ICameraSessionHelper {
+public interface CameraSessionHelper {
 
     void init();
 

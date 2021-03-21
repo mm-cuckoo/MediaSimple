@@ -2,7 +2,7 @@ package com.cfox.camera.capture.business;
 
 import android.util.Size;
 
-public interface IBusiness {
+public interface Business {
 
     Size getPreviewSize(Size size, Size[] supportSizes);
     Size getPictureSize(Size size, Size[] supportSizes);

@@ -3,7 +3,6 @@ package com.cfox.camera.camera.info;
 import android.util.Range;
 import android.util.Size;
 
-import com.cfox.camera.camera.session.IRequestBuilderManager;
 
 public interface CameraInfoManager {
 
@@ -36,6 +35,4 @@ public interface CameraInfoManager {
     Size[] getPreviewSize(Class klass);
 
     Range<Integer> getEvRange();
-
-//    IRequestBuilderManager getBuilderHelper();
 }

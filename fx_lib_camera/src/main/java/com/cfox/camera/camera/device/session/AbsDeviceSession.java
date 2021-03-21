@@ -13,7 +13,7 @@ import com.cfox.camera.camera.info.CameraInfoHelper;
 import com.cfox.camera.camera.info.CameraInfo;
 import com.cfox.camera.camera.device.EsCameraDeviceImpl;
 import com.cfox.camera.camera.device.EsCameraDevice;
-import com.cfox.camera.camera.session.helper.impl.ImageSessionHelperImpl;
+import com.cfox.camera.camera.session.helper.impl.PhotoSessionHelperImpl;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.surface.ISurfaceHelper;
 import com.cfox.camera.utils.EasyError;
@@ -88,8 +88,8 @@ public class AbsDeviceSession implements DeviceSession {
     @Override
     public Observable<EsResult> onRepeatingRequest(EsRequest request) {
         final CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(Es.Key.REQUEST_BUILDER);
-        final ImageSessionHelperImpl.CaptureSessionCallback captureCallback  =
-                (ImageSessionHelperImpl.CaptureSessionCallback) request.getObj(Es.Key.SESSION_CALLBACK);
+        final PhotoSessionHelperImpl.CaptureSessionCallback captureCallback  =
+                (PhotoSessionHelperImpl.CaptureSessionCallback) request.getObj(Es.Key.SESSION_CALLBACK);
         return Observable.create(new ObservableOnSubscribe<EsResult>() {
             @Override
             public void subscribe(ObservableEmitter<EsResult> emitter) throws Exception {

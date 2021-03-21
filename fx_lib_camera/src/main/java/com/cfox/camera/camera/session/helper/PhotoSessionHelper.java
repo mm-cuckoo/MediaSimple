@@ -6,7 +6,7 @@ import com.cfox.camera.utils.EsResult;
 
 import io.reactivex.Observable;
 
-public interface ImageSessionHelper extends ICameraSessionHelper {
+public interface PhotoSessionHelper extends CameraSessionHelper {
 
     Observable<EsResult> capture(EsRequest request);
 

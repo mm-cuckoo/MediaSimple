@@ -3,14 +3,14 @@ package com.cfox.camera.camera.session.helper.impl;
 import android.hardware.camera2.CameraAccessException;
 
 import com.cfox.camera.camera.device.session.DeviceSession;
-import com.cfox.camera.camera.session.helper.ICameraSessionHelper;
+import com.cfox.camera.camera.session.helper.CameraSessionHelper;
 import com.cfox.camera.utils.EsRequest;
 import com.cfox.camera.utils.EsResult;
 
 import io.reactivex.Observable;
 import io.reactivex.functions.BiFunction;
 
-public abstract class AbsCameraSessionHelper implements ICameraSessionHelper {
+public abstract class AbsCameraSessionHelper implements CameraSessionHelper {
     @Override
     public Observable<EsResult> onOpenCamera(final EsRequest request) {
         return Observable.combineLatest(

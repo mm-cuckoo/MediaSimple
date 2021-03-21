@@ -10,25 +10,25 @@ import com.cfox.camera.camera.info.CameraInfo;
 import com.cfox.camera.camera.info.CameraInfoHelper;
 import com.cfox.camera.camera.info.CameraInfoManager;
 import com.cfox.camera.camera.info.CameraInfoManagerImpl;
-import com.cfox.camera.capture.ImageCapture;
+import com.cfox.camera.capture.PhotoCapture;
 import com.cfox.camera.log.EsLog;
-import com.cfox.camera.mode.ImageMode;
-import com.cfox.camera.capture.business.IBusiness;
-import com.cfox.camera.capture.business.impl.PhotoBusiness;
+import com.cfox.camera.mode.PhotoMode;
+import com.cfox.camera.capture.business.Business;
+import com.cfox.camera.capture.business.impl.PhotoBusinessImpl;
 import com.cfox.camera.surface.ISurfaceHelper;
 import com.cfox.camera.utils.CameraObserver;
 import com.cfox.camera.utils.Es;
 import com.cfox.camera.utils.EsRequest;
 import com.cfox.camera.utils.EsResult;
 // 整理发送
-public class ImageCaptureImpl implements ImageCapture {
+public class PhotoCaptureImpl implements PhotoCapture {
 
-    private final ImageMode mImageMode;
+    private final PhotoMode mPhotoMode;
     private final CameraInfoManager mCameraInfoManager = CameraInfoManagerImpl.CAMERA_INFO_MANAGER;
-    private final IBusiness mBusiness;
-    public ImageCaptureImpl(ImageMode imageMode, IConfigWrapper configWrapper) {
-        mImageMode = imageMode;
-        mBusiness = new PhotoBusiness(configWrapper);
+    private final Business mBusiness;
+    public PhotoCaptureImpl(PhotoMode photoMode, IConfigWrapper configWrapper) {
+        mPhotoMode = photoMode;
+        mBusiness = new PhotoBusinessImpl(configWrapper);
     }
 
     @Override
@@ -51,7 +51,7 @@ public class ImageCaptureImpl implements ImageCapture {
         request.put(Es.Key.PIC_SIZE, pictureSize);
 
 
-        mImageMode.requestPreview(request).subscribe(new CameraObserver<EsResult>(){
+        mPhotoMode.requestPreview(request).subscribe(new CameraObserver<EsResult>(){
             @Override
             public void onNext(EsResult fxResult) {
                 EsLog.d("onNext: .requestPreview....");
@@ -63,7 +63,7 @@ public class ImageCaptureImpl implements ImageCapture {
 
     @Override
     public void onCameraConfig(EsRequest request) {
-        mImageMode.requestCameraConfig(request).subscribe(new CameraObserver<EsResult>(){
+        mPhotoMode.requestCameraConfig(request).subscribe(new CameraObserver<EsResult>(){
             @Override
             public void onNext(EsResult fxResult) {
                 EsLog.d("onNext: .requestCameraConfig....");
@@ -74,7 +74,7 @@ public class ImageCaptureImpl implements ImageCapture {
 
     @Override
     public void onStop(EsRequest request) {
-        mImageMode.requestStop(request).subscribe(new CameraObserver<EsResult>(){
+        mPhotoMode.requestStop(request).subscribe(new CameraObserver<EsResult>(){
             @Override
             public void onNext(EsResult fxResult) {
                 EsLog.d("onNext: .requestStop....");
@@ -93,7 +93,7 @@ public class ImageCaptureImpl implements ImageCapture {
         int sensorOrientation = mCameraInfoManager.getSensorOrientation();
         int picOrientation = mBusiness.getPictureOrientation(sensorOrientation);
         request.put(Es.Key.PIC_ORIENTATION, picOrientation);
-        mImageMode.requestCapture(request).subscribe(new CameraObserver<EsResult>(){
+        mPhotoMode.requestCapture(request).subscribe(new CameraObserver<EsResult>(){
             @Override
             public void onNext(EsResult fxResult) {
                 EsLog.d("onNext: .requestCapture....");

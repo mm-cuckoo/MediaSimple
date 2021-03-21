@@ -9,15 +9,15 @@ import android.util.Size;
 
 import com.cfox.camera.CameraConfig;
 import com.cfox.camera.EsCameraManager;
-import com.cfox.camera.capture.BaseCapture;
-import com.cfox.camera.capture.ImageCapture;
+import com.cfox.camera.capture.Capture;
+import com.cfox.camera.capture.PhotoCapture;
 import com.cfox.camera.surface.SurfaceHelper;
 import com.cfox.camera.utils.Es;
 import com.cfox.camera.utils.EsRequest;
 
 class EsyCameraController {
     private final EsCameraManager mFxCameraManager;
-    private BaseCapture mCameraCapture;
+    private Capture mCameraCapture;
 
     public EsyCameraController(Context context) {
         mFxCameraManager = new EsCameraManager(context);
@@ -115,9 +115,9 @@ class EsyCameraController {
     }
 
     void capture() {
-        if (mCameraCapture instanceof ImageCapture) {
+        if (mCameraCapture instanceof PhotoCapture) {
             EsRequest request = new EsRequest();
-            ((ImageCapture) mCameraCapture).onCapture(request);
+            ((PhotoCapture) mCameraCapture).onCapture(request);
 
         }
     }

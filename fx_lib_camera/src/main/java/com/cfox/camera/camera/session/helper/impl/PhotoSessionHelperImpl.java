@@ -6,24 +6,25 @@ import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
-import android.util.Log;
+import android.view.Surface;
 
 import androidx.annotation.NonNull;
 
 import com.cfox.camera.camera.device.session.DeviceSession;
 import com.cfox.camera.camera.info.CameraInfoManager;
 import com.cfox.camera.camera.info.CameraInfoManagerImpl;
-import com.cfox.camera.camera.session.IPhotoRequestBuilderManager;
 import com.cfox.camera.camera.session.ISessionManager;
-import com.cfox.camera.camera.session.ImageSession;
-import com.cfox.camera.camera.session.helper.ImageSessionHelper;
-import com.cfox.camera.camera.session.builder.ImageRequestBuilderManger;
+import com.cfox.camera.camera.session.RequestBuilderManager;
+import com.cfox.camera.camera.session.helper.PhotoSessionHelper;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.surface.ISurfaceHelper;
 import com.cfox.camera.utils.Es;
 import com.cfox.camera.utils.EsRequest;
 import com.cfox.camera.utils.EsResult;
 
+
+import java.util.ArrayList;
+import java.util.List;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
@@ -32,18 +33,19 @@ import io.reactivex.ObservableOnSubscribe;
 /**
  * 负责挣了并发送个camera session 动作
  */
-public class ImageSessionHelperImpl extends AbsCameraSessionHelper implements ImageSessionHelper {
+public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements PhotoSessionHelper {
 
     private CaptureRequest.Builder mPreviewBuilder;
 
     private DeviceSession mImageSession;
-    private final IPhotoRequestBuilderManager mRequestBuilderManager;
+    private final RequestBuilderManager mRequestBuilderManager;
     private final CameraInfoManager mCameraInfoManager = CameraInfoManagerImpl.CAMERA_INFO_MANAGER;
     private final ISessionManager mCameraSessionManager;
+    private ISurfaceHelper mSurfaceHelper;
 
-    public ImageSessionHelperImpl(ISessionManager sessionManager) {
+    public PhotoSessionHelperImpl(ISessionManager sessionManager) {
         mCameraSessionManager = sessionManager;
-        mRequestBuilderManager = new ImageRequestBuilderManger(mCameraInfoManager);
+        mRequestBuilderManager = new RequestBuilderManager(mCameraInfoManager);
     }
 
     @Override
@@ -59,38 +61,50 @@ public class ImageSessionHelperImpl extends AbsCameraSessionHelper implements Im
 
     @Override
     public void applyPreviewRepeatingBuilder(EsRequest request) throws CameraAccessException {
-        mPreviewBuilder = createPreviewBuilder(request);
+        mSurfaceHelper = (ISurfaceHelper) request.getObj(Es.Key.SURFACE_HELPER);
+        mPreviewBuilder = createPreviewBuilder(mSurfaceHelper.getSurface());
         applyBuilderSettings(request);
         request.put(Es.Key.REQUEST_BUILDER, mPreviewBuilder);
         request.put(Es.Key.SESSION_CALLBACK, mCaptureCallback.setType(CaptureSessionCallback.TYPE_PREVIEW));
     }
 
-    private CaptureRequest.Builder createPreviewBuilder(EsRequest request) throws CameraAccessException {
-        ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(Es.Key.SURFACE_HELPER);
-        CaptureRequest.Builder builder = mImageSession.onCreateRequestBuilder(CameraDevice.TEMPLATE_PREVIEW);
-        // TODO: 2020-01-11 adjust add more target
-        builder.addTarget(surfaceHelper.getSurface());
-        return builder;
-    }
-
     private void applyBuilderSettings(EsRequest request) {
         int flashValue = request.getInt(Es.Key.CAMERA_FLASH_VALUE, Es.FLASH_TYPE.OFF);
         mRequestBuilderManager.getFlashRequest(getPreviewBuilder(), flashValue);
-        mRequestBuilderManager.getPreviewRequest(getPreviewBuilder());
+        mRequestBuilderManager.applyPreviewRequest(getPreviewBuilder());
     }
 
     private CaptureRequest.Builder getPreviewBuilder() {
         return mPreviewBuilder;
     }
 
-    private CaptureRequest.Builder getCaptureBuilder(EsRequest request) {
-        mRequestBuilderManager.captureBuilder(mPreviewBuilder);
-        return mPreviewBuilder;
+    private CaptureRequest.Builder createCaptureBuilder(List<Surface> surfaceList) {
+        return createBuilder(CameraDevice.TEMPLATE_STILL_CAPTURE, surfaceList);
+    }
+
+    private CaptureRequest.Builder createPreviewBuilder(Surface surface) {
+        List<Surface> previewSurfaceList = new ArrayList<>();
+        previewSurfaceList.add(surface);
+        return createBuilder(CameraDevice.TEMPLATE_PREVIEW, previewSurfaceList);
+    }
+
+    private CaptureRequest.Builder createBuilder(int templateType, List<Surface> surfaceList) {
+        CaptureRequest.Builder captureBuilder = null;
+        try {
+             captureBuilder = mImageSession.onCreateRequestBuilder(templateType);
+             for (Surface surface : surfaceList) {
+                 captureBuilder.addTarget(surface);
+             }
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
+        return captureBuilder;
     }
 
 
     @Override
     public Observable<EsResult> onSendRepeatingRequest(EsRequest request) {
+        // 需要进行添加
         request.put(Es.Key.REQUEST_BUILDER, mPreviewBuilder);
         return mImageSession.onRepeatingRequest(request);
     }
@@ -104,7 +118,7 @@ public class ImageSessionHelperImpl extends AbsCameraSessionHelper implements Im
     @Override
     public Observable<EsResult> capture(final EsRequest request) {
         EsLog.d("capture: ......3333...");
-        request.put(Es.Key.REQUEST_BUILDER, getCaptureBuilder(request));
+//        request.put(Es.Key.REQUEST_BUILDER, getCaptureBuilder(request));
         return Observable.create(new ObservableOnSubscribe<EsResult>() {
             @Override
             public void subscribe(final ObservableEmitter<EsResult> emitter) throws Exception {

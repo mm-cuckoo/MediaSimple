@@ -1,7 +1,7 @@
 package com.cfox.camera.mode;
 
 
-import com.cfox.camera.camera.session.helper.ICameraSessionHelper;
+import com.cfox.camera.camera.session.helper.CameraSessionHelper;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.surface.ISurfaceHelper;
 import com.cfox.camera.utils.Es;
@@ -17,9 +17,9 @@ import io.reactivex.functions.Function;
 
 public abstract class BaseMode implements IMode {
 
-    private final ICameraSessionHelper mCameraSessionHelper;
+    private final CameraSessionHelper mCameraSessionHelper;
 
-    protected BaseMode(ICameraSessionHelper cameraSessionHelper) {
+    protected BaseMode(CameraSessionHelper cameraSessionHelper) {
         this.mCameraSessionHelper = cameraSessionHelper;
     }
 
