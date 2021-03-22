@@ -14,7 +14,7 @@ public interface DeviceSession {
 
     Observable<EsResult> onOpenCamera(EsRequest request);
 
-    Observable<EsResult> onCreatePreviewSession(EsRequest request);
+    Observable<EsResult> onCreateCaptureSession(EsRequest request);
 
     CaptureRequest.Builder onCreateRequestBuilder(int templateType) throws CameraAccessException;
 
@@ -25,7 +25,5 @@ public interface DeviceSession {
     void capture(EsRequest request) throws CameraAccessException;
 
     void stopRepeating() throws CameraAccessException;
-
-    CameraCaptureSession getSession();
 
 }

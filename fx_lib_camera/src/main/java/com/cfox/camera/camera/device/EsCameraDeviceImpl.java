@@ -51,14 +51,13 @@ public class EsCameraDeviceImpl implements EsCameraDevice {
         final String cameraId = request.getString(Es.Key.CAMERA_ID);
         return Observable.create(new ObservableOnSubscribe<EsResult>() {
             @Override
-            public void subscribe(final ObservableEmitter<EsResult> emitter) throws Exception {
+            public void subscribe(final ObservableEmitter<EsResult> emitter) {
                 EsLog.d( "open camera start .....camera id:" + cameraId);
 
                 try {
                     if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
                         throw new RuntimeException("Time out waiting to lock camera opening.");
                     }
-
                     mCameraManager.openCamera(cameraId, new CameraDevice.StateCallback() {
                         @Override
                         public void onOpened(@NonNull CameraDevice camera) {
@@ -108,7 +107,7 @@ public class EsCameraDeviceImpl implements EsCameraDevice {
     public Observable<EsResult> closeCameraDevice(final String cameraId) {
         return Observable.create(new ObservableOnSubscribe<EsResult>() {
             @Override
-            public void subscribe(ObservableEmitter<EsResult> emitter) throws Exception {
+            public void subscribe(ObservableEmitter<EsResult> emitter) {
                 try {
                     EsLog.d("start close camera id " + cameraId);
                     if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
@@ -117,10 +116,7 @@ public class EsCameraDeviceImpl implements EsCameraDevice {
 
                     CameraDevice cameraDevice = null;
                     if (mDeviceMap.containsKey(cameraId)) {
-                        EsLog.d( "closeCameraDevice :: subscribe: has camera device id:" + cameraId);
                         cameraDevice = mDeviceMap.remove(cameraId);
-                    } else {
-                        EsLog.d( "closeCameraDevice:  no camera device camera id: " + cameraId);
                     }
 
                     if (cameraDevice != null) {
@@ -130,10 +126,10 @@ public class EsCameraDeviceImpl implements EsCameraDevice {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 } finally {
+                    mCameraOpenCloseLock.release();
                     EsResult result = new EsResult();
                     emitter.onNext(result);
                     emitter.onComplete();
-                    mCameraOpenCloseLock.release();
                 }
             }
         });

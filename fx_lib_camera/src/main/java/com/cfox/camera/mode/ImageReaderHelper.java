@@ -1,4 +1,4 @@
-package com.cfox.camera.camera;
+package com.cfox.camera.mode;
 
 import android.graphics.ImageFormat;
 import android.media.Image;
@@ -9,7 +9,7 @@ import android.util.Size;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.utils.Es;
 import com.cfox.camera.utils.EsRequest;
-import com.cfox.camera.utils.ThreadHandlerManager;
+import com.cfox.camera.utils.WorkerHandlerManager;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -27,7 +27,7 @@ public class ImageReaderHelper implements IReaderHelper {
     private Handler mImageReaderHandler;
     public ImageReaderHelper() {
         mImageReaders = new ArrayList<>();
-        mImageReaderHandler = ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_IMAGE_READER).getHandler();
+        mImageReaderHandler = WorkerHandlerManager.getHandler(WorkerHandlerManager.Tag.T_TYPE_IMAGE_READER);
     }
 
     @Override

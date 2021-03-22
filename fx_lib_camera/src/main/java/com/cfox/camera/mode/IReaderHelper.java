@@ -1,4 +1,4 @@
-package com.cfox.camera.camera;
+package com.cfox.camera.mode;
 
 import android.media.ImageReader;
 

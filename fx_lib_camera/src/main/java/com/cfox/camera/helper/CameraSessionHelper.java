@@ -1,8 +1,6 @@
-package com.cfox.camera.camera.session.helper;
+package com.cfox.camera.helper;
 
 import android.hardware.camera2.CameraAccessException;
-import android.util.Range;
-import android.util.Size;
 
 import com.cfox.camera.utils.EsRequest;
 import com.cfox.camera.utils.EsResult;

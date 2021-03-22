@@ -1,4 +1,4 @@
-package com.cfox.camera.camera.session.helper;
+package com.cfox.camera.helper;
 
 
 import com.cfox.camera.utils.EsRequest;

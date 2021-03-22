@@ -1,22 +1,25 @@
-package com.cfox.camera.camera.session.helper.impl;
+package com.cfox.camera.helper.impl;
 
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
+import android.view.Surface;
 
 import com.cfox.camera.camera.info.CameraInfo;
 import com.cfox.camera.camera.device.session.DeviceSession;
-import com.cfox.camera.camera.session.ISessionManager;
+import com.cfox.camera.camera.device.session.DeviceSessionManager;
 import com.cfox.camera.camera.info.CameraInfoManager;
-import com.cfox.camera.camera.session.helper.DulVideoSessionHelper;
+import com.cfox.camera.helper.DulVideoSessionHelper;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.surface.ISurfaceHelper;
 import com.cfox.camera.utils.Es;
 import com.cfox.camera.utils.EsRequest;
 import com.cfox.camera.utils.EsResult;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import io.reactivex.Observable;
@@ -32,9 +35,9 @@ public class DulVideoSessionHelperImpl extends AbsCameraSessionHelper implements
     private final Map<String, CaptureRequest.Builder> mPreviewBuilderMap = new HashMap<>(2);
     private final Map<String, DeviceSession> mCameraSessionMap = new HashMap<>(2);
     private final Map<String, CameraCaptureSession.CaptureCallback> mCameraSessionCallbackMap = new HashMap<>(2);
-    private final ISessionManager mCameraSessionManager;
+    private final DeviceSessionManager mCameraSessionManager;
 
-    public DulVideoSessionHelperImpl(ISessionManager cameraSessionManager) {
+    public DulVideoSessionHelperImpl(DeviceSessionManager cameraSessionManager) {
         this.mCameraSessionManager = cameraSessionManager;
 
     }
@@ -57,19 +60,20 @@ public class DulVideoSessionHelperImpl extends AbsCameraSessionHelper implements
     }
 
     @Override
-    public void applyPreviewRepeatingBuilder(EsRequest request) throws CameraAccessException {
-        String cameraId = request.getString(Es.Key.CAMERA_ID);
-//        CameraInfoManager cameraHelper = getCameraHelperForId(cameraId);
-        ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(Es.Key.SURFACE_HELPER);
-        CaptureRequest.Builder builder = getCameraSessionForId(cameraId).onCreateRequestBuilder(CameraDevice.TEMPLATE_PREVIEW);
-        mPreviewBuilderMap.put(cameraId, builder);
-        builder.addTarget(surfaceHelper.getSurface());
-        request.put(Es.Key.REQUEST_BUILDER, builder);
+    public void applyPreviewRepeatingBuilder(EsRequest request){
+//        String cameraId = request.getString(Es.Key.CAMERA_ID);
+////        CameraInfoManager cameraHelper = getCameraHelperForId(cameraId);
+//        ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(Es.Key.SURFACE_HELPER);
+//        CaptureRequest.Builder builder = getCameraSessionForId(cameraId).onCreateRequestBuilder(CameraDevice.TEMPLATE_PREVIEW);
+//        mPreviewBuilderMap.put(cameraId, builder);
+//        builder.addTarget(surfaceHelper.getSurface());
+//        request.put(Es.Key.REQUEST_BUILDER, builder);
 //        CaptureSessionCallback mPreviewCallback1 = new CaptureSessionCallback();
 //        request.put(Es.Key.SESSION_CALLBACK, mPreviewCallback1.setType(ImageSessionHelperImpl.CaptureSessionCallback.TYPE_PREVIEW));
 
 
     }
+
 
     @Override
     public DeviceSession getCameraSession(EsRequest request) {

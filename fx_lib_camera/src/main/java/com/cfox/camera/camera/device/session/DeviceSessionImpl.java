@@ -1,28 +1,24 @@
 package com.cfox.camera.camera.device.session;
 
-import android.content.Context;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
-import android.os.Handler;
-import android.os.Looper;
 
 import androidx.annotation.NonNull;
 
 import com.cfox.camera.EsException;
 import com.cfox.camera.camera.info.CameraInfoHelper;
 import com.cfox.camera.camera.info.CameraInfo;
-import com.cfox.camera.camera.device.EsCameraDeviceImpl;
 import com.cfox.camera.camera.device.EsCameraDevice;
-import com.cfox.camera.camera.session.helper.impl.PhotoSessionHelperImpl;
+import com.cfox.camera.helper.impl.PhotoSessionHelperImpl;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.surface.ISurfaceHelper;
 import com.cfox.camera.utils.EasyError;
 import com.cfox.camera.utils.Es;
 import com.cfox.camera.utils.EsRequest;
 import com.cfox.camera.utils.EsResult;
-import com.cfox.camera.utils.ThreadHandlerManager;
+import com.cfox.camera.utils.WorkerHandlerManager;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
@@ -30,14 +26,14 @@ import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 
-public class AbsDeviceSession implements DeviceSession {
+public class DeviceSessionImpl implements DeviceSession {
     private final EsCameraDevice mEsCameraDevice;
     private CameraCaptureSession mCaptureSession;
     private CameraDevice mCameraDevice;
     private String mCameraId;
 
-    AbsDeviceSession(Context context) {
-        mEsCameraDevice = EsCameraDeviceImpl.getsInstance(context);
+    DeviceSessionImpl(EsCameraDevice cameraDevice) {
+        mEsCameraDevice = cameraDevice;
     }
 
     @Override
@@ -61,7 +57,7 @@ public class AbsDeviceSession implements DeviceSession {
         return mCameraDevice.createCaptureRequest(templateType);
     }
 
-    public Observable<EsResult> onCreatePreviewSession(EsRequest request) {
+    public Observable<EsResult> onCreateCaptureSession(EsRequest request) {
         final ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(Es.Key.SURFACE_HELPER);
         EsLog.d("onCreatePreviewSession: ---->" + surfaceHelper.getAllSurfaces().size());
         // TODO: 19-11-29 check  mCaptureSession is null
@@ -82,7 +78,7 @@ public class AbsDeviceSession implements DeviceSession {
                         emitter.onError(new EsException("Create Preview Session failed  ", EasyError.ERROR_CODE_CREATE_PREVIEW_SESSION));
 
                     }
-                }, ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_CAMERA).getHandler());
+                }, WorkerHandlerManager.getHandler(WorkerHandlerManager.Tag.T_TYPE_CAMERA));
             }
         });
     }
@@ -97,7 +93,7 @@ public class AbsDeviceSession implements DeviceSession {
             public void subscribe(ObservableEmitter<EsResult> emitter) throws Exception {
                 captureCallback.setEmitter(emitter);
                 mCaptureSession.setRepeatingRequest(requestBuilder.build(), captureCallback,
-                        ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_CAMERA).getHandler());
+                        WorkerHandlerManager.getHandler(WorkerHandlerManager.Tag.T_TYPE_CAMERA));
             }
         });
     }
@@ -122,18 +118,12 @@ public class AbsDeviceSession implements DeviceSession {
         EsLog.d("capture ==>" + request);
         CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(Es.Key.REQUEST_BUILDER);
         CameraCaptureSession.CaptureCallback captureCallback = (CameraCaptureSession.CaptureCallback) request.getObj(Es.Key.CAPTURE_CALLBACK);
-
-        mCaptureSession.capture(requestBuilder.build(), captureCallback, new Handler(Looper.getMainLooper()));
+        mCaptureSession.capture(requestBuilder.build(), captureCallback, WorkerHandlerManager.getHandler(WorkerHandlerManager.Tag.T_TYPE_CAMERA));
     }
 
     @Override
     public void stopRepeating() throws CameraAccessException {
         mCaptureSession.stopRepeating();
         mCaptureSession.abortCaptures();
-    }
-
-    @Override
-    public CameraCaptureSession getSession() {
-        return mCaptureSession;
     }
 }

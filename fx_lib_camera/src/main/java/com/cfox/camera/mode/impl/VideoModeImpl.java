@@ -2,9 +2,9 @@ package com.cfox.camera.mode.impl;
 
 import android.util.Size;
 
-import com.cfox.camera.camera.IReaderHelper;
-import com.cfox.camera.camera.ImageReaderHelper;
-import com.cfox.camera.camera.session.helper.VideoSessionHelper;
+import com.cfox.camera.mode.IReaderHelper;
+import com.cfox.camera.mode.ImageReaderHelper;
+import com.cfox.camera.helper.VideoSessionHelper;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.mode.VideoMode;
 import com.cfox.camera.mode.BaseMode;

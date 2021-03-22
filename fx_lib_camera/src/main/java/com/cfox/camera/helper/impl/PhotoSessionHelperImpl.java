@@ -1,4 +1,4 @@
-package com.cfox.camera.camera.session.helper.impl;
+package com.cfox.camera.helper.impl;
 
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
@@ -14,9 +14,9 @@ import androidx.annotation.NonNull;
 import com.cfox.camera.camera.device.session.DeviceSession;
 import com.cfox.camera.camera.info.CameraInfoManager;
 import com.cfox.camera.camera.info.CameraInfoManagerImpl;
-import com.cfox.camera.camera.session.ISessionManager;
-import com.cfox.camera.camera.session.RequestBuilderManager;
-import com.cfox.camera.camera.session.helper.PhotoSessionHelper;
+import com.cfox.camera.camera.device.session.DeviceSessionManager;
+import com.cfox.camera.helper.PhotoSessionHelper;
+import com.cfox.camera.helper.RequestBuilderManager;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.surface.ISurfaceHelper;
 import com.cfox.camera.utils.Es;
@@ -30,6 +30,7 @@ import java.util.List;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.functions.Consumer;
 
 /**
  * 负责挣了并发送个camera session 动作
@@ -42,10 +43,10 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
     private DeviceSession mPhotoSession;
     private final RequestBuilderManager mRequestBuilderManager;
     private final CameraInfoManager mCameraInfoManager = CameraInfoManagerImpl.CAMERA_INFO_MANAGER;
-    private final ISessionManager mCameraSessionManager;
+    private final DeviceSessionManager mCameraSessionManager;
     private ISurfaceHelper mSurfaceHelper;
 
-    public PhotoSessionHelperImpl(ISessionManager sessionManager) {
+    public PhotoSessionHelperImpl(DeviceSessionManager sessionManager) {
         mCameraSessionManager = sessionManager;
         mRequestBuilderManager = new RequestBuilderManager(mCameraInfoManager);
     }
@@ -56,27 +57,36 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
     }
 
     @Override
+    public DeviceSession getCameraSession(EsRequest request) {
+        if (mPhotoSession == null) {
+            mPhotoSession = mCameraSessionManager.createSession();
+        }
+        return mPhotoSession;
+    }
+
+
+    @Override
     Observable<EsResult> beforeOpenCamera(EsRequest request) {
-        mPhotoSession = null;
-        mPreviewBuilder = null;
-        mCaptureBuilder = null;
-        return mCameraSessionManager.closeSession();
+        return mCameraSessionManager.closeSession().doOnNext(new Consumer<EsResult>() {
+            @Override
+            public void accept(EsResult esResult) {
+                mPhotoSession = null;
+                mPreviewBuilder = null;
+                mCaptureBuilder = null;
+            }
+        });
     }
 
     @Override
-    public void applyPreviewRepeatingBuilder(EsRequest request) throws CameraAccessException {
+    public void applyPreviewRepeatingBuilder(EsRequest request) {
         mSurfaceHelper = (ISurfaceHelper) request.getObj(Es.Key.SURFACE_HELPER);
         mPreviewBuilder = createPreviewBuilder(mSurfaceHelper.getSurface());
-        applyPreviewBuilder(request);
-        request.put(Es.Key.REQUEST_BUILDER, mPreviewBuilder);
-        mPreviewCallback.setType(CaptureSessionCallback.STATE_PREVIEW);
-        request.put(Es.Key.SESSION_CALLBACK, mPreviewCallback);
-    }
-
-    private void applyPreviewBuilder(EsRequest request) {
         int flashValue = request.getInt(Es.Key.CAMERA_FLASH_VALUE, Es.FLASH_TYPE.OFF);
         mRequestBuilderManager.getFlashRequest(getPreviewBuilder(), flashValue);
         mRequestBuilderManager.applyPreviewRequest(getPreviewBuilder());
+        request.put(Es.Key.REQUEST_BUILDER, mPreviewBuilder);
+        mPreviewCallback.setType(CaptureSessionCallback.STATE_PREVIEW);
+        request.put(Es.Key.SESSION_CALLBACK, mPreviewCallback);
     }
 
     private CaptureRequest.Builder getPreviewBuilder() {
@@ -230,13 +240,6 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
         });
     }
 
-    @Override
-    public DeviceSession getCameraSession(EsRequest request) {
-        if (mPhotoSession == null) {
-            mPhotoSession = mCameraSessionManager.createSession();
-        }
-        return mPhotoSession;
-    }
 
     private final CameraCaptureSession.CaptureCallback mCaptureCallback = new CameraCaptureSession.CaptureCallback() {
 
@@ -260,14 +263,11 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
 
     public class CaptureSessionCallback extends CameraCaptureSession.CaptureCallback {
 
-        private static final int STATE_PREVIEW = 1;
-        private static final int STATE_REPEAT = 2;
-        private static final int STATE_CAPTURE = 3;
-        private static final int STATE_WAITING_LOCK = 4;
-        private static final int STATE_WAITING_PRE_CAPTURE = 5;
-        private static final int STATE_WAITING_NON_PRE_CAPTURE = 6;
-
-        private final Object mCaptureLock = new Object();
+        private static final int STATE_PREVIEW                      = 1;
+        private static final int STATE_CAPTURE                      = 2;
+        private static final int STATE_WAITING_LOCK                 = 3;
+        private static final int STATE_WAITING_PRE_CAPTURE          = 4;
+        private static final int STATE_WAITING_NON_PRE_CAPTURE      = 5;
 
         private ObservableEmitter<EsResult> mEmitter;
         private int mState = 0;

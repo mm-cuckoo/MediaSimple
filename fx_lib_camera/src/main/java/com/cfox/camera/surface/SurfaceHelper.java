@@ -8,7 +8,7 @@ import android.view.TextureView;
 import com.cfox.camera.AutoFitTextureView;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.utils.EsResult;
-import com.cfox.camera.utils.ThreadHandlerManager;
+import com.cfox.camera.utils.WorkerHandlerManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +59,7 @@ public class SurfaceHelper implements ISurfaceHelper {
                 emitter.onNext(new EsResult());
                 emitter.onComplete();
             }
-        }).subscribeOn(AndroidSchedulers.from(ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_OTHER).getLooper()));
+        }).subscribeOn(AndroidSchedulers.from(WorkerHandlerManager.getLooper(WorkerHandlerManager.Tag.T_TYPE_OTHER)));
     }
 
     @Override

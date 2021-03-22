@@ -1,13 +1,13 @@
 package com.cfox.camera.mode;
 
 
-import com.cfox.camera.camera.session.helper.CameraSessionHelper;
+import com.cfox.camera.helper.CameraSessionHelper;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.surface.ISurfaceHelper;
 import com.cfox.camera.utils.Es;
 import com.cfox.camera.utils.EsRequest;
 import com.cfox.camera.utils.EsResult;
-import com.cfox.camera.utils.ThreadHandlerManager;
+import com.cfox.camera.utils.WorkerHandlerManager;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
@@ -50,7 +50,7 @@ public abstract class BaseMode implements IMode {
                         EsLog.d("onSendRepeatingRequest ......" + request);
                         return mCameraSessionHelper.onPreviewRepeatingRequest(request);
                     }
-                }).subscribeOn(AndroidSchedulers.from(ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_CAMERA).getLooper()));
+                }).subscribeOn(AndroidSchedulers.from(WorkerHandlerManager.getLooper(WorkerHandlerManager.Tag.T_TYPE_CAMERA)));
     }
 
     @Override
@@ -66,7 +66,7 @@ public abstract class BaseMode implements IMode {
     public Observable<EsResult> requestStop(EsRequest request) {
         onRequestStop();
         return mCameraSessionHelper.close(request).subscribeOn(
-                AndroidSchedulers.from(ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_OTHER).getLooper()));
+                AndroidSchedulers.from(WorkerHandlerManager.getLooper(WorkerHandlerManager.Tag.T_TYPE_OTHER)));
     }
 
     public void onRequestStop() { }

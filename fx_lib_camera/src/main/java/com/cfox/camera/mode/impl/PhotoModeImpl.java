@@ -1,8 +1,8 @@
 package com.cfox.camera.mode.impl;
 
-import com.cfox.camera.camera.IReaderHelper;
-import com.cfox.camera.camera.ImageReaderHelper;
-import com.cfox.camera.camera.session.helper.PhotoSessionHelper;
+import com.cfox.camera.mode.IReaderHelper;
+import com.cfox.camera.mode.ImageReaderHelper;
+import com.cfox.camera.helper.PhotoSessionHelper;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.mode.PhotoMode;
 import com.cfox.camera.mode.BaseMode;

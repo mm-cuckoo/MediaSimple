@@ -1,8 +1,8 @@
-package com.cfox.camera.camera.session.helper.impl;
+package com.cfox.camera.helper.impl;
 
 import com.cfox.camera.camera.device.session.DeviceSession;
-import com.cfox.camera.camera.session.ISessionManager;
-import com.cfox.camera.camera.session.helper.VideoSessionHelper;
+import com.cfox.camera.camera.device.session.DeviceSessionManager;
+import com.cfox.camera.helper.VideoSessionHelper;
 import com.cfox.camera.utils.EsRequest;
 import com.cfox.camera.utils.EsResult;
 
@@ -12,10 +12,10 @@ public class VideoSessionHelperImpl extends AbsCameraSessionHelper implements Vi
 
 
 
-    private ISessionManager mCameraSessionManager;
+    private DeviceSessionManager mCameraSessionManager;
     private DeviceSession mDeviceSession;
 
-    public VideoSessionHelperImpl(ISessionManager sessionManager) {
+    public VideoSessionHelperImpl(DeviceSessionManager sessionManager) {
         mCameraSessionManager = sessionManager;
 
     }
