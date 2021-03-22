@@ -8,7 +8,13 @@ import com.cfox.camera.utils.EsRequest;
 import com.cfox.camera.utils.EsResult;
 
 import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.ObservableSource;
+import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.BiFunction;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
 
 public abstract class AbsCameraSessionHelper implements CameraSessionHelper {
     @Override
@@ -29,7 +35,7 @@ public abstract class AbsCameraSessionHelper implements CameraSessionHelper {
     }
 
     @Override
-    public Observable<EsResult> onSendPreviewRepeatingRequest(EsRequest request) throws CameraAccessException {
+    public Observable<EsResult> onPreviewRepeatingRequest(EsRequest request) throws CameraAccessException {
         applyPreviewRepeatingBuilder(request);
         return getCameraSession(request).onRepeatingRequest(request);
     }

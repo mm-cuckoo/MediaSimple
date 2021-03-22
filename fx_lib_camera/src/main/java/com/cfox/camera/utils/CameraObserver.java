@@ -19,7 +19,8 @@ public class CameraObserver<T> implements Observer<T> {
 
     @Override
     public void onError(Throwable e) {
-        EsLog.d("onError: " + e);
+        EsLog.e("onError: " + e);
+        throw new RuntimeException(e);
 
     }
 

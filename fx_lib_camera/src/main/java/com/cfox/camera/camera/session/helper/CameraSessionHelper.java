@@ -17,9 +17,9 @@ public interface CameraSessionHelper {
 
     Observable<EsResult> onCreatePreviewSession(EsRequest request) throws CameraAccessException;
 
-    Observable<EsResult> onSendRepeatingRequest(EsRequest request);
+    Observable<EsResult> onRepeatingRequest(EsRequest request);
 
-    Observable<EsResult> onSendPreviewRepeatingRequest(EsRequest request) throws CameraAccessException;
+    Observable<EsResult> onPreviewRepeatingRequest(EsRequest request) throws CameraAccessException;
 
     Observable<EsResult> close(EsRequest request);
 

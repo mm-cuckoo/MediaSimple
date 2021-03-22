@@ -23,6 +23,7 @@ public class SurfaceHelper implements ISurfaceHelper {
     private AutoFitTextureView mTextureView;
     private List<Surface> mSurfaces;
     private Size mPreviewSize;
+    private Surface mSurface;
 
     public SurfaceHelper(AutoFitTextureView textureView) {
         this.mTextureView = textureView;
@@ -30,16 +31,11 @@ public class SurfaceHelper implements ISurfaceHelper {
         this.mSurfaces = new ArrayList<>();
     }
 
-    public TextureView getTextureView() {
-        return mTextureView;
-    }
-
     public Surface getSurface() {
-        return new Surface(mTextureView.getSurfaceTexture());
-    }
-
-    public SurfaceTexture getSurfaceTexture() {
-        return mTextureView.getSurfaceTexture();
+        if (mSurface == null) {
+            mSurface = new Surface(mTextureView.getSurfaceTexture());
+        }
+        return mSurface;
     }
 
     public Observable<EsResult> isAvailable() {
@@ -67,12 +63,18 @@ public class SurfaceHelper implements ISurfaceHelper {
     }
 
     @Override
-    public List<Surface> getSurfaces() {
+    public List<Surface> getAllSurfaces() {
         return mSurfaces;
     }
 
     @Override
-    public void addSurface(Surface surface) {
+    public List<Surface> getCaptureSurfaces() {
+        mSurfaces.remove(getSurface());
+        return mSurfaces;
+    }
+
+    @Override
+    public void addCaptureSurface(Surface surface) {
         EsLog.d("addSurface: "  + (!mSurfaces.contains(surface)));
         if (!mSurfaces.contains(surface)) {
             EsLog.d("addSurface: .......");
@@ -81,7 +83,7 @@ public class SurfaceHelper implements ISurfaceHelper {
     }
 
     @Override
-    public Class getSurfaceClass() {
+    public Class getPreviewSurfaceClass() {
         return SurfaceTexture.class;
     }
 

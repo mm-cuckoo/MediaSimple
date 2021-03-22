@@ -2,6 +2,7 @@ package com.cfox.camera.camera.device.session;
 
 
 import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CaptureRequest;
 
 import com.cfox.camera.utils.EsRequest;
@@ -24,5 +25,7 @@ public interface DeviceSession {
     void capture(EsRequest request) throws CameraAccessException;
 
     void stopRepeating() throws CameraAccessException;
+
+    CameraCaptureSession getSession();
 
 }

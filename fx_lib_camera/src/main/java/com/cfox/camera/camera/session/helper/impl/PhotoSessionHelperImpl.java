@@ -3,10 +3,10 @@ package com.cfox.camera.camera.session.helper.impl;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
+import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.TotalCaptureResult;
-import android.util.Log;
 import android.view.Surface;
 
 import androidx.annotation.NonNull;
@@ -85,7 +85,7 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
 
     private CaptureRequest.Builder getCaptureBuilder() {
         if (mCaptureBuilder == null) {
-            mCaptureBuilder = createCaptureBuilder(mSurfaceHelper.getSurfaces());
+            mCaptureBuilder = createCaptureBuilder(mSurfaceHelper.getCaptureSurfaces());
         }
         return mCaptureBuilder;
     }
@@ -104,6 +104,7 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
         CaptureRequest.Builder captureBuilder = null;
         try {
              captureBuilder = mPhotoSession.onCreateRequestBuilder(templateType);
+             EsLog.d("surface size: ||||||||||||||---->" + surfaceList.size());
              for (Surface surface : surfaceList) {
                  captureBuilder.addTarget(surface);
              }
@@ -118,7 +119,7 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
     }
 
     @Override
-    public Observable<EsResult> onSendRepeatingRequest(EsRequest request) {
+    public Observable<EsResult> onRepeatingRequest(EsRequest request) {
         EsLog.d("onSendRepeatingRequest: req:" + request);
         // 需要进行添加
         int flashValue = request.getInt(Es.Key.CAMERA_FLASH_VALUE, Es.FLASH_TYPE.NONE);
@@ -141,11 +142,9 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
     public Observable<EsResult> capture(final EsRequest request) {
         picRotation = request.getInt(Es.Key.PIC_ORIENTATION, -1);
         EsLog.d("capture: ......3333..."  + picRotation);
-//        request.put(Es.Key.REQUEST_BUILDER, getCaptureBuilder(request));
         return Observable.create(new ObservableOnSubscribe<EsResult>() {
             @Override
             public void subscribe(final ObservableEmitter<EsResult> emitter) throws Exception {
-
                 if (mCameraInfoManager.canTriggerAf() && isFlashOn()) {
                     triggerAFCaptureSequence();
                 } else {
@@ -167,8 +166,7 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
     }
 
     private void sendStillPictureRequest() {
-        EsLog.d("sendStillPictureRequest===>");
-
+        EsLog.d("sendStillPictureRequest===>11");
         CaptureRequest.Builder builder = getCaptureBuilder();
         Integer aeFlash = getPreviewBuilder().get(CaptureRequest.CONTROL_AE_MODE);
         Integer afMode = getPreviewBuilder().get(CaptureRequest.CONTROL_AF_MODE);
@@ -179,9 +177,9 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
         builder.set(CaptureRequest.JPEG_ORIENTATION, picRotation);
         EsRequest request = new EsRequest();
         request.put(Es.Key.REQUEST_BUILDER, builder);
-        request.put(Es.Key.SESSION_CALLBACK, mCaptureCallback);
+        request.put(Es.Key.CAPTURE_CALLBACK, mCaptureCallback);
         try {
-//            mPhotoSession.stopRepeating();
+            mPhotoSession.stopRepeating();
             mPhotoSession.capture(request);
         } catch (CameraAccessException e) {
             e.printStackTrace();
@@ -205,7 +203,6 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
 
     private void resetTriggerState() {
         EsLog.d("resetTriggerState===>");
-
         mPreviewCallback.setType(CaptureSessionCallback.STATE_PREVIEW);
         CaptureRequest.Builder builder = getPreviewBuilder();
         builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CaptureRequest.CONTROL_AF_TRIGGER_IDLE);
@@ -214,7 +211,7 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
         request.put(Es.Key.REQUEST_BUILDER, mPreviewBuilder);
         request.put(Es.Key.SESSION_CALLBACK, mPreviewCallback);
         try {
-            mPhotoSession.onRepeatingRequest(request);
+            mPhotoSession.onRepeatingRequest(request).subscribe();
             mPhotoSession.capture(request);
         } catch (CameraAccessException e) {
             e.printStackTrace();
@@ -241,12 +238,7 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
         return mPhotoSession;
     }
 
-    private CameraCaptureSession.CaptureCallback mCaptureCallback = new CameraCaptureSession.CaptureCallback() {
-        @Override
-        public void onCaptureProgressed(@NonNull CameraCaptureSession session, @NonNull
-                CaptureRequest request, @NonNull CaptureResult partialResult) {
-            super.onCaptureProgressed(session, request, partialResult);
-        }
+    private final CameraCaptureSession.CaptureCallback mCaptureCallback = new CameraCaptureSession.CaptureCallback() {
 
         @Override
         public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull
@@ -255,9 +247,16 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
             EsLog.d("onCaptureCompleted====>");
             resetTriggerState();
         }
+
+        @Override
+        public void onCaptureFailed(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull CaptureFailure failure) {
+            super.onCaptureFailed(session, request, failure);
+            EsLog.d("onCaptureFailed====>");
+            resetTriggerState();
+        }
     };
 
-    private CaptureSessionCallback mPreviewCallback = new CaptureSessionCallback();
+    private final CaptureSessionCallback mPreviewCallback = new CaptureSessionCallback();
 
     public class CaptureSessionCallback extends CameraCaptureSession.CaptureCallback {
 
@@ -274,7 +273,6 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
         private int mState = 0;
         private int mAFState = -1;
         private boolean mFirstFrameCompleted = false;
-        private boolean mCaptured = false;
 
         public void setType(int type) {
             EsLog.d("setType  mState:" + type);
@@ -282,7 +280,6 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
             if (type == STATE_PREVIEW) {
                 mFirstFrameCompleted = false;
             } else if (type == STATE_CAPTURE) {
-                mCaptured = false;
             }
         }
 
@@ -297,7 +294,7 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
         public void onCaptureProgressed(@NonNull CameraCaptureSession session,
                                         @NonNull CaptureRequest request,
                                         @NonNull CaptureResult partialResult) {
-//            updateAFState(partialResult);
+            updateAFState(partialResult);
             processPreCapture(partialResult);
         }
 
@@ -313,7 +310,7 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
                 EsLog.d("preview first frame call back");
             }
 
-//            updateAFState(result);
+            updateAFState(result);
             processPreCapture(result);
         }
 

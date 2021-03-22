@@ -48,14 +48,14 @@ public abstract class BaseMode implements IMode {
                     @Override
                     public ObservableSource<EsResult> apply(EsResult fxResult) throws Exception {
                         EsLog.d("onSendRepeatingRequest ......" + request);
-                        return mCameraSessionHelper.onSendPreviewRepeatingRequest(request);
+                        return mCameraSessionHelper.onPreviewRepeatingRequest(request);
                     }
                 }).subscribeOn(AndroidSchedulers.from(ThreadHandlerManager.getInstance().obtain(ThreadHandlerManager.Tag.T_TYPE_CAMERA).getLooper()));
     }
 
     @Override
     public Observable<EsResult> requestCameraConfig(EsRequest request) {
-        return mCameraSessionHelper.onSendRepeatingRequest(request);
+        return mCameraSessionHelper.onRepeatingRequest(request);
     }
 
     private Observable<EsResult> onOpenCamera(EsRequest request) {

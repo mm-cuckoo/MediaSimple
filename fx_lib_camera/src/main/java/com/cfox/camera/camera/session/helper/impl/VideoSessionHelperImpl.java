@@ -34,7 +34,7 @@ public class VideoSessionHelperImpl extends AbsCameraSessionHelper implements Vi
     }
 
     @Override
-    public Observable<EsResult> onSendRepeatingRequest(EsRequest request) {
+    public Observable<EsResult> onRepeatingRequest(EsRequest request) {
         return null;
     }
 

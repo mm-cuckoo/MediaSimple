@@ -30,7 +30,7 @@ public class DulVideoModeImpl extends BaseMode implements DulVideoMode {
         request.put(Es.Key.PIC_SIZE, pictureSize);
 
 //        surfaceHelper.addSurface(mImageReaderHelper.createImageReader(request).getSurface());
-        request.put(Es.Key.SURFACE_CLASS, surfaceHelper.getSurfaceClass());
+        request.put(Es.Key.SURFACE_CLASS, surfaceHelper.getPreviewSurfaceClass());
 
         Size previewSize = (Size) request.getObj(Es.Key.PREVIEW_SIZE);
 //        Size previewSize = getBusiness().getPreviewSize(previewSizeForReq, mImageSessionHelper.getPreviewSize(request));

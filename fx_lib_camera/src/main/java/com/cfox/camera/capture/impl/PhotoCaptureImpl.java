@@ -41,7 +41,7 @@ public class PhotoCaptureImpl implements PhotoCapture {
 
         // 设置预览大小
         Size previewSizeForReq = (Size) request.getObj(Es.Key.PREVIEW_SIZE);
-        Size previewSize = mBusiness.getPreviewSize(previewSizeForReq, mCameraInfoManager.getPreviewSize(surfaceHelper.getSurfaceClass()));
+        Size previewSize = mBusiness.getPreviewSize(previewSizeForReq, mCameraInfoManager.getPreviewSize(surfaceHelper.getPreviewSurfaceClass()));
         surfaceHelper.setAspectRatio(previewSize);
 
         // 设置图片大小

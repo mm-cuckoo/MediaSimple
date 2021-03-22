@@ -79,7 +79,7 @@ public class DulVideoSessionHelperImpl extends AbsCameraSessionHelper implements
     }
 
     @Override
-    public Observable<EsResult> onSendRepeatingRequest(EsRequest request) {
+    public Observable<EsResult> onRepeatingRequest(EsRequest request) {
         String cameraId = request.getString(Es.Key.CAMERA_ID);
         request.put(Es.Key.REQUEST_BUILDER, mPreviewBuilderMap.get(cameraId));
         return getCameraSessionForId(cameraId).onRepeatingRequest(request);

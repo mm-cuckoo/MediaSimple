@@ -5,6 +5,8 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
+import android.os.Handler;
+import android.os.Looper;
 
 import androidx.annotation.NonNull;
 
@@ -61,13 +63,13 @@ public class AbsDeviceSession implements DeviceSession {
 
     public Observable<EsResult> onCreatePreviewSession(EsRequest request) {
         final ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(Es.Key.SURFACE_HELPER);
-        EsLog.d("onCreatePreviewSession: ---->" + surfaceHelper.getSurfaces().size());
+        EsLog.d("onCreatePreviewSession: ---->" + surfaceHelper.getAllSurfaces().size());
         // TODO: 19-11-29 check  mCaptureSession is null
         return Observable.create(new ObservableOnSubscribe<EsResult>() {
             @Override
             public void subscribe(final ObservableEmitter<EsResult> emitter) throws Exception {
                 // 设置更多返回表面
-                mCameraDevice.createCaptureSession(surfaceHelper.getSurfaces(), new CameraCaptureSession.StateCallback() {
+                mCameraDevice.createCaptureSession(surfaceHelper.getAllSurfaces(), new CameraCaptureSession.StateCallback() {
                     @Override
                     public void onConfigured(@NonNull CameraCaptureSession session) {
                         EsLog.d("onConfigured: create session success .....");
@@ -120,12 +122,18 @@ public class AbsDeviceSession implements DeviceSession {
         EsLog.d("capture ==>" + request);
         CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(Es.Key.REQUEST_BUILDER);
         CameraCaptureSession.CaptureCallback captureCallback = (CameraCaptureSession.CaptureCallback) request.getObj(Es.Key.CAPTURE_CALLBACK);
-        mCaptureSession.capture(requestBuilder.build(), captureCallback, null);
+
+        mCaptureSession.capture(requestBuilder.build(), captureCallback, new Handler(Looper.getMainLooper()));
     }
 
     @Override
     public void stopRepeating() throws CameraAccessException {
         mCaptureSession.stopRepeating();
-//        mCaptureSession.abortCaptures();
+        mCaptureSession.abortCaptures();
+    }
+
+    @Override
+    public CameraCaptureSession getSession() {
+        return mCaptureSession;
     }
 }

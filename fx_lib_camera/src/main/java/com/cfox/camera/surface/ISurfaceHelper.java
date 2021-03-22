@@ -14,11 +14,13 @@ public interface ISurfaceHelper {
 
     Observable<EsResult> isAvailable();
 
-    List<Surface> getSurfaces();
+    List<Surface> getAllSurfaces();
 
-    void addSurface(Surface surface);
+    List<Surface> getCaptureSurfaces();
 
-    Class getSurfaceClass();
+    void addCaptureSurface(Surface surface);
+
+    Class getPreviewSurfaceClass();
 
     void setAspectRatio(Size size);
 }
