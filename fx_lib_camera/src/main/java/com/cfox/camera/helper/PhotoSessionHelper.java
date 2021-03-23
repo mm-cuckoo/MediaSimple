@@ -10,6 +10,4 @@ public interface PhotoSessionHelper extends CameraSessionHelper {
 
     Observable<EsResult> capture(EsRequest request);
 
-    Observable<EsResult> captureStillPicture(EsRequest request);
-
 }

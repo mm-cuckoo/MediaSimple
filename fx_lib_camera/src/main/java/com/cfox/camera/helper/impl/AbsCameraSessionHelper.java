@@ -1,9 +1,19 @@
 package com.cfox.camera.helper.impl;
 
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraDevice;
+import android.hardware.camera2.CaptureRequest;
+import android.view.Surface;
+
 import com.cfox.camera.camera.device.session.DeviceSession;
 import com.cfox.camera.helper.CameraSessionHelper;
+import com.cfox.camera.log.EsLog;
+import com.cfox.camera.utils.Es;
 import com.cfox.camera.utils.EsRequest;
 import com.cfox.camera.utils.EsResult;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
@@ -19,7 +29,8 @@ public abstract class AbsCameraSessionHelper implements CameraSessionHelper {
      */
     @Override
     public Observable<EsResult> onOpenCamera(final EsRequest request) {
-        return beforeOpenCamera(request).flatMap(new Function<EsResult, ObservableSource<EsResult>>() {
+        return beforeOpenCamera(request)
+                .flatMap(new Function<EsResult, ObservableSource<EsResult>>() {
             @Override
             public ObservableSource<EsResult> apply(@NonNull EsResult esResult) throws Exception {
                 return getCameraSession(request).onOpenCamera(request);
@@ -37,13 +48,7 @@ public abstract class AbsCameraSessionHelper implements CameraSessionHelper {
 
     @Override
     public Observable<EsResult> onPreviewRepeatingRequest(final EsRequest request) {
-        return Observable.create(new ObservableOnSubscribe<EsRequest>() {
-            @Override
-            public void subscribe(@NonNull ObservableEmitter<EsRequest> emitter) {
-                applyPreviewRepeatingBuilder(request);
-                emitter.onNext(request);
-            }
-        }).flatMap(new Function<EsRequest, ObservableSource<EsResult>>() {
+        return applyPreviewPlan(request).flatMap(new Function<EsRequest, ObservableSource<EsResult>>() {
             @Override
             public ObservableSource<EsResult> apply(@NonNull EsRequest esRequest) {
                 return getCameraSession(esRequest).onRepeatingRequest(esRequest);
@@ -51,12 +56,34 @@ public abstract class AbsCameraSessionHelper implements CameraSessionHelper {
         });
     }
 
+    CaptureRequest.Builder createPreviewBuilder(Surface surface) {
+        List<Surface> previewSurfaceList = new ArrayList<>();
+        previewSurfaceList.add(surface);
+        return createBuilder(CameraDevice.TEMPLATE_PREVIEW, previewSurfaceList);
+    }
+
+    CaptureRequest.Builder createBuilder(int templateType, List<Surface> surfaceList) {
+        CaptureRequest.Builder captureBuilder = null;
+        try {
+            captureBuilder = getCameraSession(new EsRequest()).onCreateRequestBuilder(templateType);
+            EsLog.d("surface size: ||||||||||||||---->" + surfaceList.size());
+            for (Surface surface : surfaceList) {
+                captureBuilder.addTarget(surface);
+            }
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
+        return captureBuilder;
+    }
+
+
+
     /**
      * open camera
      */
     abstract Observable<EsResult> beforeOpenCamera(EsRequest request);
 
-    public void applyPreviewRepeatingBuilder(EsRequest request){}
+    abstract Observable<EsRequest> applyPreviewPlan(EsRequest request);
 
     public abstract DeviceSession getCameraSession(EsRequest request);
 }

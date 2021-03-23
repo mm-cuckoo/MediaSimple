@@ -11,6 +11,8 @@ public interface CameraSessionHelper {
 
     void init();
 
+    Observable<EsResult> cameraStatus();
+
     Observable<EsResult> onOpenCamera(EsRequest request);
 
     Observable<EsResult> onCreatePreviewSession(EsRequest request) throws CameraAccessException;

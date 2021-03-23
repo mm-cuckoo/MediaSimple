@@ -10,8 +10,11 @@ import com.cfox.camera.utils.EsResult;
 import com.cfox.camera.utils.WorkerHandlerManager;
 
 import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.ObservableSource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Function;
 

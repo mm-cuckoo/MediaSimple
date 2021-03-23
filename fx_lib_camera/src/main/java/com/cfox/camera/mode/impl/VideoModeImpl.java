@@ -29,15 +29,11 @@ public class VideoModeImpl extends BaseMode implements VideoMode {
         ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(Es.Key.SURFACE_HELPER);
 
         Size pictureSize = (Size) request.getObj(Es.Key.PIC_SIZE);
-//        Size pictureSize = getBusiness().getPictureSize(pictureSizeForReq, mImageSessionHelper.getPictureSize(request));
         request.put(Es.Key.PIC_SIZE, pictureSize);
 
         surfaceHelper.addCaptureSurface(mImageReaderHelper.createImageReader(request).getSurface());
-        request.put(Es.Key.SURFACE_CLASS, surfaceHelper.getPreviewSurfaceClass());
 
         Size previewSize = (Size) request.getObj(Es.Key.PREVIEW_SIZE);
-//        Size previewSize = getBusiness().getPreviewSize(previewSizeForReq, mImageSessionHelper.getPreviewSize(request));
-//        surfaceHelper.setAspectRatio(previewSize);
 
         EsLog.d("requestPreview: preview width:" + previewSize.getWidth()  +
                 "   preview height:" + previewSize.getHeight()  +

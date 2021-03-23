@@ -49,6 +49,11 @@ public class DulVideoSessionHelperImpl extends AbsCameraSessionHelper implements
     }
 
     @Override
+    public Observable<EsResult> cameraStatus() {
+        return null;
+    }
+
+    @Override
     Observable<EsResult> beforeOpenCamera(EsRequest request) {
         EsLog.d("beforeOpenCamera....");
         return Observable.create(new ObservableOnSubscribe<EsResult>() {
@@ -60,20 +65,9 @@ public class DulVideoSessionHelperImpl extends AbsCameraSessionHelper implements
     }
 
     @Override
-    public void applyPreviewRepeatingBuilder(EsRequest request){
-//        String cameraId = request.getString(Es.Key.CAMERA_ID);
-////        CameraInfoManager cameraHelper = getCameraHelperForId(cameraId);
-//        ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(Es.Key.SURFACE_HELPER);
-//        CaptureRequest.Builder builder = getCameraSessionForId(cameraId).onCreateRequestBuilder(CameraDevice.TEMPLATE_PREVIEW);
-//        mPreviewBuilderMap.put(cameraId, builder);
-//        builder.addTarget(surfaceHelper.getSurface());
-//        request.put(Es.Key.REQUEST_BUILDER, builder);
-//        CaptureSessionCallback mPreviewCallback1 = new CaptureSessionCallback();
-//        request.put(Es.Key.SESSION_CALLBACK, mPreviewCallback1.setType(ImageSessionHelperImpl.CaptureSessionCallback.TYPE_PREVIEW));
-
-
+    Observable<EsRequest> applyPreviewPlan(EsRequest request) {
+        return null;
     }
-
 
     @Override
     public DeviceSession getCameraSession(EsRequest request) {

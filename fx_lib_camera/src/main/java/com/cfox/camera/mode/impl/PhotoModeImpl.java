@@ -12,6 +12,9 @@ import com.cfox.camera.utils.EsRequest;
 import com.cfox.camera.utils.EsResult;
 
 import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.annotations.NonNull;
 
 /**
  * 整理 request 和 surface 。 返回数据整理
@@ -28,7 +31,6 @@ public class PhotoModeImpl extends BaseMode implements PhotoMode {
     @Override
     public Observable<EsResult> requestPreview(EsRequest request) {
         ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(Es.Key.SURFACE_HELPER);
-
         surfaceHelper.addCaptureSurface(mImageReaderHelper.createImageReader(request).getSurface());
         EsLog.d("requestPreview: preview request:" + request);
 

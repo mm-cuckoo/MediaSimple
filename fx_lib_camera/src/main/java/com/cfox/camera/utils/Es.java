@@ -23,7 +23,6 @@ public interface Es {
     interface Key {
         String CAMERA_ID = "camera_id";
         String SURFACE_HELPER = "surface_helper";
-        String SURFACE_CLASS = "surface_class";
         String CAMERA_DEVICE = "camera_device";
         String CAMERA_INFO = "camera_info";
         String OPEN_CAMERA_STATUS = "open_camera_status";
@@ -35,6 +34,7 @@ public interface Es {
         String IMAGE_FORMAT = "Image_format";
 
         String PREVIEW_SIZE = "preview_size";
+        String PREVIEW_EMITTER = "preview_emitter";
         String AF_CHANGE_STATE = "af_change_state";
 
         String PREVIEW_CAPTURE = "preview_capture";

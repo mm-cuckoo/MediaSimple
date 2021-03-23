@@ -86,12 +86,10 @@ public class DeviceSessionImpl implements DeviceSession {
     @Override
     public Observable<EsResult> onRepeatingRequest(EsRequest request) {
         final CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(Es.Key.REQUEST_BUILDER);
-        final PhotoSessionHelperImpl.CaptureSessionCallback captureCallback  =
-                (PhotoSessionHelperImpl.CaptureSessionCallback) request.getObj(Es.Key.SESSION_CALLBACK);
+        final CameraCaptureSession.CaptureCallback captureCallback  = (CameraCaptureSession.CaptureCallback) request.getObj(Es.Key.SESSION_CALLBACK);
         return Observable.create(new ObservableOnSubscribe<EsResult>() {
             @Override
             public void subscribe(ObservableEmitter<EsResult> emitter) throws Exception {
-                captureCallback.setEmitter(emitter);
                 mCaptureSession.setRepeatingRequest(requestBuilder.build(), captureCallback,
                         WorkerHandlerManager.getHandler(WorkerHandlerManager.Tag.T_TYPE_CAMERA));
             }

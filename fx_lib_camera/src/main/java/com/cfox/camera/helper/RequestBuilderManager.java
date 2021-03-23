@@ -97,9 +97,9 @@ public class RequestBuilderManager {
     }
 
     public void getFlashRequest(CaptureRequest.Builder builder, int value) {
-        if (!mCameraHelper.isFlashSupport()) {
-            EsLog.w(" not support flash");
-            return ;
+        if (!mCameraHelper.isFlashSupport() || value == Es.FLASH_TYPE.NONE) {
+            EsLog.w(" not support flash or value none");
+            return;
         }
         switch (value) {
             case Es.FLASH_TYPE.ON:
@@ -111,8 +111,7 @@ public class RequestBuilderManager {
                 builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
                 break;
             case Es.FLASH_TYPE.AUTO:
-                builder.set(CaptureRequest.CONTROL_AE_MODE,
-                        CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+                builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
                 builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
                 break;
             case Es.FLASH_TYPE.TORCH:

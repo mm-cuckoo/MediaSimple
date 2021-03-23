@@ -26,6 +26,11 @@ public class VideoSessionHelperImpl extends AbsCameraSessionHelper implements Vi
     }
 
     @Override
+    public Observable<EsResult> cameraStatus() {
+        return null;
+    }
+
+    @Override
     public DeviceSession getCameraSession(EsRequest request) {
         if (mDeviceSession == null) {
             mDeviceSession = mCameraSessionManager.createSession();
@@ -42,6 +47,11 @@ public class VideoSessionHelperImpl extends AbsCameraSessionHelper implements Vi
     Observable<EsResult> beforeOpenCamera(EsRequest request) {
         mDeviceSession = null;
         return mCameraSessionManager.closeSession();
+    }
+
+    @Override
+    Observable<EsRequest> applyPreviewPlan(EsRequest request) {
+        return null;
     }
 
     @Override
