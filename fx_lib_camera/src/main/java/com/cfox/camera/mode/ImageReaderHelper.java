@@ -8,7 +8,7 @@ import android.util.Size;
 
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.utils.Es;
-import com.cfox.camera.utils.EsRequest;
+import com.cfox.camera.utils.EsParams;
 import com.cfox.camera.utils.WorkerHandlerManager;
 
 import java.io.File;
@@ -31,10 +31,10 @@ public class ImageReaderHelper implements IReaderHelper {
     }
 
     @Override
-    public ImageReader createImageReader(EsRequest request) {
-        Size picSize = (Size) request.getObj(Es.Key.PIC_SIZE);
-        int imageFormat = request.getInt(Es.Key.IMAGE_FORMAT, ImageFormat.JPEG);
-        final String filePath = request.getString(Es.Key.PIC_FILE_PATH);
+    public ImageReader createImageReader(EsParams esParams) {
+        Size picSize = (Size) esParams.getObj(Es.Key.PIC_SIZE);
+        int imageFormat = esParams.getInt(Es.Key.IMAGE_FORMAT, ImageFormat.JPEG);
+        final String filePath = esParams.getString(Es.Key.PIC_FILE_PATH);
         EsLog.d("createImageReader: pic width:" + picSize.getWidth() + "  pic height:" + picSize.getHeight()  + "   format:" + imageFormat);
         ImageReader imageReader = ImageReader.newInstance(picSize.getWidth(), picSize.getHeight(), imageFormat, 2);
         mImageReaders.add(imageReader);
@@ -51,9 +51,9 @@ public class ImageReaderHelper implements IReaderHelper {
     }
 
     @Override
-    public ImageReader createPreviewImageReader(EsRequest request) {
-        Size picSize = (Size) request.getObj(Es.Key.PREVIEW_SIZE);
-        int imageFormat = request.getInt(Es.Key.IMAGE_FORMAT, ImageFormat.JPEG);
+    public ImageReader createPreviewImageReader(EsParams esParams) {
+        Size picSize = (Size) esParams.getObj(Es.Key.PREVIEW_SIZE);
+        int imageFormat = esParams.getInt(Es.Key.IMAGE_FORMAT, ImageFormat.JPEG);
         EsLog.d("createImageReader: pic width:" + picSize.getWidth() + "  pic height:" + picSize.getHeight()  + "   format:" + imageFormat);
         ImageReader imageReader = ImageReader.newInstance(picSize.getWidth(), picSize.getHeight(), ImageFormat.YUV_420_888, 2);
         mImageReaders.add(imageReader);

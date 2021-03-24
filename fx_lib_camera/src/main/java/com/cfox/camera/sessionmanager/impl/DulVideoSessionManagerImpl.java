@@ -1,34 +1,24 @@
-package com.cfox.camera.helper.impl;
+package com.cfox.camera.sessionmanager.impl;
 
-import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
-import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
-import android.view.Surface;
 
 import com.cfox.camera.camera.info.CameraInfo;
 import com.cfox.camera.camera.device.session.DeviceSession;
 import com.cfox.camera.camera.device.session.DeviceSessionManager;
 import com.cfox.camera.camera.info.CameraInfoManager;
-import com.cfox.camera.helper.DulVideoSessionHelper;
+import com.cfox.camera.sessionmanager.DulVideoSessionManager;
 import com.cfox.camera.log.EsLog;
-import com.cfox.camera.surface.ISurfaceHelper;
 import com.cfox.camera.utils.Es;
-import com.cfox.camera.utils.EsRequest;
-import com.cfox.camera.utils.EsResult;
+import com.cfox.camera.utils.EsParams;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.Consumer;
 
-public class DulVideoSessionHelperImpl extends AbsCameraSessionHelper implements DulVideoSessionHelper {
+public class DulVideoSessionManagerImpl extends AbsSessionManager implements DulVideoSessionManager {
 
     private final Map<String, CameraInfo> mCameraInfoMap = new HashMap<>(2);
     private final Map<String, CameraInfoManager> mCameraHelperMap = new HashMap<>(2);
@@ -37,7 +27,7 @@ public class DulVideoSessionHelperImpl extends AbsCameraSessionHelper implements
     private final Map<String, CameraCaptureSession.CaptureCallback> mCameraSessionCallbackMap = new HashMap<>(2);
     private final DeviceSessionManager mCameraSessionManager;
 
-    public DulVideoSessionHelperImpl(DeviceSessionManager cameraSessionManager) {
+    public DulVideoSessionManagerImpl(DeviceSessionManager cameraSessionManager) {
         this.mCameraSessionManager = cameraSessionManager;
 
     }
@@ -49,47 +39,42 @@ public class DulVideoSessionHelperImpl extends AbsCameraSessionHelper implements
     }
 
     @Override
-    public Observable<EsResult> cameraStatus() {
+    public Observable<EsParams> cameraStatus() {
+        return null;
+    }
+
+
+    @Override
+    void onBeforeOpenCamera(EsParams esParams) {
+
+    }
+
+    @Override
+    Observable<EsParams> applyPreviewPlan(EsParams esParams) {
         return null;
     }
 
     @Override
-    Observable<EsResult> beforeOpenCamera(EsRequest request) {
-        EsLog.d("beforeOpenCamera....");
-        return Observable.create(new ObservableOnSubscribe<EsResult>() {
-            @Override
-            public void subscribe(@NonNull ObservableEmitter<EsResult> emitter) throws Exception {
-                emitter.onNext(new EsResult());
-            }
-        });
-    }
-
-    @Override
-    Observable<EsRequest> applyPreviewPlan(EsRequest request) {
-        return null;
-    }
-
-    @Override
-    public DeviceSession getCameraSession(EsRequest request) {
-        String cameraId = request.getString(Es.Key.CAMERA_ID);
+    public DeviceSession getCameraSession(EsParams esParams) {
+        String cameraId = esParams.getString(Es.Key.CAMERA_ID);
         // TODO: 19-12-5 check camera id
         return getCameraSessionForId(cameraId);
     }
 
     @Override
-    public Observable<EsResult> onRepeatingRequest(EsRequest request) {
-        String cameraId = request.getString(Es.Key.CAMERA_ID);
-        request.put(Es.Key.REQUEST_BUILDER, mPreviewBuilderMap.get(cameraId));
-        return getCameraSessionForId(cameraId).onRepeatingRequest(request);
+    public Observable<EsParams> onRepeatingRequest(EsParams esParams) {
+        String cameraId = esParams.getString(Es.Key.CAMERA_ID);
+        esParams.put(Es.Key.REQUEST_BUILDER, mPreviewBuilderMap.get(cameraId));
+        return getCameraSessionForId(cameraId).onRepeatingRequest(esParams);
     }
 
     @Override
-    public Observable<EsResult> close(EsRequest request) {
+    public Observable<EsParams> close(EsParams esParams) {
         EsLog.d("close: dul video close camera s");
 
-        return mCameraSessionManager.closeSession().doOnNext(new Consumer<EsResult>() {
+        return mCameraSessionManager.closeSession().doOnNext(new Consumer<EsParams>() {
             @Override
-            public void accept(EsResult esResult) throws Exception {
+            public void accept(EsParams esParams) throws Exception {
                 mCameraInfoMap.clear();
                 mCameraHelperMap.clear();
                 mPreviewBuilderMap.clear();

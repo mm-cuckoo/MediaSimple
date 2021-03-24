@@ -15,45 +15,47 @@ import com.cfox.camera.log.EsLog;
 import com.cfox.camera.mode.PhotoMode;
 import com.cfox.camera.capture.business.Business;
 import com.cfox.camera.capture.business.impl.PhotoBusinessImpl;
-import com.cfox.camera.surface.ISurfaceHelper;
+import com.cfox.camera.surface.SurfaceManager;
+import com.cfox.camera.surface.SurfaceProvider;
 import com.cfox.camera.utils.CameraObserver;
 import com.cfox.camera.utils.Es;
-import com.cfox.camera.utils.EsRequest;
-import com.cfox.camera.utils.EsResult;
+import com.cfox.camera.utils.EsParams;
+
 // 整理发送
 public class PhotoCaptureImpl implements PhotoCapture {
 
     private final PhotoMode mPhotoMode;
     private final CameraInfoManager mCameraInfoManager = CameraInfoManagerImpl.CAMERA_INFO_MANAGER;
     private final Business mBusiness;
+    private SurfaceManager mSurfaceManager;
     public PhotoCaptureImpl(PhotoMode photoMode, IConfigWrapper configWrapper) {
         mPhotoMode = photoMode;
         mBusiness = new PhotoBusinessImpl(configWrapper);
     }
 
     @Override
-    public void onStartPreview(EsRequest request) {
-        ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(Es.Key.SURFACE_HELPER);
+    public void onStartPreview(EsParams esParams, SurfaceProvider surfaceProvider) {
+        mSurfaceManager = new SurfaceManager(surfaceProvider);
+        esParams.put(Es.Key.SURFACE_MANAGER, mSurfaceManager);
         // 切换Camera 信息管理中的 Camera 信息， 如前置camera  或 后置Camera
-        String cameraId = request.getString(Es.Key.CAMERA_ID);
+        String cameraId = esParams.getString(Es.Key.CAMERA_ID);
         CameraInfo cameraInfo = CameraInfoHelper.getInstance().getCameraInfo(cameraId);
         mCameraInfoManager.initCameraInfo(cameraInfo);
 
         // 设置预览大小
-        Size previewSizeForReq = (Size) request.getObj(Es.Key.PREVIEW_SIZE);
-        Size previewSize = mBusiness.getPreviewSize(previewSizeForReq, mCameraInfoManager.getPreviewSize(surfaceHelper.getPreviewSurfaceClass()));
-        surfaceHelper.setAspectRatio(previewSize);
+        Size previewSizeForReq = (Size) esParams.getObj(Es.Key.PREVIEW_SIZE);
+        Size previewSize = mBusiness.getPreviewSize(previewSizeForReq, mCameraInfoManager.getPreviewSize(mSurfaceManager.getPreviewSurfaceClass()));
+        mSurfaceManager.setAspectRatio(previewSize);
 
         // 设置图片大小
-        Size pictureSizeForReq = (Size) request.getObj(Es.Key.PIC_SIZE);
-        int imageFormat = request.getInt(Es.Key.IMAGE_FORMAT, ImageFormat.JPEG);
+        Size pictureSizeForReq = (Size) esParams.getObj(Es.Key.PIC_SIZE);
+        int imageFormat = esParams.getInt(Es.Key.IMAGE_FORMAT, ImageFormat.JPEG);
         Size pictureSize = mBusiness.getPictureSize(pictureSizeForReq, mCameraInfoManager.getPictureSize(imageFormat));
-        request.put(Es.Key.PIC_SIZE, pictureSize);
+        esParams.put(Es.Key.PIC_SIZE, pictureSize);
 
-
-        mPhotoMode.requestPreview(request).subscribe(new CameraObserver<EsResult>(){
+        mPhotoMode.requestPreview(esParams).subscribe(new CameraObserver<EsParams>(){
             @Override
-            public void onNext(EsResult fxResult) {
+            public void onNext(EsParams resultParams) {
                 EsLog.d("onNext: .requestPreview....");
 
 
@@ -62,10 +64,10 @@ public class PhotoCaptureImpl implements PhotoCapture {
     }
 
     @Override
-    public void onCameraConfig(EsRequest request) {
-        mPhotoMode.requestCameraConfig(request).subscribe(new CameraObserver<EsResult>(){
+    public void onCameraConfig(EsParams esParams) {
+        mPhotoMode.requestCameraConfig(esParams).subscribe(new CameraObserver<EsParams>(){
             @Override
-            public void onNext(EsResult fxResult) {
+            public void onNext(EsParams resultParams) {
                 EsLog.d("onNext: .requestCameraConfig....");
 
             }
@@ -73,10 +75,10 @@ public class PhotoCaptureImpl implements PhotoCapture {
     }
 
     @Override
-    public void onStop(EsRequest request) {
-        mPhotoMode.requestStop(request).subscribe(new CameraObserver<EsResult>(){
+    public void onStop(EsParams esParams) {
+        mPhotoMode.requestStop(esParams).subscribe(new CameraObserver<EsParams>(){
             @Override
-            public void onNext(EsResult fxResult) {
+            public void onNext(EsParams resultParams) {
                 EsLog.d("onNext: .requestStop....");
 
             }
@@ -84,18 +86,18 @@ public class PhotoCaptureImpl implements PhotoCapture {
     }
 
     @Override
-    public Range<Integer> getEvRange(EsRequest request) {
+    public Range<Integer> getEvRange(EsParams esParams) {
         return mCameraInfoManager.getEvRange();
     }
 
     @Override
-    public void onCapture(EsRequest request) {
+    public void onCapture(EsParams esParams) {
         int sensorOrientation = mCameraInfoManager.getSensorOrientation();
         int picOrientation = mBusiness.getPictureOrientation(sensorOrientation);
-        request.put(Es.Key.PIC_ORIENTATION, picOrientation);
-        mPhotoMode.requestCapture(request).subscribe(new CameraObserver<EsResult>(){
+        esParams.put(Es.Key.PIC_ORIENTATION, picOrientation);
+        mPhotoMode.requestCapture(esParams).subscribe(new CameraObserver<EsParams>(){
             @Override
-            public void onNext(EsResult fxResult) {
+            public void onNext(EsParams resultParams) {
                 EsLog.d("onNext: .requestCapture....");
 
             }

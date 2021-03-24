@@ -2,15 +2,16 @@ package com.cfox.camera.capture;
 
 import android.util.Range;
 
-import com.cfox.camera.utils.EsRequest;
+import com.cfox.camera.surface.SurfaceProvider;
+import com.cfox.camera.utils.EsParams;
 
 public interface Capture {
 
-    void onStartPreview(EsRequest request);
+    void onStartPreview(EsParams esParams, SurfaceProvider surfaceProvider);
 
-    void onCameraConfig(EsRequest request);
+    void onCameraConfig(EsParams esParams);
 
-    void onStop(EsRequest request);
+    void onStop(EsParams esParams);
 
-    Range<Integer> getEvRange(EsRequest request);
+    Range<Integer> getEvRange(EsParams esParams);
 }

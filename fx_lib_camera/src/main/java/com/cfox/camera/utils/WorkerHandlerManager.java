@@ -8,6 +8,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import io.reactivex.Scheduler;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+
 public class WorkerHandlerManager {
     public enum Tag {
         T_TYPE_MAIN("main-thread"),
@@ -41,6 +44,10 @@ public class WorkerHandlerManager {
 
     public static Handler getHandler(Tag tag) {
         return Objects.requireNonNull(WorkerHandlerManager.getInstance().obtain(tag)).getHandler();
+    }
+
+    public static Scheduler getScheduler(Tag tag) {
+        return AndroidSchedulers.from(WorkerHandlerManager.getLooper(tag));
     }
 
     public void release() {

@@ -1,10 +1,12 @@
 package com.cfox.camera.utils;
 
+import com.cfox.camera.BuildConfig;
+
 import java.util.HashMap;
 import java.util.Map;
 
-public class EsResult {
-    private Map<String, Object> mMapObject = new HashMap<>();
+public class EsParams {
+    private final Map<String, Object> mMapObject = new HashMap<>();
 
     public void put(String key, Object value) {
         mMapObject.put(key,value);
@@ -56,5 +58,23 @@ public class EsResult {
 
     public float getFloat(String key) {
         return getInt(key, 0);
+    }
+
+    @Override
+    public String toString() {
+        String result = super.toString();
+        if (BuildConfig.DEBUG) {
+            StringBuilder buffer = new StringBuilder("\n");
+            buffer.append("================ Params ======================================================= ");
+            buffer.append("\n");
+            buffer.append("============================================================================================");
+            buffer.append("\n");
+            for (Map.Entry<String, Object> entry : mMapObject.entrySet()) {
+                buffer.append("== ").append(entry.getKey()).append(":").append(entry.getValue()).append("\n");
+            }
+            buffer.append("============================================================================================");
+            result = buffer.toString();
+        }
+        return result;
     }
 }

@@ -1,8 +1,7 @@
 package com.cfox.camera.mode;
 
 
-import com.cfox.camera.utils.EsRequest;
-import com.cfox.camera.utils.EsResult;
+import com.cfox.camera.utils.EsParams;
 
 import io.reactivex.Observable;
 
@@ -10,10 +9,10 @@ public interface IMode {
 
     void init();
 
-    Observable<EsResult> requestPreview(EsRequest request);
+    Observable<EsParams> requestPreview(EsParams esParams);
 
-    Observable<EsResult> requestStop(EsRequest request);
+    Observable<EsParams> requestStop(EsParams esParams);
 
-    Observable<EsResult> requestCameraConfig(EsRequest request);
+    Observable<EsParams> requestCameraConfig(EsParams esParams);
 
 }

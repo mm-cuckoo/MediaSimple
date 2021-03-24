@@ -1,4 +1,4 @@
-package com.cfox.camera.helper;
+package com.cfox.camera.sessionmanager;
 
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.MeteringRectangle;

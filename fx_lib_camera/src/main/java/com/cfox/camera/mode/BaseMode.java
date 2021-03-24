@@ -1,78 +1,69 @@
 package com.cfox.camera.mode;
 
 
-import com.cfox.camera.helper.CameraSessionHelper;
+import com.cfox.camera.sessionmanager.SessionManager;
 import com.cfox.camera.log.EsLog;
-import com.cfox.camera.surface.ISurfaceHelper;
-import com.cfox.camera.utils.Es;
-import com.cfox.camera.utils.EsRequest;
-import com.cfox.camera.utils.EsResult;
+import com.cfox.camera.utils.EsParams;
 import com.cfox.camera.utils.WorkerHandlerManager;
 
 import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.ObservableSource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
-import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Function;
 
 public abstract class BaseMode implements IMode {
 
-    private final CameraSessionHelper mCameraSessionHelper;
+    private final SessionManager mSessionManager;
 
-    protected BaseMode(CameraSessionHelper cameraSessionHelper) {
-        this.mCameraSessionHelper = cameraSessionHelper;
+    protected BaseMode(SessionManager sessionManager) {
+        this.mSessionManager = sessionManager;
     }
 
     @Override
     public void init() {
-        mCameraSessionHelper.init();
+        mSessionManager.init();
     }
 
-    protected Observable<EsResult> startPreview(final EsRequest request) {
-        ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(Es.Key.SURFACE_HELPER);
-        return Observable.combineLatest(surfaceHelper.isAvailable(), onOpenCamera(request),
-                new BiFunction<EsResult, EsResult, EsRequest>() {
-                    @Override
-                    public EsRequest apply(EsResult result1, EsResult result2) throws Exception {
-                        EsLog.d("open camera device success ....." + request);
-                        return request;
-                    }
-                }).flatMap(new Function<EsRequest, ObservableSource<EsResult>>() {
-                    @Override
-                    public ObservableSource<EsResult> apply(EsRequest fxRequest) throws Exception {
-                        EsLog.d("create session before ....." + request);
-                        // 创建 camera session
-                        return mCameraSessionHelper.onCreatePreviewSession(request);
-                    }
-                }).flatMap(new Function<EsResult, ObservableSource<EsResult>>() {
-                    @Override
-                    public ObservableSource<EsResult> apply(EsResult fxResult) throws Exception {
-                        EsLog.d("onSendRepeatingRequest ......" + request);
-                        return mCameraSessionHelper.onPreviewRepeatingRequest(request);
-                    }
-                }).subscribeOn(AndroidSchedulers.from(WorkerHandlerManager.getLooper(WorkerHandlerManager.Tag.T_TYPE_CAMERA)));
-    }
-
-    @Override
-    public Observable<EsResult> requestCameraConfig(EsRequest request) {
-        return mCameraSessionHelper.onRepeatingRequest(request);
-    }
-
-    private Observable<EsResult> onOpenCamera(EsRequest request) {
-        return mCameraSessionHelper.onOpenCamera(request);
+    public Observable<EsParams> requestPreview(EsParams esParams) {
+        return applySurface(esParams).flatMap(new Function<EsParams, ObservableSource<EsParams>>() {
+            @Override
+            public ObservableSource<EsParams> apply(@NonNull EsParams esParams) throws Exception {
+                EsLog.d("open camera request ===>params:" + esParams);
+                // open camera requst
+                return mSessionManager.onOpenCamera(esParams);
+            }
+        }).flatMap(new Function<EsParams, ObservableSource<EsParams>>() {
+            @Override
+            public ObservableSource<EsParams> apply(@NonNull EsParams esParams) throws Exception {
+                EsLog.d("create session before ....." + esParams);
+                // 创建 camera session
+                return mSessionManager.onCreatePreviewSession(esParams);
+            }
+        }).flatMap(new Function<EsParams, ObservableSource<EsParams>>() {
+            @Override
+            public ObservableSource<EsParams> apply(@NonNull EsParams esParams) throws Exception {
+                EsLog.d("onSendRepeatingRequest ......" + esParams);
+                return mSessionManager.onPreviewRepeatingRequest(esParams);
+            }
+        }).subscribeOn(WorkerHandlerManager.getScheduler(WorkerHandlerManager.Tag.T_TYPE_CAMERA));
     }
 
     @Override
-    public Observable<EsResult> requestStop(EsRequest request) {
+    public Observable<EsParams> requestCameraConfig(EsParams esParams) {
+        return mSessionManager.onRepeatingRequest(esParams);
+    }
+
+    @Override
+    public Observable<EsParams> requestStop(EsParams esParams) {
         onRequestStop();
-        return mCameraSessionHelper.close(request).subscribeOn(
+        return mSessionManager.close(esParams).subscribeOn(
                 AndroidSchedulers.from(WorkerHandlerManager.getLooper(WorkerHandlerManager.Tag.T_TYPE_OTHER)));
     }
 
     public void onRequestStop() { }
+
+    protected abstract Observable<EsParams> applySurface(EsParams esParams);
 
 //    @Override
 //    public Range<Integer> getEvRange(EsRequest request) {

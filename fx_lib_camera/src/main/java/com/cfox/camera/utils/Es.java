@@ -21,6 +21,9 @@ public interface Es {
     }
 
     interface Key {
+
+        String SURFACE_MANAGER = "surface_manager";
+
         String CAMERA_ID = "camera_id";
         String SURFACE_HELPER = "surface_helper";
         String CAMERA_DEVICE = "camera_device";

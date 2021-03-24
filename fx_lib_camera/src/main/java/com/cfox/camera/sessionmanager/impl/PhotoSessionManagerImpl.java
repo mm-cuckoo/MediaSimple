@@ -1,4 +1,4 @@
-package com.cfox.camera.helper.impl;
+package com.cfox.camera.sessionmanager.impl;
 
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
@@ -15,13 +15,12 @@ import com.cfox.camera.camera.device.session.DeviceSession;
 import com.cfox.camera.camera.info.CameraInfoManager;
 import com.cfox.camera.camera.info.CameraInfoManagerImpl;
 import com.cfox.camera.camera.device.session.DeviceSessionManager;
-import com.cfox.camera.helper.PhotoSessionHelper;
-import com.cfox.camera.helper.RequestBuilderManager;
+import com.cfox.camera.sessionmanager.PhotoSessionManager;
+import com.cfox.camera.sessionmanager.RequestBuilderManager;
 import com.cfox.camera.log.EsLog;
-import com.cfox.camera.surface.ISurfaceHelper;
+import com.cfox.camera.surface.SurfaceManager;
 import com.cfox.camera.utils.Es;
-import com.cfox.camera.utils.EsRequest;
-import com.cfox.camera.utils.EsResult;
+import com.cfox.camera.utils.EsParams;
 
 
 import java.util.List;
@@ -29,13 +28,12 @@ import java.util.List;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.functions.Consumer;
 import io.reactivex.subjects.PublishSubject;
 
 /**
  * 负责挣了并发送个camera session 动作
  */
-public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements PhotoSessionHelper {
+public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoSessionManager {
 
     private CaptureRequest.Builder mPreviewBuilder;
     private CaptureRequest.Builder mCaptureBuilder;
@@ -44,10 +42,10 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
     private final RequestBuilderManager mRequestBuilderManager;
     private final CameraInfoManager mCameraInfoManager = CameraInfoManagerImpl.CAMERA_INFO_MANAGER;
     private final DeviceSessionManager mCameraSessionManager;
-    private ISurfaceHelper mSurfaceHelper;
-    private final PublishSubject<EsResult> mCameraStatus = PublishSubject.create();
+    private SurfaceManager mSurfaceManager;
+    private final PublishSubject<EsParams> mCameraStatus = PublishSubject.create();
 
-    public PhotoSessionHelperImpl(DeviceSessionManager sessionManager) {
+    public PhotoSessionManagerImpl(DeviceSessionManager sessionManager) {
         mCameraSessionManager = sessionManager;
         mRequestBuilderManager = new RequestBuilderManager(mCameraInfoManager);
     }
@@ -58,12 +56,12 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
     }
 
     @Override
-    public Observable<EsResult> cameraStatus() {
+    public Observable<EsParams> cameraStatus() {
         return mCameraStatus;
     }
 
     @Override
-    public DeviceSession getCameraSession(EsRequest request) {
+    public DeviceSession getCameraSession(EsParams esParams) {
         if (mPhotoSession == null) {
             mPhotoSession = mCameraSessionManager.createSession();
         }
@@ -72,45 +70,41 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
 
 
     @Override
-    Observable<EsResult> beforeOpenCamera(EsRequest request) {
-        return mCameraSessionManager.closeSession().doOnNext(new Consumer<EsResult>() {
-            @Override
-            public void accept(EsResult esResult) {
-                mPhotoSession = null;
-                mPreviewBuilder = null;
-                mCaptureBuilder = null;
-            }
-        });
+    public void onBeforeOpenCamera(EsParams esParams) {
+        mCameraSessionManager.closeSession().subscribe();
+        mPhotoSession = null;
+        mPreviewBuilder = null;
+        mCaptureBuilder = null;
     }
 
     @Override
-    Observable<EsRequest> applyPreviewPlan(final EsRequest request) {
-        return Observable.create(new ObservableOnSubscribe<EsRequest>() {
+    Observable<EsParams> applyPreviewPlan(final EsParams esParams) {
+        return Observable.create(new ObservableOnSubscribe<EsParams>() {
             @Override
-            public void subscribe(@NonNull ObservableEmitter<EsRequest> emitter) throws Exception {
-                mSurfaceHelper = (ISurfaceHelper) request.getObj(Es.Key.SURFACE_HELPER);
+            public void subscribe(@NonNull ObservableEmitter<EsParams> emitter) {
+                mSurfaceManager = (SurfaceManager) esParams.getObj(Es.Key.SURFACE_MANAGER);
                 mPreviewBuilder = getPreviewBuilder();
-                int flashValue = request.getInt(Es.Key.CAMERA_FLASH_VALUE, Es.FLASH_TYPE.OFF);
+                int flashValue = esParams.getInt(Es.Key.CAMERA_FLASH_VALUE, Es.FLASH_TYPE.OFF);
                 mRequestBuilderManager.getFlashRequest(getPreviewBuilder(), flashValue);
                 mRequestBuilderManager.applyPreviewRequest(getPreviewBuilder());
-                request.put(Es.Key.REQUEST_BUILDER, mPreviewBuilder);
+                esParams.put(Es.Key.REQUEST_BUILDER, mPreviewBuilder);
                 mPreviewCaptureCallback.stateChange(CaptureSessionCallback.STATE_PREVIEW);
-                request.put(Es.Key.SESSION_CALLBACK, mPreviewCaptureCallback);
-                emitter.onNext(request);
+                esParams.put(Es.Key.SESSION_CALLBACK, mPreviewCaptureCallback);
+                emitter.onNext(esParams);
             }
         });
     }
 
     private CaptureRequest.Builder getPreviewBuilder() {
         if (mPreviewBuilder == null) {
-            mPreviewBuilder = createPreviewBuilder(mSurfaceHelper.getSurface());
+            mPreviewBuilder = createPreviewBuilder(mSurfaceManager.getPreviewSurface());
         }
         return mPreviewBuilder;
     }
 
     private CaptureRequest.Builder getCaptureBuilder() {
         if (mCaptureBuilder == null) {
-            mCaptureBuilder = createCaptureBuilder(mSurfaceHelper.getCaptureSurfaces());
+            mCaptureBuilder = createCaptureBuilder(mSurfaceManager.getReaderSurface());
         }
         return mCaptureBuilder;
     }
@@ -124,30 +118,30 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
     }
 
     @Override
-    public Observable<EsResult> onRepeatingRequest(EsRequest request) {
-        EsLog.d("onSendRepeatingRequest: req:" + request);
+    public Observable<EsParams> onRepeatingRequest(EsParams esParams) {
+        EsLog.d("onSendRepeatingRequest: req:" + esParams);
         // 需要进行添加
-        int flashValue = request.getInt(Es.Key.CAMERA_FLASH_VALUE, Es.FLASH_TYPE.NONE);
+        int flashValue = esParams.getInt(Es.Key.CAMERA_FLASH_VALUE, Es.FLASH_TYPE.NONE);
         mRequestBuilderManager.getFlashRequest(getPreviewBuilder(), flashValue);
-        request.put(Es.Key.REQUEST_BUILDER, mPreviewBuilder);
-        request.put(Es.Key.SESSION_CALLBACK, mPreviewCaptureCallback);
-        return mPhotoSession.onRepeatingRequest(request);
+        esParams.put(Es.Key.REQUEST_BUILDER, mPreviewBuilder);
+        esParams.put(Es.Key.SESSION_CALLBACK, mPreviewCaptureCallback);
+        return mPhotoSession.onRepeatingRequest(esParams);
     }
 
 
     @Override
-    public Observable<EsResult> close(EsRequest request) {
+    public Observable<EsParams> close(EsParams esParams) {
         return mCameraSessionManager.closeSession();
     }
 
     private int picRotation = 0;
     @Override
-    public Observable<EsResult> capture(final EsRequest request) {
-        picRotation = request.getInt(Es.Key.PIC_ORIENTATION, -1);
+    public Observable<EsParams> capture(final EsParams esParams) {
+        picRotation = esParams.getInt(Es.Key.PIC_ORIENTATION, -1);
         EsLog.d("capture: ......3333..."  + picRotation);
-        return Observable.create(new ObservableOnSubscribe<EsResult>() {
+        return Observable.create(new ObservableOnSubscribe<EsParams>() {
             @Override
-            public void subscribe(final ObservableEmitter<EsResult> emitter) throws Exception {
+            public void subscribe(final ObservableEmitter<EsParams> emitter) throws Exception {
                 if (mCameraInfoManager.canTriggerAf() && isFlashOn()) {
                     triggerAFCaptureSequence();
                 } else {
@@ -162,10 +156,10 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
         CaptureRequest.Builder builder = getPreviewBuilder();
         builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CaptureRequest.CONTROL_AF_TRIGGER_START);
         mPreviewCaptureCallback.stateChange(CaptureSessionCallback.STATE_WAITING_LOCK);
-        EsRequest request = new EsRequest();
-        request.put(Es.Key.REQUEST_BUILDER, mPreviewBuilder);
-        request.put(Es.Key.CAPTURE_CALLBACK, mPreviewCaptureCallback);
-        mPhotoSession.capture(request);
+        EsParams esParams = new EsParams();
+        esParams.put(Es.Key.REQUEST_BUILDER, mPreviewBuilder);
+        esParams.put(Es.Key.CAPTURE_CALLBACK, mPreviewCaptureCallback);
+        mPhotoSession.capture(esParams);
     }
 
     private void sendStillPictureRequest() {
@@ -178,12 +172,12 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
         builder.set(CaptureRequest.CONTROL_AF_MODE, afMode);
         builder.set(CaptureRequest.FLASH_MODE, flashMode);
         builder.set(CaptureRequest.JPEG_ORIENTATION, picRotation);
-        EsRequest request = new EsRequest();
-        request.put(Es.Key.REQUEST_BUILDER, builder);
-        request.put(Es.Key.CAPTURE_CALLBACK, mPhotoCaptureCallback);
+        EsParams esParams = new EsParams();
+        esParams.put(Es.Key.REQUEST_BUILDER, builder);
+        esParams.put(Es.Key.CAPTURE_CALLBACK, mPhotoCaptureCallback);
         try {
             mPhotoSession.stopRepeating();
-            mPhotoSession.capture(request);
+            mPhotoSession.capture(esParams);
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
@@ -194,11 +188,11 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
         CaptureRequest.Builder builder = getPreviewBuilder();
         builder.set(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER, CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER_START);
         mPreviewCaptureCallback.stateChange(CaptureSessionCallback.STATE_WAITING_PRE_CAPTURE);
-        EsRequest request = new EsRequest();
-        request.put(Es.Key.REQUEST_BUILDER, mPreviewBuilder);
-        request.put(Es.Key.SESSION_CALLBACK, mPreviewCaptureCallback);
+        EsParams esParams = new EsParams();
+        esParams.put(Es.Key.REQUEST_BUILDER, mPreviewBuilder);
+        esParams.put(Es.Key.SESSION_CALLBACK, mPreviewCaptureCallback);
         try {
-            mPhotoSession.capture(request);
+            mPhotoSession.capture(esParams);
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
@@ -210,12 +204,12 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
         CaptureRequest.Builder builder = getPreviewBuilder();
         builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CaptureRequest.CONTROL_AF_TRIGGER_IDLE);
         builder.set(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER, CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER_IDLE);
-        EsRequest request = new EsRequest();
-        request.put(Es.Key.REQUEST_BUILDER, mPreviewBuilder);
-        request.put(Es.Key.SESSION_CALLBACK, mPreviewCaptureCallback);
+        EsParams esParams = new EsParams();
+        esParams.put(Es.Key.REQUEST_BUILDER, mPreviewBuilder);
+        esParams.put(Es.Key.SESSION_CALLBACK, mPreviewCaptureCallback);
         try {
-            mPhotoSession.onRepeatingRequest(request).subscribe();
-            mPhotoSession.capture(request);
+            mPhotoSession.onRepeatingRequest(esParams).subscribe();
+            mPhotoSession.capture(esParams);
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
@@ -276,9 +270,9 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
                                        @NonNull TotalCaptureResult result) {
             if (!mFirstFrameCompleted) {
                 mFirstFrameCompleted = true;
-                EsResult esResult = new EsResult();
-                esResult.put(Es.Key.FIRST_FRAME_CALLBACK, Es.Value.OK);
-                mCameraStatus.onNext(esResult);
+                EsParams esParams = new EsParams();
+                esParams.put(Es.Key.FIRST_FRAME_CALLBACK, Es.Value.OK);
+                mCameraStatus.onNext(esParams);
                 EsLog.d("preview first frame call back");
             }
 
@@ -340,9 +334,9 @@ public class PhotoSessionHelperImpl extends AbsCameraSessionHelper implements Ph
             Integer afState = captureResult.get(CaptureResult.CONTROL_AF_STATE);
             if (afState != null && afState != mAFState) {
                 mAFState = afState;
-                EsResult result = new EsResult();
-                result.put(Es.Key.AF_CHANGE_STATE, afState);
-                mCameraStatus.onNext(result);
+                EsParams esParams = new EsParams();
+                esParams.put(Es.Key.AF_CHANGE_STATE, afState);
+                mCameraStatus.onNext(esParams);
             }
 
         }

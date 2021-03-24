@@ -1,4 +1,4 @@
-package com.cfox.camera.surface;
+package com.cfox.module_camera;
 
 import android.graphics.SurfaceTexture;
 import android.util.Size;
@@ -7,28 +7,17 @@ import android.view.TextureView;
 
 import com.cfox.camera.AutoFitTextureView;
 import com.cfox.camera.log.EsLog;
-import com.cfox.camera.utils.EsResult;
-import com.cfox.camera.utils.WorkerHandlerManager;
+import com.cfox.camera.surface.SurfaceProvider;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-
-public class SurfaceHelper implements ISurfaceHelper {
+public class SurfaceProviderImpl implements SurfaceProvider {
     private final Object obj = new Object();
     private AutoFitTextureView mTextureView;
-    private List<Surface> mSurfaces;
     private Size mPreviewSize;
     private Surface mSurface;
 
-    public SurfaceHelper(AutoFitTextureView textureView) {
+    public SurfaceProviderImpl(AutoFitTextureView textureView) {
         this.mTextureView = textureView;
         this.mTextureView.setSurfaceTextureListener(mTextureListener);
-        this.mSurfaces = new ArrayList<>();
     }
 
     public Surface getSurface() {
@@ -38,49 +27,27 @@ public class SurfaceHelper implements ISurfaceHelper {
         return mSurface;
     }
 
-    public Observable<EsResult> isAvailable() {
-        return Observable.create(new ObservableOnSubscribe<EsResult>() {
-            @Override
-            public void subscribe(ObservableEmitter<EsResult> emitter) throws Exception {
-                EsLog.d("subscribe: ..........");
+    public boolean isAvailable() {
+        EsLog.d("subscribe: ..........");
+        if (!mTextureView.isAvailable()) {
+            synchronized (obj) {
                 if (!mTextureView.isAvailable()) {
-                    synchronized (obj) {
-                        if (!mTextureView.isAvailable()) {
-                            obj.wait(10 * 1000);
-                        }
-                        if (!mTextureView.isAvailable()) {
-                            throw new RuntimeException("Surface create error wait 10 s");
-                        }
+                    try {
+                        obj.wait(10 * 1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
                 }
-
-                EsLog.d("SurfaceTexture isAvailable width:" + mTextureView.getWidth()  + "  height:" + mTextureView.getHeight());
-                mSurfaces.add(getSurface());
-                emitter.onNext(new EsResult());
-                emitter.onComplete();
+                if (!mTextureView.isAvailable()) {
+                    return false;
+                }
             }
-        }).subscribeOn(AndroidSchedulers.from(WorkerHandlerManager.getLooper(WorkerHandlerManager.Tag.T_TYPE_OTHER)));
-    }
-
-    @Override
-    public List<Surface> getAllSurfaces() {
-        return mSurfaces;
-    }
-
-    @Override
-    public List<Surface> getCaptureSurfaces() {
-        mSurfaces.remove(getSurface());
-        return mSurfaces;
-    }
-
-    @Override
-    public void addCaptureSurface(Surface surface) {
-        EsLog.d("addSurface: "  + (!mSurfaces.contains(surface)));
-        if (!mSurfaces.contains(surface)) {
-            EsLog.d("addSurface: .......");
-            mSurfaces.add(surface);
         }
+
+        EsLog.d("SurfaceTexture isAvailable width:" + mTextureView.getWidth()  + "  height:" + mTextureView.getHeight());
+        return true;
     }
+
 
     @Override
     public Class getPreviewSurfaceClass() {

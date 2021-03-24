@@ -1,15 +1,16 @@
 package com.cfox.camera.mode.impl;
 
+import com.cfox.camera.EsException;
 import com.cfox.camera.mode.IReaderHelper;
 import com.cfox.camera.mode.ImageReaderHelper;
-import com.cfox.camera.helper.PhotoSessionHelper;
+import com.cfox.camera.sessionmanager.PhotoSessionManager;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.mode.PhotoMode;
 import com.cfox.camera.mode.BaseMode;
-import com.cfox.camera.surface.ISurfaceHelper;
+import com.cfox.camera.surface.SurfaceManager;
+import com.cfox.camera.utils.EsError;
 import com.cfox.camera.utils.Es;
-import com.cfox.camera.utils.EsRequest;
-import com.cfox.camera.utils.EsResult;
+import com.cfox.camera.utils.EsParams;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
@@ -20,21 +21,12 @@ import io.reactivex.annotations.NonNull;
  * 整理 request 和 surface 。 返回数据整理
  */
 public class PhotoModeImpl extends BaseMode implements PhotoMode {
-    private final PhotoSessionHelper mPhotoSessionHelper;
+    private final PhotoSessionManager mPhotoSessionManager;
     private final IReaderHelper mImageReaderHelper;
-    public PhotoModeImpl(PhotoSessionHelper photoSessionHelper) {
-        super(photoSessionHelper);
-        mPhotoSessionHelper = photoSessionHelper;
+    public PhotoModeImpl(PhotoSessionManager photoSessionManager) {
+        super(photoSessionManager);
+        mPhotoSessionManager = photoSessionManager;
         mImageReaderHelper = new ImageReaderHelper();
-    }
-
-    @Override
-    public Observable<EsResult> requestPreview(EsRequest request) {
-        ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(Es.Key.SURFACE_HELPER);
-        surfaceHelper.addCaptureSurface(mImageReaderHelper.createImageReader(request).getSurface());
-        EsLog.d("requestPreview: preview request:" + request);
-
-        return startPreview(request);
     }
 
     @Override
@@ -43,8 +35,24 @@ public class PhotoModeImpl extends BaseMode implements PhotoMode {
     }
 
     @Override
-    public Observable<EsResult> requestCapture(EsRequest request) {
-        EsLog.d("requestCapture: ......" + request);
-        return mPhotoSessionHelper.capture(request);
+    protected Observable<EsParams> applySurface(final EsParams esParams) {
+        return Observable.create(new ObservableOnSubscribe<EsParams>() {
+            @Override
+            public void subscribe(@NonNull ObservableEmitter<EsParams> emitter) {
+                SurfaceManager manager = (SurfaceManager) esParams.getObj(Es.Key.SURFACE_MANAGER);
+                if (manager.isAvailable()) {
+                    manager.addReaderSurface(mImageReaderHelper.createImageReader(esParams).getSurface());
+                    emitter.onNext(esParams);
+                } else  {
+                    emitter.onError(new EsException("surface isAvailable = false , check SurfaceProvider implement", EsError.ERROR_CODE_SURFACE_UN_AVAILABLE));
+                }
+            }
+        });
+    }
+
+    @Override
+    public Observable<EsParams> requestCapture(EsParams esParams) {
+        EsLog.d("requestCapture: ......" + esParams);
+        return mPhotoSessionManager.capture(esParams);
     }
 }

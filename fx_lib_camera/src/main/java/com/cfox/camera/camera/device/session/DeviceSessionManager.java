@@ -1,7 +1,7 @@
 package com.cfox.camera.camera.device.session;
 
 
-import com.cfox.camera.utils.EsResult;
+import com.cfox.camera.utils.EsParams;
 
 import io.reactivex.Observable;
 
@@ -11,5 +11,5 @@ public interface DeviceSessionManager {
 
     DeviceSession createSession(String sessionId);
 
-    Observable<EsResult> closeSession();
+    Observable<EsParams> closeSession();
 }

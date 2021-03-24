@@ -1,14 +1,13 @@
 package com.cfox.camera.camera.device;
 
-import com.cfox.camera.utils.EsRequest;
-import com.cfox.camera.utils.EsResult;
+import com.cfox.camera.utils.EsParams;
 
 import io.reactivex.Observable;
 
 public interface EsCameraDevice {
 
-    Observable<EsResult> openCameraDevice(EsRequest fxRequest);
+    Observable<EsParams> openCameraDevice(EsParams esParam);
 
-    Observable<EsResult> closeCameraDevice(String cameraId);
+    Observable<EsParams> closeCameraDevice(String cameraId);
 
 }

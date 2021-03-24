@@ -4,7 +4,7 @@ import android.content.Context;
 
 import com.cfox.camera.camera.device.EsCameraDeviceImpl;
 import com.cfox.camera.log.EsLog;
-import com.cfox.camera.utils.EsResult;
+import com.cfox.camera.utils.EsParams;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,21 +38,21 @@ public class DeviceSessionManagerImpl implements DeviceSessionManager {
     }
 
     @Override
-    public Observable<EsResult> closeSession() {
+    public Observable<EsParams> closeSession() {
         EsLog.d("closeSession start close all Session ");
 
-        List<Observable<EsResult>> closeSessionList = new ArrayList<>();
+        List<Observable<EsParams>> closeSessionList = new ArrayList<>();
 
         for (DeviceSession session : mCameraSessionMap.values()) {
             closeSessionList.add(session.onClose());
         }
 
         if (closeSessionList.size() == 0) {
-            return Observable.create(new ObservableOnSubscribe<EsResult>() {
+            return Observable.create(new ObservableOnSubscribe<EsParams>() {
                 @Override
-                public void subscribe(@NonNull ObservableEmitter<EsResult> emitter) throws Exception {
+                public void subscribe(@NonNull ObservableEmitter<EsParams> emitter) throws Exception {
                     EsLog.d("closeSessionIfNeed: closeSessionList.size() == 0 ");
-                    emitter.onNext(new EsResult());
+                    emitter.onNext(new EsParams());
                 }
             });
         }

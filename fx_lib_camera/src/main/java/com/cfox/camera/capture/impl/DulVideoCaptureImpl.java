@@ -6,9 +6,9 @@ import android.util.Range;
 
 import com.cfox.camera.capture.DulVideoCapture;
 import com.cfox.camera.mode.DulVideoMode;
+import com.cfox.camera.surface.SurfaceProvider;
 import com.cfox.camera.utils.CameraObserver;
-import com.cfox.camera.utils.EsRequest;
-import com.cfox.camera.utils.EsResult;
+import com.cfox.camera.utils.EsParams;
 
 public class DulVideoCaptureImpl implements DulVideoCapture {
     private static final String TAG = "DulVideoController";
@@ -19,22 +19,17 @@ public class DulVideoCaptureImpl implements DulVideoCapture {
         mDulVideoMode = dulVideoMode;
     }
 
-    @Override
-    public void onStartPreview(EsRequest request) {
-        mDulVideoMode.requestPreview(request).subscribe(new CameraObserver<EsResult>(){
-            @Override
-            public void onNext(EsResult fxResult) {
-                Log.d(TAG, "onNext: .requestPreview....");
 
-            }
-        });
+    @Override
+    public void onStartPreview(EsParams esParams, SurfaceProvider surfaceProvider) {
+
     }
 
     @Override
-    public void onCameraConfig(EsRequest request) {
-        mDulVideoMode.requestCameraConfig(request).subscribe(new CameraObserver<EsResult>(){
+    public void onCameraConfig(EsParams esParams) {
+        mDulVideoMode.requestCameraConfig(esParams).subscribe(new CameraObserver<EsParams>(){
             @Override
-            public void onNext(EsResult fxResult) {
+            public void onNext(EsParams fxParam) {
                 Log.d(TAG, "onNext: .requestCameraConfig....");
 
             }
@@ -42,10 +37,10 @@ public class DulVideoCaptureImpl implements DulVideoCapture {
     }
 
     @Override
-    public void onStop(EsRequest request) {
-        mDulVideoMode.requestStop(request).subscribe(new CameraObserver<EsResult>(){
+    public void onStop(EsParams esParams) {
+        mDulVideoMode.requestStop(esParams).subscribe(new CameraObserver<EsParams>(){
             @Override
-            public void onNext(EsResult fxResult) {
+            public void onNext(EsParams fxParam) {
                 Log.d(TAG, "onNext: .requestStop....");
 
             }
@@ -53,7 +48,7 @@ public class DulVideoCaptureImpl implements DulVideoCapture {
     }
 
     @Override
-    public Range<Integer> getEvRange(EsRequest request) {
+    public Range<Integer> getEvRange(EsParams esParams) {
         return null;
     }
 }

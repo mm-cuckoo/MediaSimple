@@ -10,8 +10,7 @@ import androidx.annotation.NonNull;
 
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.utils.Es;
-import com.cfox.camera.utils.EsRequest;
-import com.cfox.camera.utils.EsResult;
+import com.cfox.camera.utils.EsParams;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -47,13 +46,12 @@ public class EsCameraDeviceImpl implements EsCameraDevice {
 
     @SuppressLint("MissingPermission")
     @Override
-    public Observable<EsResult> openCameraDevice(final EsRequest request) {
-        final String cameraId = request.getString(Es.Key.CAMERA_ID);
-        return Observable.create(new ObservableOnSubscribe<EsResult>() {
+    public Observable<EsParams> openCameraDevice(final EsParams esParams) {
+        EsLog.d( "open camera device .params=====>:" + esParams);
+        final String cameraId = esParams.getString(Es.Key.CAMERA_ID);
+        return Observable.create(new ObservableOnSubscribe<EsParams>() {
             @Override
-            public void subscribe(final ObservableEmitter<EsResult> emitter) {
-                EsLog.d( "open camera start .....camera id:" + cameraId);
-
+            public void subscribe(final ObservableEmitter<EsParams> emitter) {
                 try {
                     if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
                         throw new RuntimeException("Time out waiting to lock camera opening.");
@@ -62,11 +60,10 @@ public class EsCameraDeviceImpl implements EsCameraDevice {
                         @Override
                         public void onOpened(@NonNull CameraDevice camera) {
                             mDeviceMap.put(camera.getId(), camera);
-                            EsLog.d( "camera device opened....camera id: "  + cameraId);
-                            EsResult result = new EsResult();
-                            result.put(Es.Key.CAMERA_DEVICE, camera);
-                            result.put(Es.Key.OPEN_CAMERA_STATUS, Es.Value.CAMERA_OPEN_SUCCESS);
-                            emitter.onNext(result);
+                            EsLog.d( "camera device opened....camera id: "  + camera.getId());
+                            esParams.put(Es.Key.CAMERA_DEVICE, camera);
+                            esParams.put(Es.Key.OPEN_CAMERA_STATUS, Es.Value.CAMERA_OPEN_SUCCESS);
+                            emitter.onNext(esParams);
                             emitter.onComplete();
                         }
 
@@ -74,9 +71,9 @@ public class EsCameraDeviceImpl implements EsCameraDevice {
                         public void onDisconnected(@NonNull CameraDevice camera) {
                             EsLog.d("onDisconnected: ");
                             closeCameraDevice(camera.getId()).subscribe();
-                            EsResult result = new EsResult();
-                            result.put(Es.Key.OPEN_CAMERA_STATUS, Es.Value.CAMERA_DISCONNECTED);
-                            emitter.onNext(result);
+                            EsParams esParams = new EsParams();
+                            esParams.put(Es.Key.OPEN_CAMERA_STATUS, Es.Value.CAMERA_DISCONNECTED);
+                            emitter.onNext(esParams);
                             emitter.onComplete();
                         }
 
@@ -84,17 +81,17 @@ public class EsCameraDeviceImpl implements EsCameraDevice {
                         public void onError(@NonNull CameraDevice camera, int error) {
                             EsLog.d("onError: code:" + error);
                             closeCameraDevice(camera.getId()).subscribe();
-                            EsResult result = new EsResult();
-                            result.put(Es.Key.OPEN_CAMERA_STATUS, Es.Value.CAMERA_OPEN_FAIL);
-                            emitter.onNext(result);
+                            EsParams esParams = new EsParams();
+                            esParams.put(Es.Key.OPEN_CAMERA_STATUS, Es.Value.CAMERA_OPEN_FAIL);
+                            emitter.onNext(esParams);
                             emitter.onError(new Throwable("open camera error Code:" + error));
                             emitter.onComplete();
                         }
                     }, null);
                 } catch (CameraAccessException | InterruptedException e) {
-                    EsResult result = new EsResult();
-                    result.put(Es.Key.OPEN_CAMERA_STATUS, Es.Value.CAMERA_OPEN_FAIL);
-                    emitter.onNext(result);
+                    EsParams esParams = new EsParams();
+                    esParams.put(Es.Key.OPEN_CAMERA_STATUS, Es.Value.CAMERA_OPEN_FAIL);
+                    emitter.onNext(esParams);
                     emitter.onError(new Throwable("open camera error Code:" + Arrays.toString(e.getStackTrace())));
                 } finally {
                     mCameraOpenCloseLock.release();
@@ -104,10 +101,10 @@ public class EsCameraDeviceImpl implements EsCameraDevice {
     }
 
     @Override
-    public Observable<EsResult> closeCameraDevice(final String cameraId) {
-        return Observable.create(new ObservableOnSubscribe<EsResult>() {
+    public Observable<EsParams> closeCameraDevice(final String cameraId) {
+        return Observable.create(new ObservableOnSubscribe<EsParams>() {
             @Override
-            public void subscribe(ObservableEmitter<EsResult> emitter) {
+            public void subscribe(ObservableEmitter<EsParams> emitter) {
                 try {
                     EsLog.d("start close camera id " + cameraId);
                     if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
@@ -127,8 +124,8 @@ public class EsCameraDeviceImpl implements EsCameraDevice {
                     e.printStackTrace();
                 } finally {
                     mCameraOpenCloseLock.release();
-                    EsResult result = new EsResult();
-                    emitter.onNext(result);
+                    EsParams esParams = new EsParams();
+                    emitter.onNext(esParams);
                     emitter.onComplete();
                 }
             }

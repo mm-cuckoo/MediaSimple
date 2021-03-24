@@ -4,6 +4,7 @@ import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
+import android.view.Surface;
 
 import androidx.annotation.NonNull;
 
@@ -11,14 +12,16 @@ import com.cfox.camera.EsException;
 import com.cfox.camera.camera.info.CameraInfoHelper;
 import com.cfox.camera.camera.info.CameraInfo;
 import com.cfox.camera.camera.device.EsCameraDevice;
-import com.cfox.camera.helper.impl.PhotoSessionHelperImpl;
 import com.cfox.camera.log.EsLog;
-import com.cfox.camera.surface.ISurfaceHelper;
-import com.cfox.camera.utils.EasyError;
+import com.cfox.camera.surface.SurfaceManager;
+import com.cfox.camera.surface.SurfaceProvider;
+import com.cfox.camera.utils.EsError;
 import com.cfox.camera.utils.Es;
-import com.cfox.camera.utils.EsRequest;
-import com.cfox.camera.utils.EsResult;
+import com.cfox.camera.utils.EsParams;
 import com.cfox.camera.utils.WorkerHandlerManager;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
@@ -37,17 +40,15 @@ public class DeviceSessionImpl implements DeviceSession {
     }
 
     @Override
-    public Observable<EsResult> onOpenCamera(final EsRequest request) {
+    public Observable<EsParams> onOpenCamera(final EsParams esParams) {
         // TODO: 19-12-1 check camera id
-        mCameraId = request.getString(Es.Key.CAMERA_ID);
+        mCameraId = esParams.getString(Es.Key.CAMERA_ID);
         EsLog.d("onOpenCamera.. camera id:" + mCameraId);
-        return mEsCameraDevice.openCameraDevice(request).map(new Function<EsResult, EsResult>() {
+        return mEsCameraDevice.openCameraDevice(esParams).map(new Function<EsParams, EsParams>() {
             @Override
-            public EsResult apply(EsResult result) throws Exception {
-                mCameraDevice = (CameraDevice) result.getObj(Es.Key.CAMERA_DEVICE);
-                CameraInfo cameraInfo = CameraInfoHelper.getInstance().getCameraInfo(mCameraDevice.getId());
-                request.put(Es.Key.CAMERA_INFO, cameraInfo);
-                return result;
+            public EsParams apply(@NonNull EsParams esParams) {
+                mCameraDevice = (CameraDevice) esParams.getObj(Es.Key.CAMERA_DEVICE);
+                return esParams;
             }
         });
     }
@@ -57,25 +58,24 @@ public class DeviceSessionImpl implements DeviceSession {
         return mCameraDevice.createCaptureRequest(templateType);
     }
 
-    public Observable<EsResult> onCreateCaptureSession(EsRequest request) {
-        final ISurfaceHelper surfaceHelper = (ISurfaceHelper) request.getObj(Es.Key.SURFACE_HELPER);
-        EsLog.d("onCreatePreviewSession: ---->" + surfaceHelper.getAllSurfaces().size());
+    public Observable<EsParams> onCreateCaptureSession(final EsParams esParams) {
+        final SurfaceManager surfaceManager = (SurfaceManager) esParams.getObj(Es.Key.SURFACE_MANAGER);
         // TODO: 19-11-29 check  mCaptureSession is null
-        return Observable.create(new ObservableOnSubscribe<EsResult>() {
+        return Observable.create(new ObservableOnSubscribe<EsParams>() {
             @Override
-            public void subscribe(final ObservableEmitter<EsResult> emitter) throws Exception {
+            public void subscribe(@NonNull final ObservableEmitter<EsParams> emitter) throws Exception {
                 // 设置更多返回表面
-                mCameraDevice.createCaptureSession(surfaceHelper.getAllSurfaces(), new CameraCaptureSession.StateCallback() {
+                mCameraDevice.createCaptureSession(surfaceManager.getTotalSurface(), new CameraCaptureSession.StateCallback() {
                     @Override
                     public void onConfigured(@NonNull CameraCaptureSession session) {
-                        EsLog.d("onConfigured: create session success .....");
+                        EsLog.d("onConfigured: create session success ....." + esParams);
                         mCaptureSession = session;
-                        emitter.onNext(new EsResult());
+                        emitter.onNext(esParams);
                     }
 
                     @Override
                     public void onConfigureFailed(@NonNull CameraCaptureSession session) {
-                        emitter.onError(new EsException("Create Preview Session failed  ", EasyError.ERROR_CODE_CREATE_PREVIEW_SESSION));
+                        emitter.onError(new EsException("Create Preview Session failed  ", EsError.ERROR_CODE_CREATE_PREVIEW_SESSION));
 
                     }
                 }, WorkerHandlerManager.getHandler(WorkerHandlerManager.Tag.T_TYPE_CAMERA));
@@ -84,12 +84,12 @@ public class DeviceSessionImpl implements DeviceSession {
     }
 
     @Override
-    public Observable<EsResult> onRepeatingRequest(EsRequest request) {
-        final CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(Es.Key.REQUEST_BUILDER);
-        final CameraCaptureSession.CaptureCallback captureCallback  = (CameraCaptureSession.CaptureCallback) request.getObj(Es.Key.SESSION_CALLBACK);
-        return Observable.create(new ObservableOnSubscribe<EsResult>() {
+    public Observable<EsParams> onRepeatingRequest(EsParams esParams) {
+        final CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) esParams.getObj(Es.Key.REQUEST_BUILDER);
+        final CameraCaptureSession.CaptureCallback captureCallback  = (CameraCaptureSession.CaptureCallback) esParams.getObj(Es.Key.SESSION_CALLBACK);
+        return Observable.create(new ObservableOnSubscribe<EsParams>() {
             @Override
-            public void subscribe(ObservableEmitter<EsResult> emitter) throws Exception {
+            public void subscribe(ObservableEmitter<EsParams> emitter) throws Exception {
                 mCaptureSession.setRepeatingRequest(requestBuilder.build(), captureCallback,
                         WorkerHandlerManager.getHandler(WorkerHandlerManager.Tag.T_TYPE_CAMERA));
             }
@@ -97,11 +97,11 @@ public class DeviceSessionImpl implements DeviceSession {
     }
 
     @Override
-    public Observable<EsResult> onClose() {
+    public Observable<EsParams> onClose() {
         EsLog.d("onClose: closeSession:  start " + mCameraId);
-        return mEsCameraDevice.closeCameraDevice(mCameraId).doOnNext(new Consumer<EsResult>() {
+        return mEsCameraDevice.closeCameraDevice(mCameraId).doOnNext(new Consumer<EsParams>() {
             @Override
-            public void accept(EsResult result) throws Exception {
+            public void accept(EsParams esParams) throws Exception {
                 EsLog.d("onClose: closeSession: .......id:" + mCameraId);
                 if (mCaptureSession != null) {
                     mCaptureSession.close();
@@ -112,10 +112,10 @@ public class DeviceSessionImpl implements DeviceSession {
     }
 
     @Override
-    public void capture(EsRequest request) throws CameraAccessException {
-        EsLog.d("capture ==>" + request);
-        CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) request.getObj(Es.Key.REQUEST_BUILDER);
-        CameraCaptureSession.CaptureCallback captureCallback = (CameraCaptureSession.CaptureCallback) request.getObj(Es.Key.CAPTURE_CALLBACK);
+    public void capture(EsParams esParams) throws CameraAccessException {
+        EsLog.d("capture ==>" + esParams);
+        CaptureRequest.Builder requestBuilder = (CaptureRequest.Builder) esParams.getObj(Es.Key.REQUEST_BUILDER);
+        CameraCaptureSession.CaptureCallback captureCallback = (CameraCaptureSession.CaptureCallback) esParams.getObj(Es.Key.CAPTURE_CALLBACK);
         mCaptureSession.capture(requestBuilder.build(), captureCallback, WorkerHandlerManager.getHandler(WorkerHandlerManager.Tag.T_TYPE_CAMERA));
     }
 

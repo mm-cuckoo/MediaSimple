@@ -1,50 +1,50 @@
 package com.cfox.camera;
 
-import com.cfox.camera.utils.EsResult;
+import com.cfox.camera.utils.EsParams;
 
 public class EsException extends Exception {
     public final int errorCode;
-    public final EsResult result;
+    public final EsParams esParams;
 
     public EsException(String errorMsg) {
         super(errorMsg);
         this.errorCode = 0;//EVENT_VALUE_UNDEFINED;
-        this.result = null;
+        this.esParams = null;
     }
 
     public EsException(String errorMsg, int errorCode) {
         super(errorMsg);
         this.errorCode = errorCode;
-        this.result = null;
+        this.esParams = null;
     }
 
     public EsException(String errorMsg, Throwable throwable) {
         super(errorMsg, throwable);
         this.errorCode = 0;//EVENT_VALUE_UNDEFINED;
-        this.result = null;
+        this.esParams = null;
     }
 
     public EsException(String errorMsg, int errorCode, Throwable throwable) {
         super(errorMsg, throwable);
         this.errorCode = errorCode;
-        this.result = null;
+        this.esParams = null;
     }
 
-    public EsException(String errorMsg, int errorCode, Throwable throwable, EsResult result) {
+    public EsException(String errorMsg, int errorCode, Throwable throwable, EsParams esParams) {
         super(errorMsg, throwable);
         this.errorCode = errorCode;
-        this.result = result;
+        this.esParams = esParams;
     }
 
-    public EsException(String errorMsg, EsResult result) {
+    public EsException(String errorMsg, EsParams esParams) {
         super(errorMsg);
-        this.result = result;
+        this.esParams = esParams;
         this.errorCode = 0;
     }
 
-    public EsException(String errorMsg, int errorCode, EsResult result) {
+    public EsException(String errorMsg, int errorCode, EsParams esParams) {
         super(errorMsg);
-        this.result = result;
+        this.esParams = esParams;
         this.errorCode = errorCode;
     }
 }

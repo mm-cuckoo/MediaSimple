@@ -13,7 +13,6 @@ import androidx.annotation.Nullable;
 import com.alibaba.android.arouter.facade.annotation.Route;
 import com.cfox.camera.AutoFitTextureView;
 import com.cfox.camera.log.EsLog;
-import com.cfox.camera.surface.SurfaceHelper;
 import com.cfox.lib_common.arouter.RouterPath;
 import com.cfox.lib_common.base.BaseFragment;
 
@@ -22,7 +21,7 @@ import com.cfox.lib_common.base.BaseFragment;
 public class CameraMainFragment extends BaseFragment {
     private static final String TAG = "CameraMainFragment";
     private AutoFitTextureView mPreviewView;
-    private SurfaceHelper mSurfaceHelper;
+    private SurfaceProviderImpl mSurfaceHelperImpl;
     private AutoFitTextureView mPreviewView2;
     private EsyCameraController mCameraController;
 
@@ -61,15 +60,15 @@ public class CameraMainFragment extends BaseFragment {
         view.findViewById(R.id.btn_open_back).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mSurfaceHelper = new SurfaceHelper(mPreviewView);
-                mCameraController.backCamera(mSurfaceHelper);
+                mSurfaceHelperImpl = new SurfaceProviderImpl(mPreviewView);
+                mCameraController.backCamera(mSurfaceHelperImpl);
             }
         });
         view.findViewById(R.id.btn_open_font).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mSurfaceHelper = new SurfaceHelper(mPreviewView);
-                mCameraController.fontCamera(mSurfaceHelper);
+                mSurfaceHelperImpl = new SurfaceProviderImpl(mPreviewView);
+                mCameraController.fontCamera(mSurfaceHelperImpl);
             }
         });
 
@@ -78,8 +77,8 @@ public class CameraMainFragment extends BaseFragment {
             public void onClick(View v) {
                 mPreviewView2.setVisibility(View.GONE);
                 mCameraController.photoModule();
-                mSurfaceHelper = new SurfaceHelper(mPreviewView);
-                mCameraController.backCamera(mSurfaceHelper);
+                mSurfaceHelperImpl = new SurfaceProviderImpl(mPreviewView);
+                mCameraController.backCamera(mSurfaceHelperImpl);
             }
         });
 
@@ -88,8 +87,8 @@ public class CameraMainFragment extends BaseFragment {
             public void onClick(View v) {
                 mPreviewView2.setVisibility(View.GONE);
                 mCameraController.videoModule();
-                mSurfaceHelper = new SurfaceHelper(mPreviewView);
-                mCameraController.backCamera(mSurfaceHelper);
+                mSurfaceHelperImpl = new SurfaceProviderImpl(mPreviewView);
+                mCameraController.backCamera(mSurfaceHelperImpl);
             }
         });
 
@@ -98,11 +97,11 @@ public class CameraMainFragment extends BaseFragment {
             public void onClick(View v) {
                 mPreviewView2.setVisibility(View.VISIBLE);
                 mCameraController.dulVideoModule();
-                mSurfaceHelper = new SurfaceHelper(mPreviewView);
-                mCameraController.backCamera(mSurfaceHelper);
+                mSurfaceHelperImpl = new SurfaceProviderImpl(mPreviewView);
+                mCameraController.backCamera(mSurfaceHelperImpl);
 
-                mSurfaceHelper = new SurfaceHelper(mPreviewView2);
-                mCameraController.fontCamera(mSurfaceHelper);
+                mSurfaceHelperImpl = new SurfaceProviderImpl(mPreviewView2);
+                mCameraController.fontCamera(mSurfaceHelperImpl);
             }
         });
 
@@ -136,9 +135,9 @@ public class CameraMainFragment extends BaseFragment {
     @Override
     public void onResume() {
         super.onResume();
-        mSurfaceHelper = new SurfaceHelper(mPreviewView);
+        mSurfaceHelperImpl = new SurfaceProviderImpl(mPreviewView);
         EsLog.d("onResume: .......");
-        mCameraController.backCamera(mSurfaceHelper);
+        mCameraController.backCamera(mSurfaceHelperImpl);
     }
 
     @Override

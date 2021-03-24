@@ -2,13 +2,13 @@ package com.cfox.camera.mode;
 
 import android.media.ImageReader;
 
-import com.cfox.camera.utils.EsRequest;
+import com.cfox.camera.utils.EsParams;
 
 public interface IReaderHelper {
 
-    ImageReader createImageReader(EsRequest request);
+    ImageReader createImageReader(EsParams esParams);
 
-    ImageReader createPreviewImageReader(EsRequest request);
+    ImageReader createPreviewImageReader(EsParams esParams);
 
     void closeImageReaders();
 }

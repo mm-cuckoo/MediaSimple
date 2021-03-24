@@ -1,8 +1,8 @@
 package com.cfox.camera.capture;
 
 
-import com.cfox.camera.utils.EsRequest;
+import com.cfox.camera.utils.EsParams;
 
 public interface PhotoCapture extends Capture {
-    void onCapture(EsRequest request);
+    void onCapture(EsParams esParams);
 }
