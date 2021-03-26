@@ -21,7 +21,6 @@ public class CameraModeManager {
     private static final String TAG = "CameraModule";
     private volatile static CameraModeManager sCameraModeManager;
     private final Map<ModuleFlag, IMode> mModuleMap = new HashMap<>(ModuleFlag.values().length);
-    private IMode mCurrentModule;
 
     public enum ModuleFlag {
         MODULE_PHOTO,

@@ -8,6 +8,4 @@ public interface IEsCameraManager {
     Capture photoModule();
 
     Capture videoModule();
-
-    Capture dulVideoModule();
 }

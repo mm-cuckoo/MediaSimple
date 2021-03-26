@@ -2,12 +2,10 @@ package com.cfox.camera;
 
 import android.content.Context;
 
-import com.cfox.camera.capture.impl.DulVideoCaptureImpl;
 import com.cfox.camera.capture.impl.PhotoCaptureImpl;
 import com.cfox.camera.capture.impl.VideoCaptureImpl;
 import com.cfox.camera.capture.Capture;
 import com.cfox.camera.mode.CameraModeManager;
-import com.cfox.camera.mode.DulVideoMode;
 import com.cfox.camera.mode.PhotoMode;
 import com.cfox.camera.mode.VideoMode;
 
@@ -35,11 +33,5 @@ public class EsCameraManager implements IEsCameraManager {
     public Capture videoModule() {
         VideoMode videoMode = mCameraModule.initModule(CameraModeManager.ModuleFlag.MODULE_VIDEO);
         return new VideoCaptureImpl(videoMode);
-    }
-
-    @Override
-    public Capture dulVideoModule() {
-        DulVideoMode dulVideoMode = mCameraModule.initModule(CameraModeManager.ModuleFlag.MODULE_DUL_VIDEO);
-        return new DulVideoCaptureImpl(dulVideoMode);
     }
 }

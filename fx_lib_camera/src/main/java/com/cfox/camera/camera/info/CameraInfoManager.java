@@ -1,5 +1,6 @@
 package com.cfox.camera.camera.info;
 
+import android.graphics.Rect;
 import android.util.Range;
 import android.util.Size;
 
@@ -35,4 +36,11 @@ public interface CameraInfoManager {
     Size[] getPreviewSize(Class klass);
 
     Range<Integer> getEvRange();
+
+    Range<Float> getFocusRange();
+
+    float getMaxZoom();
+
+    Rect getActiveArraySize();
+
 }

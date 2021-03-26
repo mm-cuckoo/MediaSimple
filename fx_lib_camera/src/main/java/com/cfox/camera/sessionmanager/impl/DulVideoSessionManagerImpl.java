@@ -9,7 +9,6 @@ import com.cfox.camera.camera.device.session.DeviceSessionManager;
 import com.cfox.camera.camera.info.CameraInfoManager;
 import com.cfox.camera.sessionmanager.DulVideoSessionManager;
 import com.cfox.camera.log.EsLog;
-import com.cfox.camera.utils.Es;
 import com.cfox.camera.utils.EsParams;
 
 import java.util.HashMap;
@@ -56,15 +55,15 @@ public class DulVideoSessionManagerImpl extends AbsSessionManager implements Dul
 
     @Override
     public DeviceSession getCameraSession(EsParams esParams) {
-        String cameraId = esParams.getString(Es.Key.CAMERA_ID);
+        String cameraId = esParams.get(EsParams.Key.CAMERA_ID);
         // TODO: 19-12-5 check camera id
         return getCameraSessionForId(cameraId);
     }
 
     @Override
     public Observable<EsParams> onRepeatingRequest(EsParams esParams) {
-        String cameraId = esParams.getString(Es.Key.CAMERA_ID);
-        esParams.put(Es.Key.REQUEST_BUILDER, mPreviewBuilderMap.get(cameraId));
+        String cameraId = esParams.get(EsParams.Key.CAMERA_ID);
+        esParams.put(EsParams.Key.REQUEST_BUILDER, mPreviewBuilderMap.get(cameraId));
         return getCameraSessionForId(cameraId).onRepeatingRequest(esParams);
     }
 

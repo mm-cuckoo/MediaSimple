@@ -1,8 +1,8 @@
 package com.cfox.camera.camera.info;
 
+import android.graphics.Rect;
 import android.hardware.camera2.CameraCharacteristics;
 import android.util.Range;
-import android.util.Rational;
 import android.util.Size;
 
 import com.cfox.camera.log.EsLog;
@@ -76,8 +76,7 @@ public class CameraInfoManagerImpl implements CameraInfoManager {
 
     @Override
     public int getValidAntiBandingMode(int targetMode) {
-        int[] allABMode = getCharacteristics().get(
-                CameraCharacteristics.CONTROL_AE_AVAILABLE_ANTIBANDING_MODES);
+        int[] allABMode = getCharacteristics().get(CameraCharacteristics.CONTROL_AE_AVAILABLE_ANTIBANDING_MODES);
         for (int mode : allABMode) {
             if (mode == targetMode) {
                 return targetMode;
@@ -90,11 +89,14 @@ public class CameraInfoManagerImpl implements CameraInfoManager {
 
     @Override
     public boolean isMeteringSupport(boolean focusArea) {
-        int regionNum;
+        Integer regionNum;
         if (focusArea) {
             regionNum = getCharacteristics().get(CameraCharacteristics.CONTROL_MAX_REGIONS_AF);
         } else {
             regionNum = getCharacteristics().get(CameraCharacteristics.CONTROL_MAX_REGIONS_AE);
+        }
+        if (regionNum == null) {
+            regionNum = 0;
         }
         return regionNum > 0;
     }
@@ -126,8 +128,29 @@ public class CameraInfoManagerImpl implements CameraInfoManager {
         return getCharacteristics().get(CameraCharacteristics.CONTROL_AE_COMPENSATION_RANGE);
     }
 
-    public Rational getEvStep() {
-        return getCharacteristics().get(CameraCharacteristics.CONTROL_AE_COMPENSATION_STEP);
+    @Override
+    public Range<Float> getFocusRange() {
+        Float minFocus = getCharacteristics().get(CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE);
+        Float maxFocus = getCharacteristics().get(CameraCharacteristics.LENS_INFO_HYPERFOCAL_DISTANCE);
+        return new Range<>(minFocus, maxFocus);
+    }
+
+//    public Rational getEvStep() {
+//        return getCharacteristics().get(CameraCharacteristics.CONTROL_AE_COMPENSATION_STEP);
+//    }
+
+    @Override
+    public float getMaxZoom() {
+        Float maxZoom = getCharacteristics().get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM);
+        if (maxZoom == null) {
+            maxZoom = 1f;
+        }
+        return maxZoom;
+    }
+
+    @Override
+    public Rect getActiveArraySize() {
+        return getCharacteristics().get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
     }
 
     private CameraCharacteristics getCharacteristics() {

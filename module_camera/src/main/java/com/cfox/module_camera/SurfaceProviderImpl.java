@@ -5,7 +5,6 @@ import android.util.Size;
 import android.view.Surface;
 import android.view.TextureView;
 
-import com.cfox.camera.AutoFitTextureView;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.surface.SurfaceProvider;
 

@@ -1,41 +1,35 @@
-package com.cfox.camera.sessionmanager;
+package com.cfox.camera.sessionmanager.req;
 
+import android.graphics.Rect;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.MeteringRectangle;
 
 import com.cfox.camera.camera.info.CameraInfoManager;
 import com.cfox.camera.log.EsLog;
-import com.cfox.camera.utils.Es;
+import com.cfox.camera.utils.EsParams;
 
-import java.util.HashMap;
-import java.util.Map;
+public class SessionRequestManager {
 
-public class RequestBuilderManager {
-
-    private final Map<CaptureRequest.Key<Integer>, Integer> mApplyMap = new HashMap<>();
+    private final RequestCache REQUEST_CACHE = new RequestCache();
 
     private final CameraInfoManager mCameraHelper;
     private MeteringRectangle[] mFocusArea;
     private MeteringRectangle[] mMeteringArea;
     // for reset AE/AF metering area
-    private MeteringRectangle[] mResetRect = new MeteringRectangle[] {
+    private final MeteringRectangle[] mResetRect = new MeteringRectangle[] {
             new MeteringRectangle(0, 0, 0, 0, 0)
     };
 
-    public RequestBuilderManager(CameraInfoManager cameraHelper) {
+    public SessionRequestManager(CameraInfoManager cameraHelper) {
         this.mCameraHelper = cameraHelper;
     }
 
     public void resetApply() {
-        mApplyMap.clear();
+        REQUEST_CACHE.reset();
     }
 
-    public int getFlashType() {
-        return 0;
-    }
-
-    private void apply(CaptureRequest.Builder builder, CaptureRequest.Key<Integer> key , int value) {
-        mApplyMap.put(key, value);
+    private <T> void apply(CaptureRequest.Builder builder, CaptureRequest.Key<T> key , T value) {
+        REQUEST_CACHE.put(key, value);
         builder.set(key, value);
     }
 
@@ -96,27 +90,43 @@ public class RequestBuilderManager {
         }
     }
 
-    public void getFlashRequest(CaptureRequest.Builder builder, int value) {
-        if (!mCameraHelper.isFlashSupport() || value == Es.FLASH_TYPE.NONE) {
-            EsLog.w(" not support flash or value none");
+    public void applyEvRange(CaptureRequest.Builder builder, Integer value) {
+        if (value == null) {
+            EsLog.w(" Ev value is null");
+            return;
+        }
+        apply(builder, CaptureRequest.CONTROL_AE_EXPOSURE_COMPENSATION , value);
+    }
+
+    public void applyZoomRect(CaptureRequest.Builder builder, Rect zoomRect) {
+        if (zoomRect == null) {
+            EsLog.w(" zoom Rect is null");
+            return;
+        }
+        apply(builder, CaptureRequest.SCALER_CROP_REGION, zoomRect);
+    }
+
+    public void applyFlashRequest(CaptureRequest.Builder builder, Integer value) {
+        if (!mCameraHelper.isFlashSupport() || value == null) {
+            EsLog.w(" not support flash or value is null");
             return;
         }
         switch (value) {
-            case Es.FLASH_TYPE.ON:
-                builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH);
-                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
+            case EsParams.Value.FLASH_TYPE.ON:
+                apply(builder, CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH);
+                apply(builder, CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
                 break;
-            case Es.FLASH_TYPE.OFF:
-                builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
-                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
+            case EsParams.Value.FLASH_TYPE.OFF:
+                apply(builder, CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
+                apply(builder, CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
                 break;
-            case Es.FLASH_TYPE.AUTO:
-                builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
-                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
+            case EsParams.Value.FLASH_TYPE.AUTO:
+                apply(builder, CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+                apply(builder, CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
                 break;
-            case Es.FLASH_TYPE.TORCH:
-                builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
-                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
+            case EsParams.Value.FLASH_TYPE.TORCH:
+                apply(builder, CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
+                apply(builder, CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
                 break;
             default:
                 EsLog.e("error value for flash mode");
@@ -125,32 +135,10 @@ public class RequestBuilderManager {
         builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CaptureRequest.CONTROL_AF_TRIGGER_IDLE);
     }
 
-    public void applyFlashRequest(CaptureRequest.Builder builder, int value) {
-        if (!mCameraHelper.isFlashSupport()) {
-            EsLog.w(" not support flash");
-            return ;
-        }
-        switch (value) {
-            case Es.FLASH_TYPE.ON:
-                builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH);
-                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
-                break;
-            case Es.FLASH_TYPE.OFF:
-                builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
-                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
-                break;
-            case Es.FLASH_TYPE.AUTO:
-                builder.set(CaptureRequest.CONTROL_AE_MODE,
-                        CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
-                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
-                break;
-            case Es.FLASH_TYPE.TORCH:
-                builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
-                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
-                break;
-            default:
-                EsLog.e("error value for flash mode");
-                break;
+    public void applyAllRequest(CaptureRequest.Builder builder) {
+        for (CaptureRequest.Key key : REQUEST_CACHE.getKeySet()) {
+            EsLog.d("apply all request key:" + key);
+            builder.set(key, REQUEST_CACHE.get(key));
         }
     }
 

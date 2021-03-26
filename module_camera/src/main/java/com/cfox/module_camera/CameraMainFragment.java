@@ -11,7 +11,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.alibaba.android.arouter.facade.annotation.Route;
-import com.cfox.camera.AutoFitTextureView;
 import com.cfox.camera.log.EsLog;
 import com.cfox.lib_common.arouter.RouterPath;
 import com.cfox.lib_common.base.BaseFragment;
@@ -49,6 +48,21 @@ public class CameraMainFragment extends BaseFragment {
                 mCameraController.torchFlash();
             }
         });
+
+        view.findViewById(R.id.btn_on_flash).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mCameraController.onFlash();
+            }
+        });
+
+        view.findViewById(R.id.btn_auto_flash).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mCameraController.autoFlash();
+            }
+        });
+
 
         view.findViewById(R.id.btn_close_flash).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -95,13 +109,12 @@ public class CameraMainFragment extends BaseFragment {
         view.findViewById(R.id.btn_dul).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mPreviewView2.setVisibility(View.VISIBLE);
-                mCameraController.dulVideoModule();
-                mSurfaceHelperImpl = new SurfaceProviderImpl(mPreviewView);
-                mCameraController.backCamera(mSurfaceHelperImpl);
-
-                mSurfaceHelperImpl = new SurfaceProviderImpl(mPreviewView2);
-                mCameraController.fontCamera(mSurfaceHelperImpl);
+//                mPreviewView2.setVisibility(View.VISIBLE);
+//                mSurfaceHelperImpl = new SurfaceProviderImpl(mPreviewView);
+//                mCameraController.backCamera(mSurfaceHelperImpl);
+//
+//                mSurfaceHelperImpl = new SurfaceProviderImpl(mPreviewView2);
+//                mCameraController.fontCamera(mSurfaceHelperImpl);
             }
         });
 
@@ -117,6 +130,24 @@ public class CameraMainFragment extends BaseFragment {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 showMsg("ev :" + progress);
                 mCameraController.setEv(progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+        ((SeekBar)view.findViewById(R.id.seek_focus)).setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                showMsg("zoom :" + progress);
+                mCameraController.setZoom(progress);
             }
 
             @Override

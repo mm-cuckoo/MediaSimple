@@ -10,14 +10,17 @@ public class SurfaceManager {
 
     private final SurfaceProvider mSurfaceProvider;
     private final List<Surface> mReaderSurface;
+    private final List<Surface> mPreviewSurface;
 
     public SurfaceManager(SurfaceProvider surfaceProvider) {
         this.mSurfaceProvider = surfaceProvider;
         this.mReaderSurface = new ArrayList<>();
+        this.mPreviewSurface = new ArrayList<>();
     }
 
-    public Surface getPreviewSurface() {
-        return mSurfaceProvider.getSurface();
+    public List<Surface> getPreviewSurface() {
+        mPreviewSurface.add(mSurfaceProvider.getSurface());
+        return mPreviewSurface;
     }
 
     public Class getPreviewSurfaceClass(){
@@ -27,8 +30,12 @@ public class SurfaceManager {
 
     public List<Surface> getTotalSurface() {
         List<Surface> surfaceList = new ArrayList<>(mReaderSurface);
-        surfaceList.add(mSurfaceProvider.getSurface());
+        surfaceList.addAll(getPreviewSurface());
         return surfaceList;
+    }
+
+    public void addPreviewSurface(Surface surface) {
+        mPreviewSurface.add(surface);
     }
 
     public void addReaderSurface(Surface surface) {

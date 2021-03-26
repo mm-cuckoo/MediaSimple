@@ -1,15 +1,14 @@
 package com.cfox.camera.mode.impl;
 
 import com.cfox.camera.EsException;
-import com.cfox.camera.mode.IReaderHelper;
-import com.cfox.camera.mode.ImageReaderHelper;
+import com.cfox.camera.imagereader.IReaderHelper;
+import com.cfox.camera.imagereader.ImageReaderHelper;
 import com.cfox.camera.sessionmanager.PhotoSessionManager;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.mode.PhotoMode;
 import com.cfox.camera.mode.BaseMode;
 import com.cfox.camera.surface.SurfaceManager;
 import com.cfox.camera.utils.EsError;
-import com.cfox.camera.utils.Es;
 import com.cfox.camera.utils.EsParams;
 
 import io.reactivex.Observable;
@@ -39,9 +38,10 @@ public class PhotoModeImpl extends BaseMode implements PhotoMode {
         return Observable.create(new ObservableOnSubscribe<EsParams>() {
             @Override
             public void subscribe(@NonNull ObservableEmitter<EsParams> emitter) {
-                SurfaceManager manager = (SurfaceManager) esParams.getObj(Es.Key.SURFACE_MANAGER);
+                SurfaceManager manager = esParams.get(EsParams.Key.SURFACE_MANAGER);
                 if (manager.isAvailable()) {
                     manager.addReaderSurface(mImageReaderHelper.createImageReader(esParams).getSurface());
+//                    manager.addPreviewSurface(mImageReaderHelper.createPreviewImageReader(esParams).getSurface());
                     emitter.onNext(esParams);
                 } else  {
                     emitter.onError(new EsException("surface isAvailable = false , check SurfaceProvider implement", EsError.ERROR_CODE_SURFACE_UN_AVAILABLE));

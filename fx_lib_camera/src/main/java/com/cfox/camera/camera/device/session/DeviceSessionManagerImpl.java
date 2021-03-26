@@ -69,7 +69,7 @@ public class DeviceSessionManagerImpl implements DeviceSessionManager {
     @Override
     public DeviceSession createSession(String sessionId) {
         EsLog.d("createSession: session id ：" + sessionId);
-        DeviceSession session = null;
+        DeviceSession session;
         if (mCameraSessionMap.containsKey(sessionId)) {
             EsLog.e("session already has: session id ：" + sessionId);
             session = mCameraSessionMap.get(sessionId);

@@ -12,42 +12,43 @@ public class EsLog {
     }
 
     public static void d(String message) {
+        String className = new Exception().getStackTrace()[1].getFileName();
+        className = className.substring(0, className.indexOf("."));
+        Log.d("[" + className + "]", printFormat(className, message));
+
+    }
+
+    public static void e(String message) {
         Thread thread = Thread.currentThread();
-        String classname = new Exception().getStackTrace()[1].getFileName();
-        classname = classname.substring(0, classname.indexOf("."));
+        String className = new Exception().getStackTrace()[1].getFileName();
+        className = className.substring(0, className.indexOf("."));
+        Log.e("[" + className + "]", printFormat(className, message));
+    }
+
+    public static void i(String message) {
+        String className = new Exception().getStackTrace()[1].getFileName();
+        className = className.substring(0, className.indexOf("."));
+        Log.i("[" + className + "]", printFormat(className, message));
+    }
+
+    public static void w(String message) {
+        String className = new Exception().getStackTrace()[1].getFileName();
+        className = className.substring(0, className.indexOf("."));
+        Log.w("[" + className + "]", printFormat(className, message));
+    }
+
+    private static String printFormat(String className, String message) {
+        Thread thread = Thread.currentThread();
         StringBuilder buffer = new StringBuilder("  ");
         buffer.append("\n");
         buffer.append("================ Logcat ======================================================= ").append("\n");
         if (!TextUtils.isEmpty(sTag)) {
             buffer.append("== Tag :").append(sTag).append("\n");
         }
-        buffer.append("== Class Name :").append(classname).append("\n");
+        buffer.append("== Class Name :").append(className).append("\n");
         buffer.append("== Thread Name :").append(thread.getName()).append("\n");
         buffer.append("== Message :").append(message).append("\n");
-        buffer.append("============================================================================================");
-
-        Log.d("[" + classname + "]", buffer.toString());
-
-    }
-
-    public static void e(String message) {
-        Thread thread = Thread.currentThread();
-        String classname = new Exception().getStackTrace()[1].getFileName();
-        classname = classname.substring(0, classname.indexOf("."));
-        Log.e("[" + classname + "]", sTag + "[" + thread.getName() + "]" + message);
-    }
-
-    public static void i(String message) {
-        Thread thread = Thread.currentThread();
-        String classname = new Exception().getStackTrace()[1].getFileName();
-        classname = classname.substring(0, classname.indexOf("."));
-        Log.i("[" + classname + "]", sTag + "[" + thread.getName() + "]" + message);
-    }
-
-    public static void w(String message) {
-        Thread thread = Thread.currentThread();
-        String classname = new Exception().getStackTrace()[1].getFileName();
-        classname = classname.substring(0, classname.indexOf("."));
-        Log.w("[" + classname + "]", "[" + thread.getName() + "]" + message);
+        buffer.append(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        return buffer.toString();
     }
 }

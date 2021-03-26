@@ -2,13 +2,12 @@ package com.cfox.camera.mode.impl;
 
 
 import com.cfox.camera.EsException;
-import com.cfox.camera.mode.IReaderHelper;
-import com.cfox.camera.mode.ImageReaderHelper;
+import com.cfox.camera.imagereader.IReaderHelper;
+import com.cfox.camera.imagereader.ImageReaderHelper;
 import com.cfox.camera.sessionmanager.VideoSessionManger;
 import com.cfox.camera.mode.VideoMode;
 import com.cfox.camera.mode.BaseMode;
 import com.cfox.camera.surface.SurfaceManager;
-import com.cfox.camera.utils.Es;
 import com.cfox.camera.utils.EsError;
 import com.cfox.camera.utils.EsParams;
 
@@ -31,7 +30,7 @@ public class VideoModeImpl extends BaseMode implements VideoMode {
         return Observable.create(new ObservableOnSubscribe<EsParams>() {
             @Override
             public void subscribe(@NonNull ObservableEmitter<EsParams> emitter) {
-                SurfaceManager manager = (SurfaceManager) esParams.getObj(Es.Key.SURFACE_MANAGER);
+                SurfaceManager manager = esParams.get(EsParams.Key.SURFACE_MANAGER);
                 if (manager.isAvailable()) {
                     manager.addReaderSurface(mImageReaderHelper.createImageReader(esParams).getSurface());
                     emitter.onNext(esParams);

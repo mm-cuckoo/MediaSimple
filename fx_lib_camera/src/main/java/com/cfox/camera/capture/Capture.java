@@ -13,5 +13,7 @@ public interface Capture {
 
     void onStop(EsParams esParams);
 
-    Range<Integer> getEvRange(EsParams esParams);
+    Range<Integer> getEvRange();
+
+    Range<Float> getFocusRange();
 }

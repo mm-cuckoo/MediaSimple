@@ -1,4 +1,4 @@
-package com.cfox.camera.mode;
+package com.cfox.camera.imagereader;
 
 import android.graphics.ImageFormat;
 import android.media.Image;
@@ -7,7 +7,6 @@ import android.os.Handler;
 import android.util.Size;
 
 import com.cfox.camera.log.EsLog;
-import com.cfox.camera.utils.Es;
 import com.cfox.camera.utils.EsParams;
 import com.cfox.camera.utils.WorkerHandlerManager;
 
@@ -32,9 +31,9 @@ public class ImageReaderHelper implements IReaderHelper {
 
     @Override
     public ImageReader createImageReader(EsParams esParams) {
-        Size picSize = (Size) esParams.getObj(Es.Key.PIC_SIZE);
-        int imageFormat = esParams.getInt(Es.Key.IMAGE_FORMAT, ImageFormat.JPEG);
-        final String filePath = esParams.getString(Es.Key.PIC_FILE_PATH);
+        Size picSize = esParams.get(EsParams.Key.PIC_SIZE);
+        int imageFormat = esParams.get(EsParams.Key.IMAGE_FORMAT, ImageFormat.JPEG);
+        final String filePath = esParams.get(EsParams.Key.PIC_FILE_PATH);
         EsLog.d("createImageReader: pic width:" + picSize.getWidth() + "  pic height:" + picSize.getHeight()  + "   format:" + imageFormat);
         ImageReader imageReader = ImageReader.newInstance(picSize.getWidth(), picSize.getHeight(), imageFormat, 2);
         mImageReaders.add(imageReader);
@@ -52,15 +51,15 @@ public class ImageReaderHelper implements IReaderHelper {
 
     @Override
     public ImageReader createPreviewImageReader(EsParams esParams) {
-        Size picSize = (Size) esParams.getObj(Es.Key.PREVIEW_SIZE);
-        int imageFormat = esParams.getInt(Es.Key.IMAGE_FORMAT, ImageFormat.JPEG);
+        Size picSize = esParams.get(EsParams.Key.PREVIEW_SIZE);
+        int imageFormat = esParams.get(EsParams.Key.IMAGE_FORMAT, ImageFormat.JPEG);
         EsLog.d("createImageReader: pic width:" + picSize.getWidth() + "  pic height:" + picSize.getHeight()  + "   format:" + imageFormat);
         ImageReader imageReader = ImageReader.newInstance(picSize.getWidth(), picSize.getHeight(), ImageFormat.YUV_420_888, 2);
         mImageReaders.add(imageReader);
         imageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
             @Override
             public void onImageAvailable(ImageReader reader) {
-//                EsLog.d("onImageAvailable: preview frame ....");
+                EsLog.d("onImageAvailable: preview frame ....");
                 Image image = reader.acquireNextImage();
                 if (image == null) return;
                 image.close();

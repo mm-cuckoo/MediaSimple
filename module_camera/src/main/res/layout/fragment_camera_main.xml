@@ -3,12 +3,12 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.cfox.camera.AutoFitTextureView
+    <com.cfox.module_camera.AutoFitTextureView
         android:id="@+id/preview_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <com.cfox.camera.AutoFitTextureView
+    <com.cfox.module_camera.AutoFitTextureView
         android:id="@+id/preview_view_2"
         android:visibility="gone"
         android:layout_width="540px"
@@ -34,10 +34,28 @@
                     android:layout_height="wrap_content" />
 
                 <Button
+                    android:id="@+id/btn_on_flash"
+                    android:text="on"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <Button
+                    android:id="@+id/btn_auto_flash"
+                    android:text="auto"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <Button
                     android:id="@+id/btn_close_flash"
                     android:text="close"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
                 <Button
                     android:id="@+id/btn_open_back"
@@ -57,6 +75,13 @@
                 android:layout_width="match_parent"
                 android:max="12"
                 android:min="-12"
+                android:layout_height="20dp" />
+
+            <SeekBar
+                android:id="@+id/seek_focus"
+                android:layout_width="match_parent"
+                android:max="40"
+                android:min="1"
                 android:layout_height="20dp" />
         </LinearLayout>
 
@@ -80,13 +105,13 @@
                 android:text="dul"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
-            <Button
-                android:id="@+id/btn_capture"
-                android:text="do capture"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
 
+        </LinearLayout>
+        <Button
+            android:id="@+id/btn_capture"
+            android:text="do capture"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
     </LinearLayout>
 
 </FrameLayout>

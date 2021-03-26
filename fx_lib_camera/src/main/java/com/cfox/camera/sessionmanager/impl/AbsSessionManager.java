@@ -23,7 +23,7 @@ import io.reactivex.functions.Function;
 abstract class AbsSessionManager implements SessionManager {
 
     /**
-     * open camera ， 在open camera 之前会调用beforeOpenCamera 方法进行关闭和初始化一些配置
+     * open camera ， 在open camera 之前会调用 onBeforeOpenCamera 方法进行关闭和初始化一些配置
      */
     @Override
     public Observable<EsParams> onOpenCamera(final EsParams esParams) {
@@ -66,10 +66,8 @@ abstract class AbsSessionManager implements SessionManager {
         });
     }
 
-    CaptureRequest.Builder createPreviewBuilder(Surface surface) {
-        List<Surface> previewSurfaceList = new ArrayList<>();
-        previewSurfaceList.add(surface);
-        return createBuilder(CameraDevice.TEMPLATE_PREVIEW, previewSurfaceList);
+    CaptureRequest.Builder createPreviewBuilder( List<Surface> surfaceList) {
+        return createBuilder(CameraDevice.TEMPLATE_PREVIEW, surfaceList);
     }
 
     CaptureRequest.Builder createBuilder(int templateType, List<Surface> surfaceList) {

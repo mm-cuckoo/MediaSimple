@@ -30,7 +30,12 @@ public class VideoCaptureImpl implements VideoCapture {
     }
 
     @Override
-    public Range<Integer> getEvRange(EsParams esParams) {
+    public Range<Integer> getEvRange() {
+        return null;
+    }
+
+    @Override
+    public Range<Float> getFocusRange() {
         return null;
     }
 }

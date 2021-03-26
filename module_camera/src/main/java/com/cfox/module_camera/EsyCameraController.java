@@ -9,7 +9,6 @@ import android.util.Size;
 import com.cfox.camera.EsCameraManager;
 import com.cfox.camera.capture.Capture;
 import com.cfox.camera.capture.PhotoCapture;
-import com.cfox.camera.utils.Es;
 import com.cfox.camera.utils.EsParams;
 
 class EsyCameraController {
@@ -29,23 +28,18 @@ class EsyCameraController {
         mCameraCapture = mCameraManager.videoModule();
     }
 
-
-    void dulVideoModule() {
-        mCameraCapture = mCameraManager.dulVideoModule();
-    }
-
     void backCamera(SurfaceProviderImpl helper) {
 
         EsParams esParams = getRequest();
-        esParams.put(Es.Key.CAMERA_ID, Es.Camera.ID.BACK.id);
-        esParams.put(Es.Key.CAMERA_FLASH_VALUE, Es.FLASH_TYPE.OFF);
+        esParams.put(EsParams.Key.CAMERA_ID, EsParams.Value.CAMERA_ID.BACK);
+        esParams.put(EsParams.Key.CAMERA_FLASH_TYPE, EsParams.Value.FLASH_TYPE.OFF);
 
         mCameraCapture.onStartPreview(esParams, helper);
     }
 
     void fontCamera(SurfaceProviderImpl helper) {
         EsParams esParams = getRequest();
-        esParams.put(Es.Key.CAMERA_ID, Es.Camera.ID.FONT.id);
+        esParams.put(EsParams.Key.CAMERA_ID, EsParams.Value.CAMERA_ID.FONT);
         mCameraCapture.onStartPreview(esParams, helper);
     }
 
@@ -59,10 +53,10 @@ class EsyCameraController {
     private EsParams getRequest() {
         EsParams esParams = new EsParams();
         Size previewSize = new Size(1920, 1080);
-        esParams.put(Es.Key.PREVIEW_SIZE, previewSize);
+        esParams.put(EsParams.Key.PREVIEW_SIZE, previewSize);
         Size picSize = new Size(1920, 1080);
-        esParams.put(Es.Key.PIC_SIZE, picSize);
-        esParams.put(Es.Key.PIC_FILE_PATH, Environment.getExternalStorageDirectory().getAbsoluteFile().getPath());
+        esParams.put(EsParams.Key.PIC_SIZE, picSize);
+        esParams.put(EsParams.Key.PIC_FILE_PATH, Environment.getExternalStorageDirectory().getAbsoluteFile().getPath());
         return esParams;
     }
 
@@ -77,26 +71,41 @@ class EsyCameraController {
 
     void torchFlash() {
         EsParams esParams = new EsParams();
-        esParams.put(Es.Key.CAMERA_FLASH_VALUE, Es.FLASH_TYPE.ON);
+        esParams.put(EsParams.Key.CAMERA_FLASH_TYPE, EsParams.Value.FLASH_TYPE.TORCH);
         mCameraCapture.onCameraConfig(esParams);
     }
 
-//    void autoFlash() {
-//        CameraConfig cameraConfig = CameraConfig.getInstance();
-//        cameraConfig.push(CaptureRequest.FLASH_MODE, FxRe.FLASH_TYPE.AUTO);
-//        FxRequest request = new FxRequest();
-//        request.put(FxRe.Key.CAMERA_CONFIG, cameraConfig);
-//        mCameraController.requestCameraConfig(request);
-//    }
+    void autoFlash() {
+        EsParams esParams = new EsParams();
+        esParams.put(EsParams.Key.CAMERA_FLASH_TYPE, EsParams.Value.FLASH_TYPE.AUTO);
+        mCameraCapture.onCameraConfig(esParams);
+    }
+
+    void onFlash() {
+        EsParams esParams = new EsParams();
+        esParams.put(EsParams.Key.CAMERA_FLASH_TYPE, EsParams.Value.FLASH_TYPE.ON);
+        mCameraCapture.onCameraConfig(esParams);
+    }
 
     void closeFlash() {
         EsParams esParams = new EsParams();
-        esParams.put(Es.Key.CAMERA_FLASH_VALUE, Es.FLASH_TYPE.OFF);
+        esParams.put(EsParams.Key.CAMERA_FLASH_TYPE, EsParams.Value.FLASH_TYPE.OFF);
         mCameraCapture.onCameraConfig(esParams);
     }
 
     void setEv(int value) {
         EsParams esParams = new EsParams();
+        esParams.put(EsParams.Key.EV_SIZE, value);
+        mCameraCapture.onCameraConfig(esParams);
+    }
+    void setFocus(float value) {
+        EsParams esParams = new EsParams();
+        mCameraCapture.onCameraConfig(esParams);
+    }
+
+    void setZoom(float value) {
+        EsParams esParams = new EsParams();
+        esParams.put(EsParams.Key.ZOOM_VALUE, value);
         mCameraCapture.onCameraConfig(esParams);
     }
 
@@ -109,7 +118,6 @@ class EsyCameraController {
     }
 
     Range<Integer> getEvRange() {
-        EsParams esParams = new EsParams();
-        return mCameraCapture.getEvRange(esParams);
-    }// 重新设计代码
+        return mCameraCapture.getEvRange();
+    }
 }

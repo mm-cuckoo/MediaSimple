@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.cfox.camera;
+package com.cfox.module_camera;
 
 import android.content.Context;
 import android.util.AttributeSet;
