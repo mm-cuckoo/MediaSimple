@@ -12,6 +12,7 @@ import com.cfox.camera.camera.info.CameraInfoManager;
 import com.cfox.camera.camera.info.CameraInfoManagerImpl;
 import com.cfox.camera.camera.device.session.DeviceSessionManager;
 import com.cfox.camera.sessionmanager.PhotoSessionManager;
+import com.cfox.camera.sessionmanager.ZoomHelper;
 import com.cfox.camera.sessionmanager.callback.PhotoCaptureCallback;
 import com.cfox.camera.sessionmanager.callback.PreviewCaptureCallback;
 import com.cfox.camera.sessionmanager.req.SessionRequestManager;
@@ -36,6 +37,7 @@ public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoS
     private final PhotoCaptureCallback PHOTO_CAPTURE_CALLBACK = new PhotoCaptureCallback();
     private final CameraInfoManager CAMERA_INFO_MANAGER = CameraInfoManagerImpl.CAMERA_INFO_MANAGER;
     private final SessionRequestManager SESSION_REQUEST_MANAGER = new SessionRequestManager(CAMERA_INFO_MANAGER);
+    private final ZoomHelper ZOOM_HELPER = new ZoomHelper(CAMERA_INFO_MANAGER);
 
     private CaptureRequest.Builder mPreviewBuilder;
     private CaptureRequest.Builder mCaptureBuilder;
@@ -56,8 +58,13 @@ public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoS
     }
 
     @Override
-    public Observable<EsParams> cameraStatus() {
+    public Observable<EsParams> previewStatus() {
         return PREVIEW_CAPTURE_CALLBACK.getPreviewStateSubject();
+    }
+
+    @Override
+    public Observable<EsParams> captureStatus() {
+        return PHOTO_CAPTURE_CALLBACK.getCaptureStateSubject();
     }
 
     @Override
@@ -95,12 +102,18 @@ public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoS
     }
 
     private void applyRequestMessage(CaptureRequest.Builder builder, EsParams esParams) {
+        // zoom
+        Float zoomValue = esParams.get(EsParams.Key.ZOOM_VALUE);
+        if (zoomValue != null) {
+            SESSION_REQUEST_MANAGER.applyZoomRect(builder, ZOOM_HELPER.getZoomRect(zoomValue));
+        }
+
         // flash
         SESSION_REQUEST_MANAGER.applyFlashRequest(builder, esParams.get(EsParams.Key.CAMERA_FLASH_TYPE));
-        // zoom
-        SESSION_REQUEST_MANAGER.applyZoomRect(builder, esParams.get(EsParams.Key.ZOOM_RECT));
         // ev
-        SESSION_REQUEST_MANAGER.applyEvRange(getPreviewBuilder(), esParams.get(EsParams.Key.EV_SIZE));
+        SESSION_REQUEST_MANAGER.applyEvRange(builder, esParams.get(EsParams.Key.EV_SIZE));
+
+
     }
 
     private CaptureRequest.Builder getPreviewBuilder() {

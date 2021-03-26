@@ -11,7 +11,7 @@ import com.cfox.camera.camera.info.CameraInfoHelper;
 import com.cfox.camera.camera.info.CameraInfoManager;
 import com.cfox.camera.camera.info.CameraInfoManagerImpl;
 import com.cfox.camera.capture.PhotoCapture;
-import com.cfox.camera.capture.ZoomHelper;
+import com.cfox.camera.sessionmanager.ZoomHelper;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.mode.PhotoMode;
 import com.cfox.camera.capture.business.Business;
@@ -27,7 +27,6 @@ public class PhotoCaptureImpl implements PhotoCapture {
     private final PhotoMode mPhotoMode;
     private final CameraInfoManager mCameraInfoManager = CameraInfoManagerImpl.CAMERA_INFO_MANAGER;
     private final Business mBusiness;
-    private ZoomHelper mZoomHelper;
 
     public PhotoCaptureImpl(PhotoMode photoMode, IConfigWrapper configWrapper) {
         mPhotoMode = photoMode;
@@ -36,7 +35,6 @@ public class PhotoCaptureImpl implements PhotoCapture {
 
     @Override
     public void onStartPreview(EsParams esParams, SurfaceProvider surfaceProvider) {
-        mZoomHelper = new ZoomHelper(mCameraInfoManager);
         SurfaceManager surfaceManager = new SurfaceManager(surfaceProvider);
         esParams.put(EsParams.Key.SURFACE_MANAGER, surfaceManager);
         // 切换Camera 信息管理中的 Camera 信息， 如前置camera  或 后置Camera
@@ -55,9 +53,6 @@ public class PhotoCaptureImpl implements PhotoCapture {
         Size pictureSize = mBusiness.getPictureSize(pictureSizeForReq, mCameraInfoManager.getPictureSize(imageFormat));
         esParams.put(EsParams.Key.PIC_SIZE, pictureSize);
 
-//        float zooValue = esParams.getFloat(Es.Key.ZOOM_VALUE, 1.0f);
-//        esParams.put(Es.Key.ZOOM_RECT, mZoomHelper.getZoomRect(zooValue));
-
         EsLog.d("zoom size:" + mCameraInfoManager.getMaxZoom()  + "   zoom area:" + mCameraInfoManager.getActiveArraySize());
 
         mPhotoMode.requestPreview(esParams).subscribe(new CameraObserver<EsParams>(){
@@ -72,10 +67,7 @@ public class PhotoCaptureImpl implements PhotoCapture {
 
     @Override
     public void onCameraConfig(EsParams esParams) {
-        Float zooValue = esParams.get(EsParams.Key.ZOOM_VALUE);
-        if (zooValue != null) {
-            esParams.put(EsParams.Key.ZOOM_RECT, mZoomHelper.getZoomRect(zooValue));
-        }
+
         mPhotoMode.requestCameraConfig(esParams).subscribe(new CameraObserver<EsParams>(){
             @Override
             public void onNext(EsParams resultParams) {

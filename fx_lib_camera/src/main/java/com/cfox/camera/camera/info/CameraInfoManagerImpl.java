@@ -135,15 +135,20 @@ public class CameraInfoManagerImpl implements CameraInfoManager {
         return new Range<>(minFocus, maxFocus);
     }
 
-//    public Rational getEvStep() {
-//        return getCharacteristics().get(CameraCharacteristics.CONTROL_AE_COMPENSATION_STEP);
-//    }
 
+    /**
+     * 在这里拿到的值就是zoom 范围
+     *  1 ~ MaxZoom
+     * @return max zoom size
+     */
     @Override
     public float getMaxZoom() {
         Float maxZoom = getCharacteristics().get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM);
         if (maxZoom == null) {
             maxZoom = 1f;
+        } else {
+            // 在这里扩大10倍
+            maxZoom *= 10;
         }
         return maxZoom;
     }

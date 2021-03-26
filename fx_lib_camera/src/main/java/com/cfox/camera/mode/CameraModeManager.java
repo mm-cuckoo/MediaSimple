@@ -3,8 +3,6 @@ package com.cfox.camera.mode;
 import android.content.Context;
 import android.util.Log;
 
-import com.cfox.camera.sessionmanager.DulVideoSessionManager;
-import com.cfox.camera.sessionmanager.impl.DulVideoSessionManagerImpl;
 import com.cfox.camera.camera.device.session.DeviceSessionManagerImpl;
 import com.cfox.camera.camera.device.session.DeviceSessionManager;
 import com.cfox.camera.sessionmanager.PhotoSessionManager;
@@ -24,9 +22,7 @@ public class CameraModeManager {
 
     public enum ModuleFlag {
         MODULE_PHOTO,
-        MODULE_VIDEO,
-        MODULE_DUL_VIDEO
-
+        MODULE_VIDEO
     }
 
     public static CameraModeManager getInstance(Context context) {
@@ -58,9 +54,6 @@ public class CameraModeManager {
         VideoSessionManger videoSessionManger = new VideoSessionMangerImpl(sessionManager);
         mModuleMap.put(ModuleFlag.MODULE_VIDEO, new VideoModeImpl(videoSessionManger));
 
-
-        DulVideoSessionManager dulVideoSessionManager = new DulVideoSessionManagerImpl(sessionManager);
-//        mModuleMap.put(ModuleFlag.MODULE_DUL_VIDEO, new DulVideoModeImpl(dulVideoSessionManager));
     }
 
 }

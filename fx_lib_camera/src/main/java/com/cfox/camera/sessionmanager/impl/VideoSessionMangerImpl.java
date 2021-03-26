@@ -25,7 +25,12 @@ public class VideoSessionMangerImpl extends AbsSessionManager implements VideoSe
     }
 
     @Override
-    public Observable<EsParams> cameraStatus() {
+    public Observable<EsParams> captureStatus() {
+        return null;
+    }
+
+    @Override
+    public Observable<EsParams> previewStatus() {
         return null;
     }
 

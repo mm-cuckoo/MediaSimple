@@ -83,7 +83,6 @@ public class EsParams {
         public static final EsParams.Key<CameraDevice> CAMERA_DEVICE = new EsParams.Key<>("camera_device");
 
         public static final EsParams.Key<Float> ZOOM_VALUE = new EsParams.Key<>("zoom_value");
-        public static final EsParams.Key<Rect> ZOOM_RECT = new EsParams.Key<>("zoom_rect");
 
         public static final EsParams.Key<String> OPEN_CAMERA_STATUS = new EsParams.Key<>("open_camera_status");
         public static final EsParams.Key<CaptureRequest.Builder> REQUEST_BUILDER = new EsParams.Key<>("request_builder");

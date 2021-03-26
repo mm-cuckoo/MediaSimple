@@ -60,15 +60,6 @@ class EsyCameraController {
         return esParams;
     }
 
-//    void openFlash() {
-//        CameraConfig cameraConfig = CameraConfig.getInstance();
-//        cameraConfig.push(CaptureRequest.FLASH_MODE, FxRe.FLASH_TYPE.ON);
-//        FxRequest request = new FxRequest();
-//        request.put(FxRe.Key.CAMERA_CONFIG, cameraConfig);
-//        mCameraController.requestCameraConfig(request);
-//    }
-
-
     void torchFlash() {
         EsParams esParams = new EsParams();
         esParams.put(EsParams.Key.CAMERA_FLASH_TYPE, EsParams.Value.FLASH_TYPE.TORCH);

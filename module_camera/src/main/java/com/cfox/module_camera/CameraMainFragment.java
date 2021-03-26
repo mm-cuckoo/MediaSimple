@@ -106,18 +106,6 @@ public class CameraMainFragment extends BaseFragment {
             }
         });
 
-        view.findViewById(R.id.btn_dul).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-//                mPreviewView2.setVisibility(View.VISIBLE);
-//                mSurfaceHelperImpl = new SurfaceProviderImpl(mPreviewView);
-//                mCameraController.backCamera(mSurfaceHelperImpl);
-//
-//                mSurfaceHelperImpl = new SurfaceProviderImpl(mPreviewView2);
-//                mCameraController.fontCamera(mSurfaceHelperImpl);
-            }
-        });
-
         view.findViewById(R.id.btn_capture).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

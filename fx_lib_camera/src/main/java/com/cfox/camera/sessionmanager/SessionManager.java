@@ -10,7 +10,9 @@ public interface SessionManager {
 
     void init();
 
-    Observable<EsParams> cameraStatus();
+    Observable<EsParams> captureStatus();
+
+    Observable<EsParams> previewStatus();
 
     Observable<EsParams> onOpenCamera(EsParams esParams);
 
