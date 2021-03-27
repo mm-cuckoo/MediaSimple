@@ -1,6 +1,5 @@
 package com.cfox.camera.sessionmanager.impl;
 
-import android.annotation.SuppressLint;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
 import android.view.Surface;
@@ -26,12 +25,12 @@ import java.util.List;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Predicate;
 
 /**
  * 负责挣了并发送个camera session 动作
  */
-public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoSessionManager, Consumer<EsParams>  {
+public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoSessionManager {
 
     private final PreviewCaptureCallback PREVIEW_CAPTURE_CALLBACK = new PreviewCaptureCallback();
     private final PhotoCaptureCallback PHOTO_CAPTURE_CALLBACK = new PhotoCaptureCallback();
@@ -50,21 +49,9 @@ public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoS
         mCameraSessionManager = sessionManager;
     }
 
-    @SuppressLint("CheckResult")
     @Override
     public void init() {
-        PREVIEW_CAPTURE_CALLBACK.getPreviewStateSubject().subscribe(this);
-        PHOTO_CAPTURE_CALLBACK.getCaptureStateSubject().subscribe(this);
-    }
 
-    @Override
-    public Observable<EsParams> previewStatus() {
-        return PREVIEW_CAPTURE_CALLBACK.getPreviewStateSubject();
-    }
-
-    @Override
-    public Observable<EsParams> captureStatus() {
-        return PHOTO_CAPTURE_CALLBACK.getCaptureStateSubject();
     }
 
     @Override
@@ -86,17 +73,28 @@ public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoS
     }
 
     @Override
-    Observable<EsParams> applyPreviewPlan(final EsParams esParams) {
+    public Observable<EsParams> onPreviewRepeatingRequest(final EsParams esParams) {
         return Observable.create(new ObservableOnSubscribe<EsParams>() {
             @Override
             public void subscribe(@NonNull ObservableEmitter<EsParams> emitter) {
                 mSurfaceManager = esParams.get(EsParams.Key.SURFACE_MANAGER);
-                PREVIEW_CAPTURE_CALLBACK.applyPreview(mPhotoSession, getPreviewBuilder());
+                PREVIEW_CAPTURE_CALLBACK.applyPreview(mPhotoSession, getPreviewBuilder(), emitter);
                 SESSION_REQUEST_MANAGER.applyPreviewRequest(getPreviewBuilder());
                 applyRequestMessage(getPreviewBuilder(), esParams);
                 esParams.put(EsParams.Key.REQUEST_BUILDER, getPreviewBuilder());
                 esParams.put(EsParams.Key.CAPTURE_CALLBACK, PREVIEW_CAPTURE_CALLBACK);
-                emitter.onNext(esParams);
+                mPhotoSession.onRepeatingRequest(esParams).subscribe();
+            }
+        }).filter(new Predicate<EsParams>() {
+            @Override
+            public boolean test(@NonNull EsParams esParams) {
+                // 如果 preview 发来的信息是开始捕获， 会被拦截并进行capture
+                Integer captureState = esParams.get(EsParams.Key.CAPTURE_STATE);
+                if (captureState != null && captureState == EsParams.Value.CAPTURE_STATE.CAPTURE_START) {
+                    PHOTO_CAPTURE_CALLBACK.capture();
+                    return true;
+                }
+                return false;
             }
         });
     }
@@ -157,37 +155,24 @@ public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoS
                 CaptureRequest.Builder builder = getCaptureBuilder();
                 builder.set(CaptureRequest.JPEG_ORIENTATION, esParams.get(EsParams.Key.PIC_ORIENTATION, 0));
                 SESSION_REQUEST_MANAGER.applyAllRequest(builder);
-                PHOTO_CAPTURE_CALLBACK.prepareCapture(mPhotoSession, builder);
-
+                PHOTO_CAPTURE_CALLBACK.prepareCapture(mPhotoSession, builder, emitter);
                 if (CAMERA_INFO_MANAGER.canTriggerAf()) {
                     PREVIEW_CAPTURE_CALLBACK.capture();
                 } else {
                     PHOTO_CAPTURE_CALLBACK.capture();
                 }
             }
+        }).filter(new Predicate<EsParams>() {
+            @Override
+            public boolean test(@NonNull EsParams esParams) {
+                Integer captureState = esParams.get(EsParams.Key.CAPTURE_STATE);
+                if (captureState != null
+                        && (captureState == EsParams.Value.CAPTURE_STATE.CAPTURE_FAIL
+                        || captureState == EsParams.Value.CAPTURE_STATE.CAPTURE_COMPLETED)) {
+                    PREVIEW_CAPTURE_CALLBACK.resetPreviewState();
+                }
+                return false;
+            }
         });
-    }
-
-    @Override
-    public void accept(EsParams esParams) {
-        EsLog.d("capture call back:" + esParams);
-        Integer state = esParams.get(EsParams.Key.CAPTURE_STATE);
-
-        if (state == null) {
-            return;
-        }
-
-        switch (state) {
-            case EsParams.Value.CAPTURE_STATE.CAPTURE : {
-                PHOTO_CAPTURE_CALLBACK.capture();
-                break;
-            }
-
-            case EsParams.Value.CAPTURE_STATE.CAPTURE_COMPLETED :
-            case EsParams.Value.CAPTURE_STATE.CAPTURE_FAIL : {
-                PREVIEW_CAPTURE_CALLBACK.resetPreviewState();
-                break;
-            }
-        }
     }
 }

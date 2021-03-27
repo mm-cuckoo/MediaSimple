@@ -12,25 +12,20 @@ import com.cfox.camera.camera.device.session.DeviceSession;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.utils.EsParams;
 
-import io.reactivex.subjects.PublishSubject;
+import io.reactivex.ObservableEmitter;
 
 public class PhotoCaptureCallback extends CameraCaptureSession.CaptureCallback {
 
-
-
-    private final PublishSubject<EsParams> CAPTURE_STATUS = PublishSubject.create();
-
     private CaptureRequest.Builder mCaptureBuilder;
     private DeviceSession mDeviceSession;
+    private ObservableEmitter<EsParams> mEmitter;
 
-
-    public PublishSubject<EsParams> getCaptureStateSubject() {
-        return CAPTURE_STATUS;
-    }
-
-    public void prepareCapture(DeviceSession deviceSession, CaptureRequest.Builder captureBuilder) {
+    public void prepareCapture(DeviceSession deviceSession,
+                               CaptureRequest.Builder captureBuilder,
+                               ObservableEmitter<EsParams> emitter) {
         this.mCaptureBuilder = captureBuilder;
         this.mDeviceSession = deviceSession;
+        this.mEmitter = emitter;
     }
 
     public void capture() {
@@ -39,6 +34,16 @@ public class PhotoCaptureCallback extends CameraCaptureSession.CaptureCallback {
         }
     }
 
+    @Override
+    public void onCaptureStarted(@NonNull CameraCaptureSession session,
+                                 @NonNull CaptureRequest request, long timestamp, long frameNumber) {
+        super.onCaptureStarted(session, request, timestamp, frameNumber);
+        EsLog.d("onCaptureStarted====>");
+        EsParams esParams = new EsParams();
+        esParams.put(EsParams.Key.CAPTURE_STATE, EsParams.Value.CAPTURE_STATE.CAPTURE_START);
+        mEmitter.onNext(esParams);
+
+    }
 
     @Override
     public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull
@@ -47,7 +52,7 @@ public class PhotoCaptureCallback extends CameraCaptureSession.CaptureCallback {
         EsLog.d("onCaptureCompleted====>");
         EsParams esParams = new EsParams();
         esParams.put(EsParams.Key.CAPTURE_STATE, EsParams.Value.CAPTURE_STATE.CAPTURE_COMPLETED);
-        CAPTURE_STATUS.onNext(esParams);
+        mEmitter.onNext(esParams);
     }
 
     @Override
@@ -56,11 +61,11 @@ public class PhotoCaptureCallback extends CameraCaptureSession.CaptureCallback {
         EsLog.d("onCaptureFailed====>");
         EsParams esParams = new EsParams();
         esParams.put(EsParams.Key.CAPTURE_STATE, EsParams.Value.CAPTURE_STATE.CAPTURE_FAIL);
-        CAPTURE_STATUS.onNext(esParams);
+        mEmitter.onNext(esParams);
     }
 
     private void sendStillPictureRequest() {
-        EsLog.d("sendStillPictureRequest===>11");
+        EsLog.d("sendStillPictureRequest===>");
         EsParams esParams = new EsParams();
         esParams.put(EsParams.Key.REQUEST_BUILDER, mCaptureBuilder);
         esParams.put(EsParams.Key.CAPTURE_CALLBACK, this);

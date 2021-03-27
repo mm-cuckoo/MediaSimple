@@ -10,10 +10,6 @@ public interface SessionManager {
 
     void init();
 
-    Observable<EsParams> captureStatus();
-
-    Observable<EsParams> previewStatus();
-
     Observable<EsParams> onOpenCamera(EsParams esParams);
 
     Observable<EsParams> onCreatePreviewSession(EsParams esParams) throws CameraAccessException;

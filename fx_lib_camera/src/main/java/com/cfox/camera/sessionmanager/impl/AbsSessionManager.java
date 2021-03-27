@@ -39,7 +39,7 @@ abstract class AbsSessionManager implements SessionManager {
     private Observable<EsParams> beforeOpenCamera(final EsParams esParams) {
         return Observable.create(new ObservableOnSubscribe<EsParams>() {
             @Override
-            public void subscribe(@NonNull ObservableEmitter<EsParams> emitter) throws Exception {
+            public void subscribe(@NonNull ObservableEmitter<EsParams> emitter) {
                 onBeforeOpenCamera(esParams);
                 emitter.onNext(esParams);
             }
@@ -56,15 +56,15 @@ abstract class AbsSessionManager implements SessionManager {
         return getCameraSession(esParams).onCreateCaptureSession(esParams);
     }
 
-    @Override
-    public Observable<EsParams> onPreviewRepeatingRequest(final EsParams param) {
-        return applyPreviewPlan(param).flatMap(new Function<EsParams, ObservableSource<EsParams>>() {
-            @Override
-            public ObservableSource<EsParams> apply(@NonNull EsParams esParams) {
-                return getCameraSession(esParams).onRepeatingRequest(esParams);
-            }
-        });
-    }
+//    @Override
+//    public Observable<EsParams> onPreviewRepeatingRequest(final EsParams param) {
+//        return applyPreviewPlan(param).flatMap(new Function<EsParams, ObservableSource<EsParams>>() {
+//            @Override
+//            public ObservableSource<EsParams> apply(@NonNull EsParams esParams) {
+//                return getCameraSession(esParams).onRepeatingRequest(esParams);
+//            }
+//        });
+//    }
 
     CaptureRequest.Builder createPreviewBuilder( List<Surface> surfaceList) {
         return createBuilder(CameraDevice.TEMPLATE_PREVIEW, surfaceList);
@@ -84,7 +84,7 @@ abstract class AbsSessionManager implements SessionManager {
         return captureBuilder;
     }
 
-    abstract Observable<EsParams> applyPreviewPlan(EsParams esParams);
+//    abstract Observable<EsParams> applyPreviewPlan(EsParams esParams);
 
     public abstract DeviceSession getCameraSession(EsParams esParams);
 }

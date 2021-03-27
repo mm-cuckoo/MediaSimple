@@ -1,5 +1,7 @@
 package com.cfox.camera.sessionmanager.impl;
 
+import android.hardware.camera2.CameraAccessException;
+
 import com.cfox.camera.camera.device.session.DeviceSession;
 import com.cfox.camera.camera.device.session.DeviceSessionManager;
 import com.cfox.camera.sessionmanager.VideoSessionManger;
@@ -25,16 +27,6 @@ public class VideoSessionMangerImpl extends AbsSessionManager implements VideoSe
     }
 
     @Override
-    public Observable<EsParams> captureStatus() {
-        return null;
-    }
-
-    @Override
-    public Observable<EsParams> previewStatus() {
-        return null;
-    }
-
-    @Override
     public DeviceSession getCameraSession(EsParams esParams) {
         if (mDeviceSession == null) {
             mDeviceSession = mCameraSessionManager.createSession();
@@ -47,15 +39,15 @@ public class VideoSessionMangerImpl extends AbsSessionManager implements VideoSe
         return null;
     }
 
+    @Override
+    public Observable<EsParams> onPreviewRepeatingRequest(EsParams esParams) throws CameraAccessException {
+        return null;
+    }
+
 
     @Override
     void onBeforeOpenCamera(EsParams esParams) {
         mCameraSessionManager.closeSession().subscribe();
-    }
-
-    @Override
-    Observable<EsParams> applyPreviewPlan(EsParams esParams) {
-        return null;
     }
 
     @Override

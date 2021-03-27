@@ -67,7 +67,7 @@ public class EsParams {
         String CAMERA_OPEN_FAIL = "camera_open_fail";
 
         interface CAPTURE_STATE {
-            int CAPTURE = 1;
+            int CAPTURE_START = 1;
             int CAPTURE_COMPLETED = 2;
             int CAPTURE_FAIL = 3;
         }

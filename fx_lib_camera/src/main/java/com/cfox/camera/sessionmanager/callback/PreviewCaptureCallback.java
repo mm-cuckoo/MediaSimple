@@ -12,10 +12,9 @@ import com.cfox.camera.camera.device.session.DeviceSession;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.utils.EsParams;
 
-import io.reactivex.subjects.PublishSubject;
+import io.reactivex.ObservableEmitter;
 
 public class PreviewCaptureCallback extends CameraCaptureSession.CaptureCallback {
-
 
     private static final int STATE_PREVIEW                      = 1;
     private static final int STATE_CAPTURE                      = 2;
@@ -23,23 +22,19 @@ public class PreviewCaptureCallback extends CameraCaptureSession.CaptureCallback
     private static final int STATE_WAITING_PRE_CAPTURE          = 4;
     private static final int STATE_WAITING_NON_PRE_CAPTURE      = 5;
 
-
-    private final PublishSubject<EsParams> PREVIEW_STATUS = PublishSubject.create();
-
     private int mState = 0;
     private int mAFState = -1;
     private boolean mFirstFrameCompleted = false;
     private CaptureRequest.Builder mPreviewBuilder;
     private DeviceSession mDeviceSession;
+    private ObservableEmitter<EsParams> mEmitter;
 
-
-    public PublishSubject<EsParams> getPreviewStateSubject() {
-        return PREVIEW_STATUS;
-    }
-
-    public void applyPreview(DeviceSession deviceSession, CaptureRequest.Builder previewBuilder) {
+    public void applyPreview(DeviceSession deviceSession,
+                             CaptureRequest.Builder previewBuilder,
+                             ObservableEmitter<EsParams> emitter) {
         this.mPreviewBuilder = previewBuilder;
         this.mDeviceSession = deviceSession;
+        this.mEmitter = emitter;
         mFirstFrameCompleted = false;
         stateChange(STATE_PREVIEW);
     }
@@ -68,7 +63,7 @@ public class PreviewCaptureCallback extends CameraCaptureSession.CaptureCallback
             mFirstFrameCompleted = true;
             EsParams esParams = new EsParams();
             esParams.put(EsParams.Key.FIRST_FRAME_CALLBACK, EsParams.Value.OK);
-            PREVIEW_STATUS.onNext(esParams);
+            mEmitter.onNext(esParams);
             EsLog.d("preview first frame call back");
         }
 
@@ -128,8 +123,8 @@ public class PreviewCaptureCallback extends CameraCaptureSession.CaptureCallback
 
     private void runCaptureAction() {
         EsParams esParams = new EsParams();
-        esParams.put(EsParams.Key.CAPTURE_STATE, EsParams.Value.CAPTURE_STATE.CAPTURE);
-        PREVIEW_STATUS.onNext(esParams);
+        esParams.put(EsParams.Key.CAPTURE_STATE, EsParams.Value.CAPTURE_STATE.CAPTURE_START);
+        mEmitter.onNext(esParams);
     }
 
     private void updateAFState(CaptureResult captureResult) {
@@ -138,7 +133,7 @@ public class PreviewCaptureCallback extends CameraCaptureSession.CaptureCallback
             mAFState = afState;
             EsParams esParams = new EsParams();
             esParams.put(EsParams.Key.AF_CHANGE_STATE, afState);
-            PREVIEW_STATUS.onNext(esParams);
+            mEmitter.onNext(esParams);
         }
 
     }
