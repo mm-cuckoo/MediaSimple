@@ -1,10 +1,9 @@
-package com.cfox.camera.camera.device.session;
+package com.cfox.camera.camera.session;
 
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
-import android.view.Surface;
 
 import androidx.annotation.NonNull;
 
@@ -22,13 +21,13 @@ import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 
-public class DeviceSessionImpl implements DeviceSession {
+public class CameraSessionImpl implements CameraSession {
     private final EsCameraDevice mEsCameraDevice;
     private CameraCaptureSession mCaptureSession;
     private CameraDevice mCameraDevice;
     private String mCameraId;
 
-    DeviceSessionImpl(EsCameraDevice cameraDevice) {
+    CameraSessionImpl(EsCameraDevice cameraDevice) {
         mEsCameraDevice = cameraDevice;
     }
 

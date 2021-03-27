@@ -8,7 +8,7 @@ import android.hardware.camera2.TotalCaptureResult;
 
 import androidx.annotation.NonNull;
 
-import com.cfox.camera.camera.device.session.DeviceSession;
+import com.cfox.camera.camera.session.CameraSession;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.utils.EsParams;
 
@@ -17,19 +17,19 @@ import io.reactivex.ObservableEmitter;
 public class PhotoCaptureCallback extends CameraCaptureSession.CaptureCallback {
 
     private CaptureRequest.Builder mCaptureBuilder;
-    private DeviceSession mDeviceSession;
+    private CameraSession mCameraSession;
     private ObservableEmitter<EsParams> mEmitter;
 
-    public void prepareCapture(DeviceSession deviceSession,
+    public void prepareCapture(CameraSession cameraSession,
                                CaptureRequest.Builder captureBuilder,
                                ObservableEmitter<EsParams> emitter) {
         this.mCaptureBuilder = captureBuilder;
-        this.mDeviceSession = deviceSession;
+        this.mCameraSession = cameraSession;
         this.mEmitter = emitter;
     }
 
     public void capture() {
-        if (mDeviceSession != null && mCaptureBuilder != null) {
+        if (mCameraSession != null && mCaptureBuilder != null) {
             sendStillPictureRequest();
         }
     }
@@ -70,8 +70,8 @@ public class PhotoCaptureCallback extends CameraCaptureSession.CaptureCallback {
         esParams.put(EsParams.Key.REQUEST_BUILDER, mCaptureBuilder);
         esParams.put(EsParams.Key.CAPTURE_CALLBACK, this);
         try {
-            mDeviceSession.stopRepeating();
-            mDeviceSession.capture(esParams);
+            mCameraSession.stopRepeating();
+            mCameraSession.capture(esParams);
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }

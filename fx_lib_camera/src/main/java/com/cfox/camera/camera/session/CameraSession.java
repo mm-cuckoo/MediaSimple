@@ -1,4 +1,4 @@
-package com.cfox.camera.camera.device.session;
+package com.cfox.camera.camera.session;
 
 
 import android.hardware.camera2.CameraAccessException;
@@ -8,7 +8,7 @@ import com.cfox.camera.utils.EsParams;
 
 import io.reactivex.Observable;
 
-public interface DeviceSession {
+public interface CameraSession {
 
     Observable<EsParams> onOpenCamera(EsParams esParams);
 

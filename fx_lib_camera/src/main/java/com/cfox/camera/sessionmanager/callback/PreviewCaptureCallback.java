@@ -8,8 +8,9 @@ import android.hardware.camera2.TotalCaptureResult;
 
 import androidx.annotation.NonNull;
 
-import com.cfox.camera.camera.device.session.DeviceSession;
+import com.cfox.camera.camera.session.CameraSession;
 import com.cfox.camera.log.EsLog;
+import com.cfox.camera.utils.CameraObserver;
 import com.cfox.camera.utils.EsParams;
 
 import io.reactivex.ObservableEmitter;
@@ -26,14 +27,14 @@ public class PreviewCaptureCallback extends CameraCaptureSession.CaptureCallback
     private int mAFState = -1;
     private boolean mFirstFrameCompleted = false;
     private CaptureRequest.Builder mPreviewBuilder;
-    private DeviceSession mDeviceSession;
+    private CameraSession mCameraSession;
     private ObservableEmitter<EsParams> mEmitter;
 
-    public void applyPreview(DeviceSession deviceSession,
+    public void applyPreview(CameraSession cameraSession,
                              CaptureRequest.Builder previewBuilder,
                              ObservableEmitter<EsParams> emitter) {
         this.mPreviewBuilder = previewBuilder;
-        this.mDeviceSession = deviceSession;
+        this.mCameraSession = cameraSession;
         this.mEmitter = emitter;
         mFirstFrameCompleted = false;
         stateChange(STATE_PREVIEW);
@@ -150,7 +151,7 @@ public class PreviewCaptureCallback extends CameraCaptureSession.CaptureCallback
         esParams.put(EsParams.Key.REQUEST_BUILDER, mPreviewBuilder);
         esParams.put(EsParams.Key.CAPTURE_CALLBACK, this);
         try {
-            mDeviceSession.capture(esParams);
+            mCameraSession.capture(esParams);
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
@@ -164,7 +165,7 @@ public class PreviewCaptureCallback extends CameraCaptureSession.CaptureCallback
         esParams.put(EsParams.Key.REQUEST_BUILDER, mPreviewBuilder);
         esParams.put(EsParams.Key.CAPTURE_CALLBACK, this);
         try {
-            mDeviceSession.capture(esParams);
+            mCameraSession.capture(esParams);
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
@@ -179,8 +180,8 @@ public class PreviewCaptureCallback extends CameraCaptureSession.CaptureCallback
         esParams.put(EsParams.Key.REQUEST_BUILDER, mPreviewBuilder);
         esParams.put(EsParams.Key.CAPTURE_CALLBACK, this);
         try {
-            mDeviceSession.onRepeatingRequest(esParams).subscribe();
-            mDeviceSession.capture(esParams);
+            mCameraSession.onRepeatingRequest(esParams).subscribe(new CameraObserver<EsParams>());
+            mCameraSession.capture(esParams);
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }

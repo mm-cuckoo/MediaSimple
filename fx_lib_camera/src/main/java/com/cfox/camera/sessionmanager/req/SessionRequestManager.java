@@ -112,19 +112,19 @@ public class SessionRequestManager {
             return;
         }
         switch (value) {
-            case EsParams.Value.FLASH_TYPE.ON:
+            case EsParams.Value.FLASH_STATE.ON:
                 apply(builder, CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH);
                 apply(builder, CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
                 break;
-            case EsParams.Value.FLASH_TYPE.OFF:
+            case EsParams.Value.FLASH_STATE.OFF:
                 apply(builder, CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
                 apply(builder, CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
                 break;
-            case EsParams.Value.FLASH_TYPE.AUTO:
+            case EsParams.Value.FLASH_STATE.AUTO:
                 apply(builder, CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
                 apply(builder, CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
                 break;
-            case EsParams.Value.FLASH_TYPE.TORCH:
+            case EsParams.Value.FLASH_STATE.TORCH:
                 apply(builder, CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
                 apply(builder, CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
                 break;

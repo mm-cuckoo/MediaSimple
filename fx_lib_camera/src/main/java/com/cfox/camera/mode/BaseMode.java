@@ -50,7 +50,7 @@ public abstract class BaseMode implements IMode {
     }
 
     @Override
-    public Observable<EsParams> requestCameraConfig(EsParams esParams) {
+    public Observable<EsParams> requestCameraRepeating(EsParams esParams) {
         return mSessionManager.onRepeatingRequest(esParams);
     }
 
@@ -58,16 +58,12 @@ public abstract class BaseMode implements IMode {
     public Observable<EsParams> requestStop(EsParams esParams) {
         onRequestStop();
         return mSessionManager.close(esParams).subscribeOn(
-                AndroidSchedulers.from(WorkerHandlerManager.getLooper(WorkerHandlerManager.Tag.T_TYPE_OTHER)));
+                AndroidSchedulers.from(WorkerHandlerManager.getLooper(WorkerHandlerManager.Tag.T_TYPE_CAMERA)));
     }
 
     public void onRequestStop() { }
 
     protected abstract Observable<EsParams> applySurface(EsParams esParams);
 
-//    @Override
-//    public Range<Integer> getEvRange(EsRequest request) {
-//        return mCameraSessionHelper.getEvRange(request);
-//    }
 }
 

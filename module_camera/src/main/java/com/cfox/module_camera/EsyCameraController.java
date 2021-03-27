@@ -2,16 +2,21 @@ package com.cfox.module_camera;
 
 
 import android.content.Context;
-import android.os.Environment;
+import android.graphics.ImageFormat;
 import android.util.Range;
 import android.util.Size;
 
 import com.cfox.camera.EsCameraManager;
+import com.cfox.camera.request.PreviewRequest;
 import com.cfox.camera.capture.Capture;
 import com.cfox.camera.capture.PhotoCapture;
+import com.cfox.camera.capture.PreviewStateListener;
+import com.cfox.camera.request.RepeatRequest;
 import com.cfox.camera.utils.EsParams;
+import com.cfox.module_camera.reader.CaptureImageReader;
+import com.cfox.module_camera.reader.PreviewImageReader;
 
-class EsyCameraController {
+class EsyCameraController implements PreviewStateListener {
     private final EsCameraManager mCameraManager;
     private Capture mCameraCapture;
 
@@ -30,80 +35,81 @@ class EsyCameraController {
 
     void backCamera(SurfaceProviderImpl helper) {
 
-        EsParams esParams = getRequest();
-        esParams.put(EsParams.Key.CAMERA_ID, EsParams.Value.CAMERA_ID.BACK);
-        esParams.put(EsParams.Key.CAMERA_FLASH_TYPE, EsParams.Value.FLASH_TYPE.OFF);
+        PreviewRequest.Builder builder = getRequest();
+        builder.openBackCamera()
+                .setSurfaceProvider(helper);
 
-        mCameraCapture.onStartPreview(esParams, helper);
+        mCameraCapture.onStartPreview(builder.builder(),this);
     }
 
     void fontCamera(SurfaceProviderImpl helper) {
-        EsParams esParams = getRequest();
-        esParams.put(EsParams.Key.CAMERA_ID, EsParams.Value.CAMERA_ID.FONT);
-        mCameraCapture.onStartPreview(esParams, helper);
+        PreviewRequest.Builder builder = getRequest();
+        builder.openFontCamera()
+                .setSurfaceProvider(helper);
+        mCameraCapture.onStartPreview(builder.builder(), this);
     }
 
 
     void stopCamera() {
-        EsParams esParams = new EsParams();
-        mCameraCapture.onStop(esParams);
+        mCameraCapture.onStop();
     }
 
 
-    private EsParams getRequest() {
-        EsParams esParams = new EsParams();
+    private PreviewRequest.Builder getRequest() {
+
         Size previewSize = new Size(1920, 1080);
-        esParams.put(EsParams.Key.PREVIEW_SIZE, previewSize);
         Size picSize = new Size(1920, 1080);
-        esParams.put(EsParams.Key.PIC_SIZE, picSize);
-        esParams.put(EsParams.Key.PIC_FILE_PATH, Environment.getExternalStorageDirectory().getAbsoluteFile().getPath());
-        return esParams;
+        return PreviewRequest.createBuilder()
+                .setPreviewSize(previewSize)
+                .setPictureSize(picSize, ImageFormat.JPEG)
+                .setFlash(EsParams.Value.FLASH_STATE.OFF)
+                .addImageReaderProvider(new PreviewImageReader())
+                .addImageReaderProvider(new CaptureImageReader());
     }
 
     void torchFlash() {
-        EsParams esParams = new EsParams();
-        esParams.put(EsParams.Key.CAMERA_FLASH_TYPE, EsParams.Value.FLASH_TYPE.TORCH);
-        mCameraCapture.onCameraConfig(esParams);
+        RepeatRequest.Builder builder = RepeatRequest.createBuilder();
+        builder.setFlash(EsParams.Value.FLASH_STATE.TORCH);
+        mCameraCapture.onCameraRepeating(builder.builder());
     }
 
     void autoFlash() {
-        EsParams esParams = new EsParams();
-        esParams.put(EsParams.Key.CAMERA_FLASH_TYPE, EsParams.Value.FLASH_TYPE.AUTO);
-        mCameraCapture.onCameraConfig(esParams);
+        RepeatRequest.Builder builder = RepeatRequest.createBuilder();
+        builder.setFlash(EsParams.Value.FLASH_STATE.AUTO);
+        mCameraCapture.onCameraRepeating(builder.builder());
     }
 
     void onFlash() {
-        EsParams esParams = new EsParams();
-        esParams.put(EsParams.Key.CAMERA_FLASH_TYPE, EsParams.Value.FLASH_TYPE.ON);
-        mCameraCapture.onCameraConfig(esParams);
+        RepeatRequest.Builder builder = RepeatRequest.createBuilder();
+        builder.setFlash(EsParams.Value.FLASH_STATE.ON);
+        mCameraCapture.onCameraRepeating(builder.builder());
     }
 
     void closeFlash() {
-        EsParams esParams = new EsParams();
-        esParams.put(EsParams.Key.CAMERA_FLASH_TYPE, EsParams.Value.FLASH_TYPE.OFF);
-        mCameraCapture.onCameraConfig(esParams);
+        RepeatRequest.Builder builder = RepeatRequest.createBuilder();
+        builder.setFlash(EsParams.Value.FLASH_STATE.OFF);
+        mCameraCapture.onCameraRepeating(builder.builder());
     }
 
     void setEv(int value) {
-        EsParams esParams = new EsParams();
-        esParams.put(EsParams.Key.EV_SIZE, value);
-        mCameraCapture.onCameraConfig(esParams);
+        RepeatRequest.Builder builder = RepeatRequest.createBuilder();
+        builder.setEv(value);
+        mCameraCapture.onCameraRepeating(builder.builder());
     }
     void setFocus(float value) {
         EsParams esParams = new EsParams();
-        mCameraCapture.onCameraConfig(esParams);
+        mCameraCapture.onCameraRepeating(esParams);
     }
 
     void setZoom(float value) {
-        EsParams esParams = new EsParams();
-        esParams.put(EsParams.Key.ZOOM_VALUE, value);
-        mCameraCapture.onCameraConfig(esParams);
+        RepeatRequest.Builder builder = RepeatRequest.createBuilder();
+        builder.setZoom(value);
+        mCameraCapture.onCameraRepeating(builder.builder());
     }
 
     void capture() {
         if (mCameraCapture instanceof PhotoCapture) {
-            EsParams esParams = new EsParams();
-            ((PhotoCapture) mCameraCapture).onCapture(esParams);
+            ((PhotoCapture) mCameraCapture).onCapture(null);
 
         }
     }

@@ -9,6 +9,7 @@ import android.hardware.camera2.CameraManager;
 import androidx.annotation.NonNull;
 
 import com.cfox.camera.log.EsLog;
+import com.cfox.camera.utils.CameraObserver;
 import com.cfox.camera.utils.EsParams;
 
 import java.util.Arrays;
@@ -69,7 +70,7 @@ public class EsCameraDeviceImpl implements EsCameraDevice {
                         @Override
                         public void onDisconnected(@NonNull CameraDevice camera) {
                             EsLog.d("onDisconnected: ");
-                            closeCameraDevice(camera.getId()).subscribe();
+                            closeCameraDevice(camera.getId()).subscribe(new CameraObserver<EsParams>());
                             EsParams esParams = new EsParams();
                             esParams.put(EsParams.Key.OPEN_CAMERA_STATUS, EsParams.Value.CAMERA_DISCONNECTED);
                             emitter.onNext(esParams);
@@ -79,7 +80,7 @@ public class EsCameraDeviceImpl implements EsCameraDevice {
                         @Override
                         public void onError(@NonNull CameraDevice camera, int error) {
                             EsLog.d("onError: code:" + error);
-                            closeCameraDevice(camera.getId()).subscribe();
+                            closeCameraDevice(camera.getId()).subscribe(new CameraObserver<EsParams>());
                             EsParams esParams = new EsParams();
                             esParams.put(EsParams.Key.OPEN_CAMERA_STATUS, EsParams.Value.CAMERA_OPEN_FAIL);
                             emitter.onNext(esParams);

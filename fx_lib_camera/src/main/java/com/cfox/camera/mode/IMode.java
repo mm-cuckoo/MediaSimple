@@ -13,6 +13,6 @@ public interface IMode {
 
     Observable<EsParams> requestStop(EsParams esParams);
 
-    Observable<EsParams> requestCameraConfig(EsParams esParams);
+    Observable<EsParams> requestCameraRepeating(EsParams esParams);
 
 }

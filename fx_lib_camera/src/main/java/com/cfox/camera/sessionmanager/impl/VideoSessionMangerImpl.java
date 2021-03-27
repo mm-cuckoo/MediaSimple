@@ -2,9 +2,10 @@ package com.cfox.camera.sessionmanager.impl;
 
 import android.hardware.camera2.CameraAccessException;
 
-import com.cfox.camera.camera.device.session.DeviceSession;
-import com.cfox.camera.camera.device.session.DeviceSessionManager;
+import com.cfox.camera.camera.session.CameraSession;
+import com.cfox.camera.camera.session.CameraSessionManager;
 import com.cfox.camera.sessionmanager.VideoSessionManger;
+import com.cfox.camera.utils.CameraObserver;
 import com.cfox.camera.utils.EsParams;
 
 import io.reactivex.Observable;
@@ -13,10 +14,10 @@ public class VideoSessionMangerImpl extends AbsSessionManager implements VideoSe
 
 
 
-    private DeviceSessionManager mCameraSessionManager;
-    private DeviceSession mDeviceSession;
+    private CameraSessionManager mCameraSessionManager;
+    private CameraSession mCameraSession;
 
-    public VideoSessionMangerImpl(DeviceSessionManager sessionManager) {
+    public VideoSessionMangerImpl(CameraSessionManager sessionManager) {
         mCameraSessionManager = sessionManager;
 
     }
@@ -27,11 +28,11 @@ public class VideoSessionMangerImpl extends AbsSessionManager implements VideoSe
     }
 
     @Override
-    public DeviceSession getCameraSession(EsParams esParams) {
-        if (mDeviceSession == null) {
-            mDeviceSession = mCameraSessionManager.createSession();
+    public CameraSession getCameraSession(EsParams esParams) {
+        if (mCameraSession == null) {
+            mCameraSession = mCameraSessionManager.createSession();
         }
-        return mDeviceSession;
+        return mCameraSession;
     }
 
     @Override
@@ -47,7 +48,7 @@ public class VideoSessionMangerImpl extends AbsSessionManager implements VideoSe
 
     @Override
     void onBeforeOpenCamera(EsParams esParams) {
-        mCameraSessionManager.closeSession().subscribe();
+        mCameraSessionManager.closeSession().subscribe(new CameraObserver<EsParams>());
     }
 
     @Override

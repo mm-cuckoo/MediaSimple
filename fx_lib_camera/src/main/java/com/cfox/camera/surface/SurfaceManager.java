@@ -9,12 +9,12 @@ import java.util.List;
 public class SurfaceManager {
 
     private final SurfaceProvider mSurfaceProvider;
-    private final List<Surface> mReaderSurface;
+    private final List<Surface> mCaptureSurface;
     private final List<Surface> mPreviewSurface;
 
     public SurfaceManager(SurfaceProvider surfaceProvider) {
         this.mSurfaceProvider = surfaceProvider;
-        this.mReaderSurface = new ArrayList<>();
+        this.mCaptureSurface = new ArrayList<>();
         this.mPreviewSurface = new ArrayList<>();
     }
 
@@ -29,7 +29,7 @@ public class SurfaceManager {
 
 
     public List<Surface> getTotalSurface() {
-        List<Surface> surfaceList = new ArrayList<>(mReaderSurface);
+        List<Surface> surfaceList = new ArrayList<>(mCaptureSurface);
         surfaceList.addAll(getPreviewSurface());
         return surfaceList;
     }
@@ -38,12 +38,12 @@ public class SurfaceManager {
         mPreviewSurface.add(surface);
     }
 
-    public void addReaderSurface(Surface surface) {
-        mReaderSurface.add(surface);
+    public void addCaptureSurface(Surface surface) {
+        mCaptureSurface.add(surface);
     }
 
     public List<Surface> getReaderSurface() {
-        return mReaderSurface;
+        return mCaptureSurface;
     }
 
     public void setAspectRatio(Size size) {

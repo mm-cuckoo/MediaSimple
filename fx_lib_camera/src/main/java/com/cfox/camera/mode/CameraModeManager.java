@@ -3,8 +3,8 @@ package com.cfox.camera.mode;
 import android.content.Context;
 import android.util.Log;
 
-import com.cfox.camera.camera.device.session.DeviceSessionManagerImpl;
-import com.cfox.camera.camera.device.session.DeviceSessionManager;
+import com.cfox.camera.camera.session.CameraSessionManagerImpl;
+import com.cfox.camera.camera.session.CameraSessionManager;
 import com.cfox.camera.sessionmanager.PhotoSessionManager;
 import com.cfox.camera.sessionmanager.VideoSessionManger;
 import com.cfox.camera.sessionmanager.impl.PhotoSessionManagerImpl;
@@ -45,7 +45,7 @@ public class CameraModeManager {
 
 
     private CameraModeManager(Context context) {
-        DeviceSessionManager sessionManager = DeviceSessionManagerImpl.getInstance(context);
+        CameraSessionManager sessionManager = CameraSessionManagerImpl.getInstance(context);
 
         PhotoSessionManager photoSessionManager = new PhotoSessionManagerImpl(sessionManager);
         mModuleMap.put(ModuleFlag.MODULE_PHOTO, new PhotoModeImpl(photoSessionManager));

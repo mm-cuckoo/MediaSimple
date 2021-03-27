@@ -5,12 +5,11 @@ import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
 import android.view.Surface;
 
-import com.cfox.camera.camera.device.session.DeviceSession;
+import com.cfox.camera.camera.session.CameraSession;
 import com.cfox.camera.sessionmanager.SessionManager;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.utils.EsParams;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.Observable;
@@ -56,16 +55,6 @@ abstract class AbsSessionManager implements SessionManager {
         return getCameraSession(esParams).onCreateCaptureSession(esParams);
     }
 
-//    @Override
-//    public Observable<EsParams> onPreviewRepeatingRequest(final EsParams param) {
-//        return applyPreviewPlan(param).flatMap(new Function<EsParams, ObservableSource<EsParams>>() {
-//            @Override
-//            public ObservableSource<EsParams> apply(@NonNull EsParams esParams) {
-//                return getCameraSession(esParams).onRepeatingRequest(esParams);
-//            }
-//        });
-//    }
-
     CaptureRequest.Builder createPreviewBuilder( List<Surface> surfaceList) {
         return createBuilder(CameraDevice.TEMPLATE_PREVIEW, surfaceList);
     }
@@ -84,7 +73,5 @@ abstract class AbsSessionManager implements SessionManager {
         return captureBuilder;
     }
 
-//    abstract Observable<EsParams> applyPreviewPlan(EsParams esParams);
-
-    public abstract DeviceSession getCameraSession(EsParams esParams);
+    public abstract CameraSession getCameraSession(EsParams esParams);
 }

@@ -1,9 +1,10 @@
-package com.cfox.camera.camera.device.session;
+package com.cfox.camera.camera.session;
 
 import android.content.Context;
 
 import com.cfox.camera.camera.device.EsCameraDeviceImpl;
 import com.cfox.camera.log.EsLog;
+import com.cfox.camera.utils.CameraObserver;
 import com.cfox.camera.utils.EsParams;
 
 import java.util.ArrayList;
@@ -16,21 +17,21 @@ import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.annotations.NonNull;
 
-public class DeviceSessionManagerImpl implements DeviceSessionManager {
+public class CameraSessionManagerImpl implements CameraSessionManager {
 
-    private static DeviceSessionManager mSessionManager;
+    private static CameraSessionManager mSessionManager;
     private final Context mContext;
-    private final Map<String, DeviceSession> mCameraSessionMap = new HashMap<>();
+    private final Map<String, CameraSession> mCameraSessionMap = new HashMap<>();
 
-    private DeviceSessionManagerImpl(Context context) {
+    private CameraSessionManagerImpl(Context context) {
         this.mContext = context.getApplicationContext();
     }
 
-    public static DeviceSessionManager getInstance(Context context) {
+    public static CameraSessionManager getInstance(Context context) {
         if (mSessionManager == null) {
-            synchronized (DeviceSessionManagerImpl.class) {
+            synchronized (CameraSessionManagerImpl.class) {
                 if (mSessionManager == null) {
-                    mSessionManager = new DeviceSessionManagerImpl(context);
+                    mSessionManager = new CameraSessionManagerImpl(context);
                 }
             }
         }
@@ -43,7 +44,7 @@ public class DeviceSessionManagerImpl implements DeviceSessionManager {
 
         List<Observable<EsParams>> closeSessionList = new ArrayList<>();
 
-        for (DeviceSession session : mCameraSessionMap.values()) {
+        for (CameraSession session : mCameraSessionMap.values()) {
             closeSessionList.add(session.onClose());
         }
 
@@ -62,20 +63,20 @@ public class DeviceSessionManagerImpl implements DeviceSessionManager {
     }
 
     @Override
-    public DeviceSession createSession() {
+    public CameraSession createSession() {
         return createSession(String.valueOf(mCameraSessionMap.size()));
     }
 
     @Override
-    public DeviceSession createSession(String sessionId) {
+    public CameraSession createSession(String sessionId) {
         EsLog.d("createSession: session id ：" + sessionId);
-        DeviceSession session;
+        CameraSession session;
         if (mCameraSessionMap.containsKey(sessionId)) {
             EsLog.e("session already has: session id ：" + sessionId);
             session = mCameraSessionMap.get(sessionId);
-            session.onClose().subscribe();
+            session.onClose().subscribe(new CameraObserver<EsParams>());
         }  else  {
-            session = new DeviceSessionImpl(EsCameraDeviceImpl.getsInstance(mContext));
+            session = new CameraSessionImpl(EsCameraDeviceImpl.getsInstance(mContext));
         }
         mCameraSessionMap.put(sessionId, session);
         return session;

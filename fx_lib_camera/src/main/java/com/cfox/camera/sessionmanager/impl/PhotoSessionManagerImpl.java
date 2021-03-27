@@ -6,10 +6,10 @@ import android.view.Surface;
 
 import androidx.annotation.NonNull;
 
-import com.cfox.camera.camera.device.session.DeviceSession;
+import com.cfox.camera.camera.session.CameraSession;
 import com.cfox.camera.camera.info.CameraInfoManager;
 import com.cfox.camera.camera.info.CameraInfoManagerImpl;
-import com.cfox.camera.camera.device.session.DeviceSessionManager;
+import com.cfox.camera.camera.session.CameraSessionManager;
 import com.cfox.camera.sessionmanager.PhotoSessionManager;
 import com.cfox.camera.sessionmanager.ZoomHelper;
 import com.cfox.camera.sessionmanager.callback.PhotoCaptureCallback;
@@ -17,6 +17,7 @@ import com.cfox.camera.sessionmanager.callback.PreviewCaptureCallback;
 import com.cfox.camera.sessionmanager.req.SessionRequestManager;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.surface.SurfaceManager;
+import com.cfox.camera.utils.CameraObserver;
 import com.cfox.camera.utils.EsParams;
 
 
@@ -27,26 +28,28 @@ import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.functions.Predicate;
 
-/**
- * 负责挣了并发送个camera session 动作
- */
 public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoSessionManager {
 
-    private final PreviewCaptureCallback PREVIEW_CAPTURE_CALLBACK = new PreviewCaptureCallback();
-    private final PhotoCaptureCallback PHOTO_CAPTURE_CALLBACK = new PhotoCaptureCallback();
-    private final CameraInfoManager CAMERA_INFO_MANAGER = CameraInfoManagerImpl.CAMERA_INFO_MANAGER;
-    private final SessionRequestManager SESSION_REQUEST_MANAGER = new SessionRequestManager(CAMERA_INFO_MANAGER);
-    private final ZoomHelper ZOOM_HELPER = new ZoomHelper(CAMERA_INFO_MANAGER);
+    private final PreviewCaptureCallback mPreviewCaptureCallback;
+    private final PhotoCaptureCallback mPhotoCaptureCallback;
+    private final CameraInfoManager mCameraInfoManager;
+    private final SessionRequestManager mSessionRequestManager;
+    private final ZoomHelper mZoomHelper;
+    private final CameraSessionManager mCameraSessionManager;
 
     private CaptureRequest.Builder mPreviewBuilder;
     private CaptureRequest.Builder mCaptureBuilder;
 
-    private DeviceSession mPhotoSession;
-    private final DeviceSessionManager mCameraSessionManager;
+    private CameraSession mPhotoSession;
     private SurfaceManager mSurfaceManager;
 
-    public PhotoSessionManagerImpl(DeviceSessionManager sessionManager) {
+    public PhotoSessionManagerImpl(CameraSessionManager sessionManager) {
         mCameraSessionManager = sessionManager;
+        mPreviewCaptureCallback = new PreviewCaptureCallback();
+        mPhotoCaptureCallback = new PhotoCaptureCallback();
+        mCameraInfoManager = CameraInfoManagerImpl.CAMERA_INFO_MANAGER;
+        mSessionRequestManager = new SessionRequestManager(mCameraInfoManager);
+        mZoomHelper = new ZoomHelper(mCameraInfoManager);
     }
 
     @Override
@@ -55,7 +58,7 @@ public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoS
     }
 
     @Override
-    public DeviceSession getCameraSession(EsParams esParams) {
+    public CameraSession getCameraSession(EsParams esParams) {
         if (mPhotoSession == null) {
             mPhotoSession = mCameraSessionManager.createSession();
         }
@@ -68,7 +71,7 @@ public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoS
         mPhotoSession = null;
         mPreviewBuilder = null;
         mCaptureBuilder = null;
-        mCameraSessionManager.closeSession().subscribe();
+        mCameraSessionManager.closeSession().subscribe(new CameraObserver<EsParams>());
 
     }
 
@@ -78,12 +81,12 @@ public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoS
             @Override
             public void subscribe(@NonNull ObservableEmitter<EsParams> emitter) {
                 mSurfaceManager = esParams.get(EsParams.Key.SURFACE_MANAGER);
-                PREVIEW_CAPTURE_CALLBACK.applyPreview(mPhotoSession, getPreviewBuilder(), emitter);
-                SESSION_REQUEST_MANAGER.applyPreviewRequest(getPreviewBuilder());
+                mPreviewCaptureCallback.applyPreview(mPhotoSession, getPreviewBuilder(), emitter);
+                mSessionRequestManager.applyPreviewRequest(getPreviewBuilder());
                 applyRequestMessage(getPreviewBuilder(), esParams);
                 esParams.put(EsParams.Key.REQUEST_BUILDER, getPreviewBuilder());
-                esParams.put(EsParams.Key.CAPTURE_CALLBACK, PREVIEW_CAPTURE_CALLBACK);
-                mPhotoSession.onRepeatingRequest(esParams).subscribe();
+                esParams.put(EsParams.Key.CAPTURE_CALLBACK, mPreviewCaptureCallback);
+                mPhotoSession.onRepeatingRequest(esParams).subscribe(new CameraObserver<EsParams>());
             }
         }).filter(new Predicate<EsParams>() {
             @Override
@@ -91,7 +94,7 @@ public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoS
                 // 如果 preview 发来的信息是开始捕获， 会被拦截并进行capture
                 Integer captureState = esParams.get(EsParams.Key.CAPTURE_STATE);
                 if (captureState != null && captureState == EsParams.Value.CAPTURE_STATE.CAPTURE_START) {
-                    PHOTO_CAPTURE_CALLBACK.capture();
+                    mPhotoCaptureCallback.capture();
                     return true;
                 }
                 return false;
@@ -103,15 +106,13 @@ public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoS
         // zoom
         Float zoomValue = esParams.get(EsParams.Key.ZOOM_VALUE);
         if (zoomValue != null) {
-            SESSION_REQUEST_MANAGER.applyZoomRect(builder, ZOOM_HELPER.getZoomRect(zoomValue));
+            mSessionRequestManager.applyZoomRect(builder, mZoomHelper.getZoomRect(zoomValue));
         }
 
         // flash
-        SESSION_REQUEST_MANAGER.applyFlashRequest(builder, esParams.get(EsParams.Key.CAMERA_FLASH_TYPE));
+        mSessionRequestManager.applyFlashRequest(builder, esParams.get(EsParams.Key.FLASH_STATE));
         // ev
-        SESSION_REQUEST_MANAGER.applyEvRange(builder, esParams.get(EsParams.Key.EV_SIZE));
-
-
+        mSessionRequestManager.applyEvRange(builder, esParams.get(EsParams.Key.EV_SIZE));
     }
 
     private CaptureRequest.Builder getPreviewBuilder() {
@@ -137,7 +138,7 @@ public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoS
         EsLog.d("onSendRepeatingRequest: req:" + esParams);
         applyRequestMessage(getPreviewBuilder(), esParams);
         esParams.put(EsParams.Key.REQUEST_BUILDER, mPreviewBuilder);
-        esParams.put(EsParams.Key.CAPTURE_CALLBACK, PREVIEW_CAPTURE_CALLBACK);
+        esParams.put(EsParams.Key.CAPTURE_CALLBACK, mPreviewCaptureCallback);
         return mPhotoSession.onRepeatingRequest(esParams);
     }
 
@@ -154,12 +155,12 @@ public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoS
             public void subscribe(@NonNull final ObservableEmitter<EsParams> emitter) {
                 CaptureRequest.Builder builder = getCaptureBuilder();
                 builder.set(CaptureRequest.JPEG_ORIENTATION, esParams.get(EsParams.Key.PIC_ORIENTATION, 0));
-                SESSION_REQUEST_MANAGER.applyAllRequest(builder);
-                PHOTO_CAPTURE_CALLBACK.prepareCapture(mPhotoSession, builder, emitter);
-                if (CAMERA_INFO_MANAGER.canTriggerAf()) {
-                    PREVIEW_CAPTURE_CALLBACK.capture();
+                mSessionRequestManager.applyAllRequest(builder);
+                mPhotoCaptureCallback.prepareCapture(mPhotoSession, builder, emitter);
+                if (mCameraInfoManager.canTriggerAf()) {
+                    mPreviewCaptureCallback.capture();
                 } else {
-                    PHOTO_CAPTURE_CALLBACK.capture();
+                    mPhotoCaptureCallback.capture();
                 }
             }
         }).filter(new Predicate<EsParams>() {
@@ -169,7 +170,7 @@ public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoS
                 if (captureState != null
                         && (captureState == EsParams.Value.CAPTURE_STATE.CAPTURE_FAIL
                         || captureState == EsParams.Value.CAPTURE_STATE.CAPTURE_COMPLETED)) {
-                    PREVIEW_CAPTURE_CALLBACK.resetPreviewState();
+                    mPreviewCaptureCallback.resetPreviewState();
                 }
                 return false;
             }

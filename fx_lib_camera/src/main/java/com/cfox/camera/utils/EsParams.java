@@ -1,15 +1,16 @@
 package com.cfox.camera.utils;
 
-import android.graphics.Rect;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
 import android.util.Size;
 
 import com.cfox.camera.BuildConfig;
+import com.cfox.camera.imagereader.ImageReaderProvider;
 import com.cfox.camera.surface.SurfaceManager;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class EsParams {
@@ -55,7 +56,7 @@ public class EsParams {
             String BACK = "0";
         }
 
-        interface FLASH_TYPE {
+        interface FLASH_STATE {
             int TORCH       = 1;
             int OFF         = 2;
             int AUTO        = 3;
@@ -79,6 +80,8 @@ public class EsParams {
 
         public static final EsParams.Key<SurfaceManager> SURFACE_MANAGER = new EsParams.Key<>("surface_manager");
 
+        public static final EsParams.Key<List<ImageReaderProvider>> IMAGE_READERS = new EsParams.Key<>("image_readers");
+
         public static final EsParams.Key<String> CAMERA_ID = new EsParams.Key<>("camera_id");
         public static final EsParams.Key<CameraDevice> CAMERA_DEVICE = new EsParams.Key<>("camera_device");
 
@@ -99,7 +102,7 @@ public class EsParams {
 
         public static final EsParams.Key<String> FIRST_FRAME_CALLBACK = new EsParams.Key<>("first_frame_callback");
         public static final EsParams.Key<CameraCaptureSession.CaptureCallback> CAPTURE_CALLBACK = new EsParams.Key<>("capture_callback");
-        public static final EsParams.Key<Integer> CAMERA_FLASH_TYPE = new EsParams.Key<>("camera_flash_value");
+        public static final EsParams.Key<Integer> FLASH_STATE = new EsParams.Key<>("camera_flash_value");
         public static final EsParams.Key<Integer> EV_SIZE = new EsParams.Key<>("ev_size");
 
         public final String NAME;
