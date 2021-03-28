@@ -2,7 +2,7 @@ package com.cfox.camera.capture.business;
 
 import android.util.Size;
 
-import com.cfox.camera.IConfig;
+import com.cfox.camera.ConfigStrategy;
 import com.cfox.camera.IConfigWrapper;
 
 public abstract class BaseBusiness implements Business {
@@ -27,7 +27,7 @@ public abstract class BaseBusiness implements Business {
         return mConfigWrapper.getConfig().getPictureOrientation(cameraSensorOrientation);
     }
 
-    protected IConfig getConfig() {
+    protected ConfigStrategy getConfig() {
         return mConfigWrapper.getConfig();
     }
 }

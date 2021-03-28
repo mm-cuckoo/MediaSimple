@@ -22,7 +22,6 @@ public class CameraMainFragment extends BaseFragment implements PreviewStateList
     private static final String TAG = "CameraMainFragment";
     private AutoFitTextureView mPreviewView;
     private SurfaceProviderImpl mSurfaceHelperImpl;
-    private AutoFitTextureView mPreviewView2;
     private EsyCameraController mCameraController;
 
     @Override
@@ -42,7 +41,6 @@ public class CameraMainFragment extends BaseFragment implements PreviewStateList
         super.onViewCreated(view, savedInstanceState);
 
         mPreviewView = view.findViewById(R.id.preview_view);
-        mPreviewView2 = view.findViewById(R.id.preview_view_2);
         view.findViewById(R.id.btn_torch_flash).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -90,7 +88,6 @@ public class CameraMainFragment extends BaseFragment implements PreviewStateList
         view.findViewById(R.id.btn_photo).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mPreviewView2.setVisibility(View.GONE);
                 mCameraController.photoModule();
                 mSurfaceHelperImpl = new SurfaceProviderImpl(mPreviewView);
                 mCameraController.backCamera(mSurfaceHelperImpl, CameraMainFragment.this);
@@ -100,7 +97,6 @@ public class CameraMainFragment extends BaseFragment implements PreviewStateList
         view.findViewById(R.id.btn_video).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mPreviewView2.setVisibility(View.GONE);
                 mCameraController.videoModule();
                 mSurfaceHelperImpl = new SurfaceProviderImpl(mPreviewView);
                 mCameraController.backCamera(mSurfaceHelperImpl, CameraMainFragment.this);

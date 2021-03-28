@@ -76,10 +76,6 @@ public class SessionRequestManager {
         builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CaptureRequest.CONTROL_AF_TRIGGER_IDLE);
     }
 
-    public void getStillPictureRequest(CaptureRequest.Builder builder, int rotation) {
-        builder.set(CaptureRequest.JPEG_ORIENTATION, rotation);
-    }
-
     public void getFocusDistanceRequest(CaptureRequest.Builder builder, float distance) {
         int afMode = mCameraHelper.getValidAFMode(CaptureRequest.CONTROL_AF_MODE_OFF);
         // preview

@@ -158,7 +158,8 @@ public class CameraInfoManagerImpl implements CameraInfoManager {
         return getCharacteristics().get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
     }
 
-    private CameraCharacteristics getCharacteristics() {
+    @Override
+    public CameraCharacteristics getCharacteristics() {
         return mCameraInfo.getCharacteristics();
     }
 }

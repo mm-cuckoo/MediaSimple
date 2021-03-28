@@ -1,8 +1,8 @@
 package com.cfox.camera.capture.impl;
 
 
-import android.graphics.ImageFormat;
 import android.hardware.camera2.CaptureResult;
+import android.util.Pair;
 import android.util.Range;
 import android.util.Size;
 
@@ -21,7 +21,6 @@ import com.cfox.camera.capture.business.Business;
 import com.cfox.camera.capture.business.impl.PhotoBusinessImpl;
 import com.cfox.camera.request.RepeatRequest;
 import com.cfox.camera.surface.SurfaceManager;
-import com.cfox.camera.surface.SurfaceProvider;
 import com.cfox.camera.utils.CameraObserver;
 import com.cfox.camera.utils.EsParams;
 
@@ -40,9 +39,9 @@ public class PhotoCaptureImpl implements PhotoCapture {
     }
 
     @Override
-    public void onStartPreview(@NonNull PreviewRequest request, PreviewStateListener listener) {
+    public void onStartPreview(@NonNull PreviewRequest request, final PreviewStateListener listener) {
         SurfaceManager surfaceManager = new SurfaceManager(request.getSurfaceProvider());
-        EsParams esParams = new EsParams();
+        final EsParams esParams = new EsParams();
         esParams.put(EsParams.Key.SURFACE_MANAGER, surfaceManager);
         esParams.put(EsParams.Key.CAMERA_ID, request.getCameraId());
         esParams.put(EsParams.Key.FLASH_STATE, request.getFlashState());
@@ -70,13 +69,15 @@ public class PhotoCaptureImpl implements PhotoCapture {
             @Override
             public void onNext(@NonNull EsParams resultParams) {
                 EsLog.d("onNext: .requestPreview...." + resultParams);
-
-
+                Integer afState = resultParams.get(EsParams.Key.AF_STATE);
+                if (afState != null && listener != null) {
+                    updateAFState(afState, listener);
+                }
             }
         });
     }
 
-    void updateAFState(int state, PreviewStateListener listener) {
+    private void updateAFState(int state, PreviewStateListener listener) {
         switch (state) {
             case CaptureResult.CONTROL_AF_STATE_ACTIVE_SCAN:
                 listener.startFocus();
@@ -100,14 +101,7 @@ public class PhotoCaptureImpl implements PhotoCapture {
 
     @Override
     public void onCameraRepeating(@NonNull EsParams esParams) {
-
-        mPhotoMode.requestCameraRepeating(esParams).subscribe(new CameraObserver<EsParams>(){
-            @Override
-            public void onNext(@NonNull EsParams resultParams) {
-                EsLog.d("onNext: .requestCameraConfig....");
-
-            }
-        });
+        mPhotoMode.requestCameraRepeating(esParams).subscribe(new CameraObserver<EsParams>());
     }
 
     @Override
@@ -126,6 +120,11 @@ public class PhotoCaptureImpl implements PhotoCapture {
         Integer ev = request.getEv();
         if (ev != null) {
             esParams.put(EsParams.Key.EV_SIZE, ev);
+        }
+
+        Pair<Float, Float> afTouchXy = request.getAfTouchXY();
+        if (afTouchXy != null) {
+            esParams.put(EsParams.Key.AF_TRIGGER, afTouchXy);
         }
 
         mPhotoMode.requestCameraRepeating(esParams).subscribe(new CameraObserver<EsParams>());

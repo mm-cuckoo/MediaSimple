@@ -3,6 +3,7 @@ package com.cfox.camera.utils;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
+import android.util.Pair;
 import android.util.Size;
 
 import com.cfox.camera.BuildConfig;
@@ -90,6 +91,7 @@ public class EsParams {
         public static final EsParams.Key<Integer> PIC_ORIENTATION = new EsParams.Key<>("pic_orientation");
         public static final EsParams.Key<Size> PREVIEW_SIZE = new EsParams.Key<>("preview_size");
         public static final EsParams.Key<Integer> AF_STATE = new EsParams.Key<>("af_state");
+        public static final EsParams.Key<Pair<Float, Float>> AF_TRIGGER = new EsParams.Key<>("af_trigger");
         public static final EsParams.Key<Integer> CAPTURE_STATE = new EsParams.Key<>("capture_state");
         public static final EsParams.Key<String> PREVIEW_FIRST_FRAME = new EsParams.Key<>("preview_first_frame");
         public static final EsParams.Key<CameraCaptureSession.CaptureCallback> CAPTURE_CALLBACK = new EsParams.Key<>("capture_callback");

@@ -2,6 +2,7 @@ package com.cfox.camera.sessionmanager.impl;
 
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
+import android.util.Size;
 import android.view.Surface;
 
 import androidx.annotation.NonNull;
@@ -10,6 +11,7 @@ import com.cfox.camera.camera.session.CameraSession;
 import com.cfox.camera.camera.info.CameraInfoManager;
 import com.cfox.camera.camera.info.CameraInfoManagerImpl;
 import com.cfox.camera.camera.session.CameraSessionManager;
+import com.cfox.camera.sessionmanager.FocusHelper;
 import com.cfox.camera.sessionmanager.PhotoSessionManager;
 import com.cfox.camera.sessionmanager.ZoomHelper;
 import com.cfox.camera.sessionmanager.callback.PhotoCaptureCallback;
@@ -34,8 +36,9 @@ public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoS
     private final PhotoCaptureCallback mPhotoCaptureCallback;
     private final CameraInfoManager mCameraInfoManager;
     private final SessionRequestManager mSessionRequestManager;
-    private final ZoomHelper mZoomHelper;
     private final CameraSessionManager mCameraSessionManager;
+    private final ZoomHelper mZoomHelper;
+    private final FocusHelper mFocusHelper;
 
     private CaptureRequest.Builder mPreviewBuilder;
     private CaptureRequest.Builder mCaptureBuilder;
@@ -50,6 +53,7 @@ public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoS
         mCameraInfoManager = CameraInfoManagerImpl.CAMERA_INFO_MANAGER;
         mSessionRequestManager = new SessionRequestManager(mCameraInfoManager);
         mZoomHelper = new ZoomHelper(mCameraInfoManager);
+        mFocusHelper = new FocusHelper(mCameraInfoManager);
     }
 
     @Override
@@ -71,6 +75,7 @@ public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoS
         mPhotoSession = null;
         mPreviewBuilder = null;
         mCaptureBuilder = null;
+        mSessionRequestManager.resetApply();
         mCameraSessionManager.closeSession().subscribe(new CameraObserver<EsParams>());
 
     }
@@ -81,6 +86,7 @@ public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoS
             @Override
             public void subscribe(@NonNull ObservableEmitter<EsParams> emitter) {
                 mSurfaceManager = esParams.get(EsParams.Key.SURFACE_MANAGER);
+                mFocusHelper.init(esParams.get(EsParams.Key.PREVIEW_SIZE));
                 mPreviewCaptureCallback.applyPreview(mPhotoSession, getPreviewBuilder(), emitter);
                 mSessionRequestManager.applyPreviewRequest(getPreviewBuilder());
                 applyRequestMessage(getPreviewBuilder(), esParams);

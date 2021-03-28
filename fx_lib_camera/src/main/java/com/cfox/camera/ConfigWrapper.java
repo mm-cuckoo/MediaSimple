@@ -2,17 +2,17 @@ package com.cfox.camera;
 
 public class ConfigWrapper implements IConfigWrapper {
 
-    private IConfig mConfig = new DefaultConfig();
+    private ConfigStrategy mConfig = new DefaultConfigStrategy();
 
 
-    public ConfigWrapper(IConfig config) {
+    public ConfigWrapper(ConfigStrategy config) {
         if (config != null) {
             mConfig = config;
         }
     }
 
     @Override
-    public IConfig getConfig() {
+    public ConfigStrategy getConfig() {
         return mConfig;
     }
 }

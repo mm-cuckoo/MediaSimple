@@ -1,6 +1,7 @@
 package com.cfox.camera.camera.info;
 
 import android.graphics.Rect;
+import android.hardware.camera2.CameraCharacteristics;
 import android.util.Range;
 import android.util.Size;
 
@@ -42,5 +43,7 @@ public interface CameraInfoManager {
     float getMaxZoom();
 
     Rect getActiveArraySize();
+
+    CameraCharacteristics getCharacteristics();
 
 }

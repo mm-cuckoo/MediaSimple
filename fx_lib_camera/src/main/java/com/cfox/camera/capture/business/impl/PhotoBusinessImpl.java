@@ -12,6 +12,6 @@ public class PhotoBusinessImpl extends BaseBusiness {
 
     @Override
     public Size getPreviewSize(Size size, Size[] supportSizes) {
-        return getConfig().getPhotoPreviewSize(size, supportSizes);
+        return getConfig().getPreviewSize(size, supportSizes);
     }
 }

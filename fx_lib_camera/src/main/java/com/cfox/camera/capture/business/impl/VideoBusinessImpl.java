@@ -12,6 +12,6 @@ public class VideoBusinessImpl extends BaseBusiness {
 
     @Override
     public Size getPreviewSize(Size size, Size[] supportSizes) {
-        return getConfig().getVideoPreviewSize(size, supportSizes);
+        return getConfig().getPreviewSize(size, supportSizes);
     }
 }

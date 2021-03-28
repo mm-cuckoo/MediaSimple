@@ -18,7 +18,7 @@ public class EsCameraManager implements IEsCameraManager {
         this(context, null);
     }
 
-    public EsCameraManager(Context context, IConfig config) {
+    public EsCameraManager(Context context, ConfigStrategy config) {
         mConfigWrapper = new ConfigWrapper(config);
         mCameraModule = CameraModeManager.getInstance(context.getApplicationContext());
     }
