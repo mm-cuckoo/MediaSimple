@@ -42,7 +42,7 @@ public class PhotoModeImpl extends BaseMode implements PhotoMode {
             @Override
             public void subscribe(@NonNull ObservableEmitter<EsParams> emitter) {
                 SurfaceManager manager = esParams.get(EsParams.Key.SURFACE_MANAGER);
-                List<ImageReaderProvider> imageReaderProviders = esParams.get(EsParams.Key.IMAGE_READERS);
+                List<ImageReaderProvider> imageReaderProviders = esParams.get(EsParams.Key.IMAGE_READER_PROVIDERS);
                 if (manager.isAvailable()) {
                     for (ImageReaderProvider provider : imageReaderProviders) {
                         if (provider.getType() == ImageReaderProvider.TYPE.PREVIEW) {

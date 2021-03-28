@@ -19,7 +19,7 @@ public class RepeatRequest {
         return mEv;
     }
 
-    public int getFlashState() {
+    public Integer getFlashState() {
         return mFlashState;
     }
 

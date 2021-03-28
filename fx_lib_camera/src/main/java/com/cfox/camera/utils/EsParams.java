@@ -46,6 +46,7 @@ public class EsParams {
             for (Map.Entry<Key<?>, Object> entry : mMapObject.entrySet()) {
                 buffer.append("== ").append(entry.getKey().NAME).append(":").append(entry.getValue()).append("\n");
             }
+            buffer.deleteCharAt(buffer.length() -1);
             result = buffer.toString();
         }
         return result;
@@ -79,28 +80,18 @@ public class EsParams {
 
 
         public static final EsParams.Key<SurfaceManager> SURFACE_MANAGER = new EsParams.Key<>("surface_manager");
-
-        public static final EsParams.Key<List<ImageReaderProvider>> IMAGE_READERS = new EsParams.Key<>("image_readers");
-
+        public static final EsParams.Key<List<ImageReaderProvider>> IMAGE_READER_PROVIDERS = new EsParams.Key<>("image_reader_providers");
         public static final EsParams.Key<String> CAMERA_ID = new EsParams.Key<>("camera_id");
         public static final EsParams.Key<CameraDevice> CAMERA_DEVICE = new EsParams.Key<>("camera_device");
-
         public static final EsParams.Key<Float> ZOOM_VALUE = new EsParams.Key<>("zoom_value");
-
-        public static final EsParams.Key<String> OPEN_CAMERA_STATUS = new EsParams.Key<>("open_camera_status");
+        public static final EsParams.Key<String> OPEN_CAMERA_STATE = new EsParams.Key<>("open_camera_state");
         public static final EsParams.Key<CaptureRequest.Builder> REQUEST_BUILDER = new EsParams.Key<>("request_builder");
-
-
         public static final EsParams.Key<Size> PIC_SIZE = new EsParams.Key<>("pic_size");
         public static final EsParams.Key<Integer> PIC_ORIENTATION = new EsParams.Key<>("pic_orientation");
-        public static final EsParams.Key<String> PIC_FILE_PATH = new EsParams.Key<>("pic_file_path");
-        public static final EsParams.Key<Integer> IMAGE_FORMAT = new EsParams.Key<>("image_format");
-
         public static final EsParams.Key<Size> PREVIEW_SIZE = new EsParams.Key<>("preview_size");
-        public static final EsParams.Key<Integer> AF_CHANGE_STATE = new EsParams.Key<>("af_change_state");
+        public static final EsParams.Key<Integer> AF_STATE = new EsParams.Key<>("af_state");
         public static final EsParams.Key<Integer> CAPTURE_STATE = new EsParams.Key<>("capture_state");
-
-        public static final EsParams.Key<String> FIRST_FRAME_CALLBACK = new EsParams.Key<>("first_frame_callback");
+        public static final EsParams.Key<String> PREVIEW_FIRST_FRAME = new EsParams.Key<>("preview_first_frame");
         public static final EsParams.Key<CameraCaptureSession.CaptureCallback> CAPTURE_CALLBACK = new EsParams.Key<>("capture_callback");
         public static final EsParams.Key<Integer> FLASH_STATE = new EsParams.Key<>("camera_flash_value");
         public static final EsParams.Key<Integer> EV_SIZE = new EsParams.Key<>("ev_size");

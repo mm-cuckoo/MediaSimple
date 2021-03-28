@@ -10,6 +10,8 @@ import com.cfox.camera.request.RepeatRequest;
 import com.cfox.camera.surface.SurfaceProvider;
 import com.cfox.camera.utils.EsParams;
 
+import io.reactivex.annotations.NonNull;
+
 public class VideoCaptureImpl implements VideoCapture {
     private final VideoMode mVideoMode;
 
@@ -18,22 +20,17 @@ public class VideoCaptureImpl implements VideoCapture {
     }
 
     @Override
-    public void onStartPreview(EsParams esParams, SurfaceProvider surfaceProvider) {
-        mVideoMode.requestPreview(esParams);
-    }
-
-    @Override
-    public void onStartPreview(PreviewRequest request, PreviewStateListener listener) {
+    public void onStartPreview(@NonNull PreviewRequest request, PreviewStateListener listener) {
 
     }
 
     @Override
-    public void onCameraRepeating(EsParams esParams) {
+    public void onCameraRepeating(@NonNull EsParams esParams) {
         mVideoMode.requestCameraRepeating(esParams);
     }
 
     @Override
-    public void onCameraRepeating(RepeatRequest request) {
+    public void onCameraRepeating(@NonNull RepeatRequest request) {
 
     }
 

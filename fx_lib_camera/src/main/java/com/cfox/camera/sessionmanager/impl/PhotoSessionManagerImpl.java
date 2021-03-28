@@ -95,9 +95,9 @@ public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoS
                 Integer captureState = esParams.get(EsParams.Key.CAPTURE_STATE);
                 if (captureState != null && captureState == EsParams.Value.CAPTURE_STATE.CAPTURE_START) {
                     mPhotoCaptureCallback.capture();
-                    return true;
+                    return false;
                 }
-                return false;
+                return true;
             }
         });
     }
@@ -172,7 +172,7 @@ public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoS
                         || captureState == EsParams.Value.CAPTURE_STATE.CAPTURE_COMPLETED)) {
                     mPreviewCaptureCallback.resetPreviewState();
                 }
-                return false;
+                return true;
             }
         });
     }

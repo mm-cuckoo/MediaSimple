@@ -16,7 +16,7 @@ import com.cfox.camera.utils.EsParams;
 import com.cfox.module_camera.reader.CaptureImageReader;
 import com.cfox.module_camera.reader.PreviewImageReader;
 
-class EsyCameraController implements PreviewStateListener {
+class EsyCameraController {
     private final EsCameraManager mCameraManager;
     private Capture mCameraCapture;
 
@@ -33,20 +33,20 @@ class EsyCameraController implements PreviewStateListener {
         mCameraCapture = mCameraManager.videoModule();
     }
 
-    void backCamera(SurfaceProviderImpl helper) {
+    void backCamera(SurfaceProviderImpl helper, PreviewStateListener listener) {
 
         PreviewRequest.Builder builder = getRequest();
         builder.openBackCamera()
                 .setSurfaceProvider(helper);
 
-        mCameraCapture.onStartPreview(builder.builder(),this);
+        mCameraCapture.onStartPreview(builder.builder(),listener);
     }
 
-    void fontCamera(SurfaceProviderImpl helper) {
+    void fontCamera(SurfaceProviderImpl helper, PreviewStateListener listener) {
         PreviewRequest.Builder builder = getRequest();
         builder.openFontCamera()
                 .setSurfaceProvider(helper);
-        mCameraCapture.onStartPreview(builder.builder(), this);
+        mCameraCapture.onStartPreview(builder.builder(), listener);
     }
 
 
@@ -63,7 +63,7 @@ class EsyCameraController implements PreviewStateListener {
                 .setPreviewSize(previewSize)
                 .setPictureSize(picSize, ImageFormat.JPEG)
                 .setFlash(EsParams.Value.FLASH_STATE.OFF)
-                .addImageReaderProvider(new PreviewImageReader())
+//                .addImageReaderProvider(new PreviewImageReader())
                 .addImageReaderProvider(new CaptureImageReader());
     }
 

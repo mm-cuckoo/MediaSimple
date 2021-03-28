@@ -62,7 +62,7 @@ public class EsCameraDeviceImpl implements EsCameraDevice {
                             mDeviceMap.put(camera.getId(), camera);
                             EsLog.d( "camera device opened....camera id: "  + camera.getId());
                             esParams.put(EsParams.Key.CAMERA_DEVICE, camera);
-                            esParams.put(EsParams.Key.OPEN_CAMERA_STATUS, EsParams.Value.CAMERA_OPEN_SUCCESS);
+                            esParams.put(EsParams.Key.OPEN_CAMERA_STATE, EsParams.Value.CAMERA_OPEN_SUCCESS);
                             emitter.onNext(esParams);
                             emitter.onComplete();
                         }
@@ -72,7 +72,7 @@ public class EsCameraDeviceImpl implements EsCameraDevice {
                             EsLog.d("onDisconnected: ");
                             closeCameraDevice(camera.getId()).subscribe(new CameraObserver<EsParams>());
                             EsParams esParams = new EsParams();
-                            esParams.put(EsParams.Key.OPEN_CAMERA_STATUS, EsParams.Value.CAMERA_DISCONNECTED);
+                            esParams.put(EsParams.Key.OPEN_CAMERA_STATE, EsParams.Value.CAMERA_DISCONNECTED);
                             emitter.onNext(esParams);
                             emitter.onComplete();
                         }
@@ -82,7 +82,7 @@ public class EsCameraDeviceImpl implements EsCameraDevice {
                             EsLog.d("onError: code:" + error);
                             closeCameraDevice(camera.getId()).subscribe(new CameraObserver<EsParams>());
                             EsParams esParams = new EsParams();
-                            esParams.put(EsParams.Key.OPEN_CAMERA_STATUS, EsParams.Value.CAMERA_OPEN_FAIL);
+                            esParams.put(EsParams.Key.OPEN_CAMERA_STATE, EsParams.Value.CAMERA_OPEN_FAIL);
                             emitter.onNext(esParams);
                             emitter.onError(new Throwable("open camera error Code:" + error));
                             emitter.onComplete();
@@ -90,7 +90,7 @@ public class EsCameraDeviceImpl implements EsCameraDevice {
                     }, null);
                 } catch (CameraAccessException | InterruptedException e) {
                     EsParams esParams = new EsParams();
-                    esParams.put(EsParams.Key.OPEN_CAMERA_STATUS, EsParams.Value.CAMERA_OPEN_FAIL);
+                    esParams.put(EsParams.Key.OPEN_CAMERA_STATE, EsParams.Value.CAMERA_OPEN_FAIL);
                     emitter.onNext(esParams);
                     emitter.onError(new Throwable("open camera error Code:" + Arrays.toString(e.getStackTrace())));
                 } finally {

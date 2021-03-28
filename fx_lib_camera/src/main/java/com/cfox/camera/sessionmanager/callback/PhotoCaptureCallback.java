@@ -20,18 +20,16 @@ public class PhotoCaptureCallback extends CameraCaptureSession.CaptureCallback {
     private CameraSession mCameraSession;
     private ObservableEmitter<EsParams> mEmitter;
 
-    public void prepareCapture(CameraSession cameraSession,
-                               CaptureRequest.Builder captureBuilder,
-                               ObservableEmitter<EsParams> emitter) {
+    public void prepareCapture(@NonNull CameraSession cameraSession,
+                               @NonNull CaptureRequest.Builder captureBuilder,
+                               @NonNull ObservableEmitter<EsParams> emitter) {
         this.mCaptureBuilder = captureBuilder;
         this.mCameraSession = cameraSession;
         this.mEmitter = emitter;
     }
 
     public void capture() {
-        if (mCameraSession != null && mCaptureBuilder != null) {
-            sendStillPictureRequest();
-        }
+        sendStillPictureRequest();
     }
 
     @Override

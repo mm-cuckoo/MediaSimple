@@ -2,6 +2,7 @@ package com.cfox.camera.capture.impl;
 
 
 import android.graphics.ImageFormat;
+import android.hardware.camera2.CaptureResult;
 import android.util.Range;
 import android.util.Size;
 
@@ -39,44 +40,13 @@ public class PhotoCaptureImpl implements PhotoCapture {
     }
 
     @Override
-    public void onStartPreview(EsParams esParams, SurfaceProvider surfaceProvider) {
-        SurfaceManager surfaceManager = new SurfaceManager(surfaceProvider);
-        esParams.put(EsParams.Key.SURFACE_MANAGER, surfaceManager);
-        // 切换Camera 信息管理中的 Camera 信息， 如前置camera  或 后置Camera
-        String cameraId = esParams.get(EsParams.Key.CAMERA_ID);
-        CameraInfo cameraInfo = CameraInfoHelper.getInstance().getCameraInfo(cameraId);
-        mCameraInfoManager.initCameraInfo(cameraInfo);
-
-        // 设置预览大小
-        Size previewSizeForReq = esParams.get(EsParams.Key.PREVIEW_SIZE);
-        Size previewSize = mBusiness.getPreviewSize(previewSizeForReq, mCameraInfoManager.getPreviewSize(surfaceManager.getPreviewSurfaceClass()));
-        surfaceManager.setAspectRatio(previewSize);
-
-        // 设置图片大小
-        Size pictureSizeForReq = esParams.get(EsParams.Key.PIC_SIZE);
-        int imageFormat = esParams.get(EsParams.Key.IMAGE_FORMAT, ImageFormat.JPEG);
-        Size pictureSize = mBusiness.getPictureSize(pictureSizeForReq, mCameraInfoManager.getPictureSize(imageFormat));
-        esParams.put(EsParams.Key.PIC_SIZE, pictureSize);
-
-        EsLog.d("zoom size:" + mCameraInfoManager.getMaxZoom()  + "   zoom area:" + mCameraInfoManager.getActiveArraySize());
-
-        mPhotoMode.requestPreview(esParams).subscribe(new CameraObserver<EsParams>(){
-            @Override
-            public void onNext(@NonNull EsParams resultParams) {
-                EsLog.d("onNext: .requestPreview...." + resultParams);
-
-
-            }
-        });
-    }
-
-    @Override
-    public void onStartPreview(PreviewRequest request, PreviewStateListener listener) {
+    public void onStartPreview(@NonNull PreviewRequest request, PreviewStateListener listener) {
         SurfaceManager surfaceManager = new SurfaceManager(request.getSurfaceProvider());
         EsParams esParams = new EsParams();
         esParams.put(EsParams.Key.SURFACE_MANAGER, surfaceManager);
         esParams.put(EsParams.Key.CAMERA_ID, request.getCameraId());
         esParams.put(EsParams.Key.FLASH_STATE, request.getFlashState());
+        esParams.put(EsParams.Key.IMAGE_READER_PROVIDERS, request.getImageReaderProviders());
 
         // 切换Camera 信息管理中的 Camera 信息， 如前置camera  或 后置Camera
         CameraInfo cameraInfo = CameraInfoHelper.getInstance().getCameraInfo(request.getCameraId());
@@ -106,8 +76,30 @@ public class PhotoCaptureImpl implements PhotoCapture {
         });
     }
 
+    void updateAFState(int state, PreviewStateListener listener) {
+        switch (state) {
+            case CaptureResult.CONTROL_AF_STATE_ACTIVE_SCAN:
+                listener.startFocus();
+                break;
+            case CaptureResult.CONTROL_AF_STATE_PASSIVE_FOCUSED:
+            case CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED:
+                listener.focusSuccess();
+                break;
+            case CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED:
+            case CaptureResult.CONTROL_AF_STATE_PASSIVE_UNFOCUSED:
+                listener.focusFailed();
+                break;
+            case CaptureResult.CONTROL_AF_STATE_PASSIVE_SCAN:
+                listener.autoFocus();
+                break;
+            case CaptureResult.CONTROL_AF_STATE_INACTIVE:
+                listener.hideFocus();
+                break;
+        }
+    }
+
     @Override
-    public void onCameraRepeating(EsParams esParams) {
+    public void onCameraRepeating(@NonNull EsParams esParams) {
 
         mPhotoMode.requestCameraRepeating(esParams).subscribe(new CameraObserver<EsParams>(){
             @Override
@@ -119,7 +111,7 @@ public class PhotoCaptureImpl implements PhotoCapture {
     }
 
     @Override
-    public void onCameraRepeating(RepeatRequest request) {
+    public void onCameraRepeating(@NonNull RepeatRequest request) {
         EsParams esParams = new EsParams();
         Float zoomSize = request.getZoomSize();
         if (zoomSize != null) {
@@ -156,7 +148,7 @@ public class PhotoCaptureImpl implements PhotoCapture {
     }
 
     @Override
-    public void onCapture(CaptureStateListener listener) {
+    public void onCapture(final CaptureStateListener listener) {
         EsParams esParams = new EsParams();
         int sensorOrientation = mCameraInfoManager.getSensorOrientation();
         int picOrientation = mBusiness.getPictureOrientation(sensorOrientation);
@@ -164,7 +156,25 @@ public class PhotoCaptureImpl implements PhotoCapture {
         mPhotoMode.requestCapture(esParams).subscribe(new CameraObserver<EsParams>(){
             @Override
             public void onNext(@NonNull EsParams resultParams) {
-                EsLog.d("onNext: .requestCapture...." + resultParams);
+                EsLog.d("capture result params :" + resultParams);
+
+                if (listener == null) {
+                    return;
+                }
+                Integer captureState = resultParams.get(EsParams.Key.CAPTURE_STATE);
+                switch (captureState) {
+                    case EsParams.Value.CAPTURE_STATE.CAPTURE_START :
+                        listener.onCaptureStarted();
+                        break;
+
+                    case EsParams.Value.CAPTURE_STATE.CAPTURE_COMPLETED :
+                        listener.onCaptureCompleted();
+                        break;
+
+                    case EsParams.Value.CAPTURE_STATE.CAPTURE_FAIL :
+                        listener.onCaptureFailed();
+                        break;
+                }
             }
         });
     }

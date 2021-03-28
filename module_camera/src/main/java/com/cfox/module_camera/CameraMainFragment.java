@@ -11,13 +11,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.alibaba.android.arouter.facade.annotation.Route;
+import com.cfox.camera.capture.PreviewStateListener;
 import com.cfox.camera.log.EsLog;
 import com.cfox.lib_common.arouter.RouterPath;
 import com.cfox.lib_common.base.BaseFragment;
 
 
 @Route(path = RouterPath.MAIN_CAMERA_FG)
-public class CameraMainFragment extends BaseFragment {
+public class CameraMainFragment extends BaseFragment implements PreviewStateListener {
     private static final String TAG = "CameraMainFragment";
     private AutoFitTextureView mPreviewView;
     private SurfaceProviderImpl mSurfaceHelperImpl;
@@ -75,14 +76,14 @@ public class CameraMainFragment extends BaseFragment {
             @Override
             public void onClick(View v) {
                 mSurfaceHelperImpl = new SurfaceProviderImpl(mPreviewView);
-                mCameraController.backCamera(mSurfaceHelperImpl);
+                mCameraController.backCamera(mSurfaceHelperImpl, CameraMainFragment.this);
             }
         });
         view.findViewById(R.id.btn_open_font).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mSurfaceHelperImpl = new SurfaceProviderImpl(mPreviewView);
-                mCameraController.fontCamera(mSurfaceHelperImpl);
+                mCameraController.fontCamera(mSurfaceHelperImpl, CameraMainFragment.this);
             }
         });
 
@@ -92,7 +93,7 @@ public class CameraMainFragment extends BaseFragment {
                 mPreviewView2.setVisibility(View.GONE);
                 mCameraController.photoModule();
                 mSurfaceHelperImpl = new SurfaceProviderImpl(mPreviewView);
-                mCameraController.backCamera(mSurfaceHelperImpl);
+                mCameraController.backCamera(mSurfaceHelperImpl, CameraMainFragment.this);
             }
         });
 
@@ -102,7 +103,7 @@ public class CameraMainFragment extends BaseFragment {
                 mPreviewView2.setVisibility(View.GONE);
                 mCameraController.videoModule();
                 mSurfaceHelperImpl = new SurfaceProviderImpl(mPreviewView);
-                mCameraController.backCamera(mSurfaceHelperImpl);
+                mCameraController.backCamera(mSurfaceHelperImpl, CameraMainFragment.this);
             }
         });
 
@@ -156,7 +157,7 @@ public class CameraMainFragment extends BaseFragment {
         super.onResume();
         mSurfaceHelperImpl = new SurfaceProviderImpl(mPreviewView);
         EsLog.d("onResume: .......");
-        mCameraController.backCamera(mSurfaceHelperImpl);
+        mCameraController.backCamera(mSurfaceHelperImpl, this);
     }
 
     @Override
@@ -169,5 +170,30 @@ public class CameraMainFragment extends BaseFragment {
 
     private void showMsg(String msg) {
         Toast.makeText(getContext(), "" + msg, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void startFocus() {
+
+    }
+
+    @Override
+    public void focusSuccess() {
+
+    }
+
+    @Override
+    public void focusFailed() {
+
+    }
+
+    @Override
+    public void autoFocus() {
+
+    }
+
+    @Override
+    public void hideFocus() {
+
     }
 }

@@ -30,9 +30,9 @@ public class PreviewCaptureCallback extends CameraCaptureSession.CaptureCallback
     private CameraSession mCameraSession;
     private ObservableEmitter<EsParams> mEmitter;
 
-    public void applyPreview(CameraSession cameraSession,
-                             CaptureRequest.Builder previewBuilder,
-                             ObservableEmitter<EsParams> emitter) {
+    public void applyPreview(@NonNull CameraSession cameraSession,
+                             @NonNull CaptureRequest.Builder previewBuilder,
+                             @NonNull ObservableEmitter<EsParams> emitter) {
         this.mPreviewBuilder = previewBuilder;
         this.mCameraSession = cameraSession;
         this.mEmitter = emitter;
@@ -63,7 +63,7 @@ public class PreviewCaptureCallback extends CameraCaptureSession.CaptureCallback
         if (!mFirstFrameCompleted) {
             mFirstFrameCompleted = true;
             EsParams esParams = new EsParams();
-            esParams.put(EsParams.Key.FIRST_FRAME_CALLBACK, EsParams.Value.OK);
+            esParams.put(EsParams.Key.PREVIEW_FIRST_FRAME, EsParams.Value.OK);
             mEmitter.onNext(esParams);
             EsLog.d("preview first frame call back");
         }
@@ -133,7 +133,7 @@ public class PreviewCaptureCallback extends CameraCaptureSession.CaptureCallback
         if (afState != null && afState != mAFState) {
             mAFState = afState;
             EsParams esParams = new EsParams();
-            esParams.put(EsParams.Key.AF_CHANGE_STATE, afState);
+            esParams.put(EsParams.Key.AF_STATE, afState);
             mEmitter.onNext(esParams);
         }
 
