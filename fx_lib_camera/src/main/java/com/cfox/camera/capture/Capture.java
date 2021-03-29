@@ -12,8 +12,6 @@ public interface Capture {
 
     void onStartPreview(@NonNull PreviewRequest request, PreviewStateListener listener);
 
-    void onCameraRepeating(@NonNull EsParams esParams);
-
     void onCameraRepeating(@NonNull RepeatRequest request);
 
     void onStop();

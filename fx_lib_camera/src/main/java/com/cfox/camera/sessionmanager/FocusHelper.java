@@ -28,7 +28,7 @@ public class FocusHelper {
 
     }
 
-    public MeteringRectangle getAFsArea(float touchX, float touchY) {
+    public MeteringRectangle getAFArea(float touchX, float touchY) {
         return calcTapAreaForCamera2(touchX, touchY,mPreviewRect.width() / 5, 1000);
     }
 

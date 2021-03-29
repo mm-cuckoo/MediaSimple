@@ -42,7 +42,7 @@ public class SessionRequestManager {
         apply(builder,CaptureRequest.CONTROL_AF_TRIGGER, CaptureRequest.CONTROL_AF_TRIGGER_IDLE);
     }
 
-    public void getTouch2FocusRequest(CaptureRequest.Builder builder,
+    public void applyTouch2FocusRequest(CaptureRequest.Builder builder,
                                                 MeteringRectangle focus, MeteringRectangle metering) {
         int afMode = mCameraHelper.getValidAFMode(CaptureRequest.CONTROL_AF_MODE_AUTO);
         builder.set(CaptureRequest.CONTROL_AF_MODE, afMode);

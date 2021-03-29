@@ -25,11 +25,6 @@ public class VideoCaptureImpl implements VideoCapture {
     }
 
     @Override
-    public void onCameraRepeating(@NonNull EsParams esParams) {
-        mVideoMode.requestCameraRepeating(esParams);
-    }
-
-    @Override
     public void onCameraRepeating(@NonNull RepeatRequest request) {
 
     }

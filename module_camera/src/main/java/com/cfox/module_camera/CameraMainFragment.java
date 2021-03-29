@@ -1,9 +1,12 @@
 package com.cfox.module_camera;
 
 import android.os.Bundle;
+import android.util.Pair;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
@@ -23,6 +26,7 @@ public class CameraMainFragment extends BaseFragment implements PreviewStateList
     private AutoFitTextureView mPreviewView;
     private SurfaceProviderImpl mSurfaceHelperImpl;
     private EsyCameraController mCameraController;
+    private FocusView mFocusView;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -39,8 +43,13 @@ public class CameraMainFragment extends BaseFragment implements PreviewStateList
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+        mFocusView = new FocusView(getActivity());
+        mFocusView.initFocusArea(400, 400);
+        mFocusView.setVisibility(View.GONE);
+        ((FrameLayout)view.findViewById(R.id.root_view)).addView(mFocusView);
         mPreviewView = view.findViewById(R.id.preview_view);
+
+
         view.findViewById(R.id.btn_torch_flash).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -146,6 +155,17 @@ public class CameraMainFragment extends BaseFragment implements PreviewStateList
             }
         });
 
+        mPreviewView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    mCameraController.setFocus(event.getX(), event.getY());
+                    mFocusView.moveToPosition(event.getX(), event.getY());
+                }
+                return true;
+            }
+        });
+
     }
 
     @Override
@@ -170,17 +190,17 @@ public class CameraMainFragment extends BaseFragment implements PreviewStateList
 
     @Override
     public void startFocus() {
-
+        mFocusView.startFocus();
     }
 
     @Override
     public void focusSuccess() {
-
+        mFocusView.focusSuccess();
     }
 
     @Override
     public void focusFailed() {
-
+        mFocusView.focusFailed();
     }
 
     @Override
@@ -190,6 +210,6 @@ public class CameraMainFragment extends BaseFragment implements PreviewStateList
 
     @Override
     public void hideFocus() {
-
+        mFocusView.hideFocusView();
     }
 }

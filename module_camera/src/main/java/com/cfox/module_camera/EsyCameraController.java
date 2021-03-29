@@ -96,9 +96,10 @@ class EsyCameraController {
         builder.setEv(value);
         mCameraCapture.onCameraRepeating(builder.builder());
     }
-    void setFocus(float value) {
-        EsParams esParams = new EsParams();
-        mCameraCapture.onCameraRepeating(esParams);
+    void setFocus(float touchX, float touchY) {
+        RepeatRequest.Builder builder = RepeatRequest.createBuilder();
+        builder.setAfTouchXY(touchX, touchY);
+        mCameraCapture.onCameraRepeating(builder.builder());
     }
 
     void setZoom(float value) {

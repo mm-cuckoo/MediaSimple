@@ -84,19 +84,20 @@ public class EsParams {
         public static final EsParams.Key<List<ImageReaderProvider>> IMAGE_READER_PROVIDERS = new EsParams.Key<>("image_reader_providers");
         public static final EsParams.Key<String> CAMERA_ID = new EsParams.Key<>("camera_id");
         public static final EsParams.Key<CameraDevice> CAMERA_DEVICE = new EsParams.Key<>("camera_device");
-        public static final EsParams.Key<Float> ZOOM_VALUE = new EsParams.Key<>("zoom_value");
         public static final EsParams.Key<String> OPEN_CAMERA_STATE = new EsParams.Key<>("open_camera_state");
         public static final EsParams.Key<CaptureRequest.Builder> REQUEST_BUILDER = new EsParams.Key<>("request_builder");
         public static final EsParams.Key<Size> PIC_SIZE = new EsParams.Key<>("pic_size");
         public static final EsParams.Key<Integer> PIC_ORIENTATION = new EsParams.Key<>("pic_orientation");
         public static final EsParams.Key<Size> PREVIEW_SIZE = new EsParams.Key<>("preview_size");
         public static final EsParams.Key<Integer> AF_STATE = new EsParams.Key<>("af_state");
-        public static final EsParams.Key<Pair<Float, Float>> AF_TRIGGER = new EsParams.Key<>("af_trigger");
         public static final EsParams.Key<Integer> CAPTURE_STATE = new EsParams.Key<>("capture_state");
         public static final EsParams.Key<String> PREVIEW_FIRST_FRAME = new EsParams.Key<>("preview_first_frame");
         public static final EsParams.Key<CameraCaptureSession.CaptureCallback> CAPTURE_CALLBACK = new EsParams.Key<>("capture_callback");
+
+        public static final EsParams.Key<Float> ZOOM_VALUE = new EsParams.Key<>("zoom_value");
         public static final EsParams.Key<Integer> FLASH_STATE = new EsParams.Key<>("camera_flash_value");
         public static final EsParams.Key<Integer> EV_SIZE = new EsParams.Key<>("ev_size");
+        public static final EsParams.Key<Pair<Float, Float>> AF_TRIGGER = new EsParams.Key<>("af_trigger");// Pair<X, Y>
 
         public final String NAME;
         public Key(String name) {

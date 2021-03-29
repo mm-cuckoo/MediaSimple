@@ -28,7 +28,7 @@ public abstract class BaseMode implements IMode {
     public Observable<EsParams> requestPreview(EsParams esParams) {
         return applySurface(esParams).flatMap(new Function<EsParams, ObservableSource<EsParams>>() {
             @Override
-            public ObservableSource<EsParams> apply(@NonNull EsParams esParams) throws Exception {
+            public ObservableSource<EsParams> apply(@NonNull EsParams esParams) {
                 EsLog.d("open camera request ===>params:" + esParams);
                 // open camera requst
                 return mSessionManager.onOpenCamera(esParams);

@@ -100,11 +100,6 @@ public class PhotoCaptureImpl implements PhotoCapture {
     }
 
     @Override
-    public void onCameraRepeating(@NonNull EsParams esParams) {
-        mPhotoMode.requestCameraRepeating(esParams).subscribe(new CameraObserver<EsParams>());
-    }
-
-    @Override
     public void onCameraRepeating(@NonNull RepeatRequest request) {
         EsParams esParams = new EsParams();
         Float zoomSize = request.getZoomSize();
@@ -126,6 +121,8 @@ public class PhotoCaptureImpl implements PhotoCapture {
         if (afTouchXy != null) {
             esParams.put(EsParams.Key.AF_TRIGGER, afTouchXy);
         }
+
+        EsLog.d("CameraRepeating==>" + esParams);
 
         mPhotoMode.requestCameraRepeating(esParams).subscribe(new CameraObserver<EsParams>());
     }

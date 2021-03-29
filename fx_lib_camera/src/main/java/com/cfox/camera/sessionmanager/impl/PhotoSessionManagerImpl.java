@@ -1,7 +1,10 @@
 package com.cfox.camera.sessionmanager.impl;
 
+import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.params.MeteringRectangle;
+import android.util.Pair;
 import android.util.Size;
 import android.view.Surface;
 
@@ -40,11 +43,8 @@ public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoS
     private final ZoomHelper mZoomHelper;
     private final FocusHelper mFocusHelper;
 
-    private CaptureRequest.Builder mPreviewBuilder;
     private CaptureRequest.Builder mCaptureBuilder;
-
     private CameraSession mPhotoSession;
-    private SurfaceManager mSurfaceManager;
 
     public PhotoSessionManagerImpl(CameraSessionManager sessionManager) {
         mCameraSessionManager = sessionManager;
@@ -73,7 +73,6 @@ public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoS
     @Override
     public void onBeforeOpenCamera(EsParams esParams) {
         mPhotoSession = null;
-        mPreviewBuilder = null;
         mCaptureBuilder = null;
         mSessionRequestManager.resetApply();
         mCameraSessionManager.closeSession().subscribe(new CameraObserver<EsParams>());
@@ -85,11 +84,10 @@ public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoS
         return Observable.create(new ObservableOnSubscribe<EsParams>() {
             @Override
             public void subscribe(@NonNull ObservableEmitter<EsParams> emitter) {
-                mSurfaceManager = esParams.get(EsParams.Key.SURFACE_MANAGER);
                 mFocusHelper.init(esParams.get(EsParams.Key.PREVIEW_SIZE));
                 mPreviewCaptureCallback.applyPreview(mPhotoSession, getPreviewBuilder(), emitter);
                 mSessionRequestManager.applyPreviewRequest(getPreviewBuilder());
-                applyRequestMessage(getPreviewBuilder(), esParams);
+                applyPreviewRequest(getPreviewBuilder(), esParams);
                 esParams.put(EsParams.Key.REQUEST_BUILDER, getPreviewBuilder());
                 esParams.put(EsParams.Key.CAPTURE_CALLBACK, mPreviewCaptureCallback);
                 mPhotoSession.onRepeatingRequest(esParams).subscribe(new CameraObserver<EsParams>());
@@ -108,29 +106,15 @@ public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoS
         });
     }
 
-    private void applyRequestMessage(CaptureRequest.Builder builder, EsParams esParams) {
-        // zoom
-        Float zoomValue = esParams.get(EsParams.Key.ZOOM_VALUE);
-        if (zoomValue != null) {
-            mSessionRequestManager.applyZoomRect(builder, mZoomHelper.getZoomRect(zoomValue));
-        }
-
-        // flash
-        mSessionRequestManager.applyFlashRequest(builder, esParams.get(EsParams.Key.FLASH_STATE));
-        // ev
-        mSessionRequestManager.applyEvRange(builder, esParams.get(EsParams.Key.EV_SIZE));
-    }
-
-    private CaptureRequest.Builder getPreviewBuilder() {
-        if (mPreviewBuilder == null) {
-            mPreviewBuilder = createPreviewBuilder(mSurfaceManager.getPreviewSurface());
-        }
-        return mPreviewBuilder;
+    private void applyPreviewRequest(CaptureRequest.Builder builder, EsParams esParams) {
+        mSessionRequestManager.applyZoomRect(builder, mZoomHelper.getZoomRect(esParams.get(EsParams.Key.ZOOM_VALUE, 1f)));// zoom
+        mSessionRequestManager.applyFlashRequest(builder, esParams.get(EsParams.Key.FLASH_STATE));// flash
+        mSessionRequestManager.applyEvRange(builder, esParams.get(EsParams.Key.EV_SIZE)); // ev
     }
 
     private CaptureRequest.Builder getCaptureBuilder() {
         if (mCaptureBuilder == null) {
-            mCaptureBuilder = createCaptureBuilder(mSurfaceManager.getReaderSurface());
+            mCaptureBuilder = createCaptureBuilder(getSurfaceManager().getReaderSurface());
         }
         return mCaptureBuilder;
     }
@@ -140,14 +124,75 @@ public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoS
     }
 
     @Override
-    public Observable<EsParams> onRepeatingRequest(EsParams esParams) {
-        EsLog.d("onSendRepeatingRequest: req:" + esParams);
-        applyRequestMessage(getPreviewBuilder(), esParams);
-        esParams.put(EsParams.Key.REQUEST_BUILDER, mPreviewBuilder);
-        esParams.put(EsParams.Key.CAPTURE_CALLBACK, mPreviewCaptureCallback);
-        return mPhotoSession.onRepeatingRequest(esParams);
+    public Observable<EsParams> onRepeatingRequest(final EsParams esParams) {
+
+        return Observable.create(new ObservableOnSubscribe<EsParams>() {
+            @Override
+            public void subscribe(@NonNull ObservableEmitter<EsParams> emitter) {
+                EsLog.d("onSendRepeatingRequest: req:" + esParams);
+                esParams.put(EsParams.Key.REQUEST_BUILDER, getPreviewBuilder());
+                esParams.put(EsParams.Key.CAPTURE_CALLBACK, mPreviewCaptureCallback);
+                flashRepeatingRequest(getPreviewBuilder(), esParams);
+                zoomRepeatingRequest(getPreviewBuilder(),esParams);
+                evRepeatingRequest(getPreviewBuilder(), esParams);
+                afTriggerRepeatingRequest(getPreviewBuilder(), esParams);
+            }
+        });
     }
 
+    private void afTriggerRepeatingRequest(CaptureRequest.Builder builder, EsParams esParams) {
+        Pair<Float, Float> afTriggerValue = esParams.get(EsParams.Key.AF_TRIGGER);
+        if (afTriggerValue == null) {
+            return;
+        }
+        MeteringRectangle focusRect = mFocusHelper.getAFArea(afTriggerValue.first, afTriggerValue.second);
+        MeteringRectangle meterRect = mFocusHelper.getAEArea(afTriggerValue.first, afTriggerValue.second);
+
+        mSessionRequestManager.applyTouch2FocusRequest(getPreviewBuilder(), focusRect, meterRect);
+        mPhotoSession.onRepeatingRequest(esParams).subscribe();
+        try {
+            builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CaptureRequest.CONTROL_AF_TRIGGER_START);
+            EsParams afTriggerParams = new EsParams();
+            afTriggerParams.put(EsParams.Key.REQUEST_BUILDER, getPreviewBuilder());
+            mPhotoSession.capture(afTriggerParams);
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void flashRepeatingRequest(CaptureRequest.Builder builder, EsParams esParams) {
+        Integer flashState = esParams.get(EsParams.Key.FLASH_STATE);
+        if (flashState == null) {
+            return;
+        }
+
+        //todo 切换待调整
+        if (flashState != EsParams.Value.FLASH_STATE.OFF) {
+            mSessionRequestManager.applyFlashRequest(builder, EsParams.Value.FLASH_STATE.OFF);
+            mPhotoSession.onRepeatingRequest(esParams).subscribe();
+        }
+        mSessionRequestManager.applyFlashRequest(builder, flashState);
+        mPhotoSession.onRepeatingRequest(esParams).subscribe();
+    }
+
+    private void evRepeatingRequest(CaptureRequest.Builder builder,EsParams esParams) {
+        Integer evSize = esParams.get(EsParams.Key.EV_SIZE);
+        if (evSize == null) {
+            return;
+        }
+
+        mSessionRequestManager.applyEvRange(builder, evSize);
+        mPhotoSession.onRepeatingRequest(esParams).subscribe();
+    }
+
+    private void zoomRepeatingRequest(CaptureRequest.Builder builder,EsParams esParams) {
+        Float zoomValue = esParams.get(EsParams.Key.ZOOM_VALUE);
+        if (zoomValue == null) {
+            return;
+        }
+        mSessionRequestManager.applyZoomRect(builder, mZoomHelper.getZoomRect(zoomValue));
+        mPhotoSession.onRepeatingRequest(esParams).subscribe();
+    }
 
     @Override
     public Observable<EsParams> close(EsParams esParams) {
