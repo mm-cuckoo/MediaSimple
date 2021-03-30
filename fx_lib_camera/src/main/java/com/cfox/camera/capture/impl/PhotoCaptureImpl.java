@@ -6,7 +6,7 @@ import android.util.Pair;
 import android.util.Range;
 import android.util.Size;
 
-import com.cfox.camera.IConfigWrapper;
+import com.cfox.camera.ConfigWrapper;
 import com.cfox.camera.request.PreviewRequest;
 import com.cfox.camera.camera.info.CameraInfo;
 import com.cfox.camera.camera.info.CameraInfoHelper;
@@ -32,7 +32,7 @@ public class PhotoCaptureImpl implements PhotoCapture {
     private final CameraInfoManager mCameraInfoManager;
     private final Business mBusiness;
 
-    public PhotoCaptureImpl(PhotoMode photoMode, IConfigWrapper configWrapper) {
+    public PhotoCaptureImpl(PhotoMode photoMode, ConfigWrapper configWrapper) {
         mPhotoMode = photoMode;
         mBusiness = new PhotoBusinessImpl(configWrapper);
         mCameraInfoManager = CameraInfoManagerImpl.CAMERA_INFO_MANAGER;

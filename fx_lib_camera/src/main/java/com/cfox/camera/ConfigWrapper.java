@@ -1,6 +1,6 @@
 package com.cfox.camera;
 
-public class ConfigWrapper implements IConfigWrapper {
+public class ConfigWrapper {
 
     private ConfigStrategy mConfig = new DefaultConfigStrategy();
 
@@ -11,7 +11,6 @@ public class ConfigWrapper implements IConfigWrapper {
         }
     }
 
-    @Override
     public ConfigStrategy getConfig() {
         return mConfig;
     }

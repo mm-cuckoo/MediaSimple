@@ -1,8 +1,11 @@
 package com.cfox.camera.sessionmanager.impl;
 
 import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.CaptureResult;
+import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.MeteringRectangle;
 import android.util.Pair;
 import android.util.Size;
@@ -160,8 +163,8 @@ public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoS
         }
     }
 
-    private void flashRepeatingRequest(CaptureRequest.Builder builder, EsParams esParams) {
-        Integer flashState = esParams.get(EsParams.Key.FLASH_STATE);
+    private void flashRepeatingRequest(final CaptureRequest.Builder builder, final EsParams esParams) {
+        final Integer flashState = esParams.get(EsParams.Key.FLASH_STATE);
         if (flashState == null) {
             return;
         }

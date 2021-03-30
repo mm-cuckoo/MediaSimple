@@ -15,6 +15,7 @@ public class SessionRequestManager {
     private final CameraInfoManager mCameraHelper;
     private MeteringRectangle[] mFocusArea;
     private MeteringRectangle[] mMeteringArea;
+    private int mFlashMode = EsParams.Value.FLASH_STATE.OFF;
     // for reset AE/AF metering area
     private final MeteringRectangle[] mResetRect = new MeteringRectangle[] {
             new MeteringRectangle(0, 0, 0, 0, 0)
@@ -76,16 +77,6 @@ public class SessionRequestManager {
         builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CaptureRequest.CONTROL_AF_TRIGGER_IDLE);
     }
 
-    public void getFocusDistanceRequest(CaptureRequest.Builder builder, float distance) {
-        int afMode = mCameraHelper.getValidAFMode(CaptureRequest.CONTROL_AF_MODE_OFF);
-        // preview
-        builder.set(CaptureRequest.CONTROL_AF_MODE, afMode);
-        float miniDistance = mCameraHelper.getMinimumDistance();
-        if (miniDistance > 0) {
-            builder.set(CaptureRequest.LENS_FOCUS_DISTANCE, miniDistance * distance);
-        }
-    }
-
     public void applyEvRange(CaptureRequest.Builder builder, Integer value) {
         if (value == null) {
             EsLog.w(" Ev value is null");
@@ -107,22 +98,23 @@ public class SessionRequestManager {
             EsLog.w(" not support flash or value is null");
             return;
         }
+        mFlashMode = value;
         switch (value) {
             case EsParams.Value.FLASH_STATE.ON:
-                apply(builder, CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH);
-                apply(builder, CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
+                builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH);
+                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
                 break;
             case EsParams.Value.FLASH_STATE.OFF:
-                apply(builder, CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
-                apply(builder, CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
+                builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
+                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
                 break;
             case EsParams.Value.FLASH_STATE.AUTO:
-                apply(builder, CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
-                apply(builder, CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
+                builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
                 break;
             case EsParams.Value.FLASH_STATE.TORCH:
-                apply(builder, CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
-                apply(builder, CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
+                builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
+                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
                 break;
             default:
                 EsLog.e("error value for flash mode");
@@ -132,6 +124,7 @@ public class SessionRequestManager {
     }
 
     public void applyAllRequest(CaptureRequest.Builder builder) {
+        applyFlashRequest(builder, mFlashMode);
         for (CaptureRequest.Key key : REQUEST_CACHE.getKeySet()) {
             EsLog.d("apply all request key:" + key);
             builder.set(key, REQUEST_CACHE.get(key));

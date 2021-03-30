@@ -3,12 +3,12 @@ package com.cfox.camera.capture.business;
 import android.util.Size;
 
 import com.cfox.camera.ConfigStrategy;
-import com.cfox.camera.IConfigWrapper;
+import com.cfox.camera.ConfigWrapper;
 
 public abstract class BaseBusiness implements Business {
-    IConfigWrapper mConfigWrapper;
+    ConfigWrapper mConfigWrapper;
 
-    protected BaseBusiness(IConfigWrapper configWrapper) {
+    protected BaseBusiness(ConfigWrapper configWrapper) {
         this.mConfigWrapper = configWrapper;
     }
 

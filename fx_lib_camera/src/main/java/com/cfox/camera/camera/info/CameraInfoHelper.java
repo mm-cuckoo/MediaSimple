@@ -34,22 +34,6 @@ public class CameraInfoHelper {
         }
     }
 
-    public Map<String, CameraInfo> getInfos() {
-        checkLoadFinish();
-        return mCameraInfoMap;
-    }
-
-
-    public CameraInfo getFontCameraInfo() {
-        checkLoadFinish();
-        return mCameraInfoMap.get(String.valueOf(CameraCharacteristics.LENS_FACING_FRONT));
-    }
-
-    public CameraInfo getBackCameraInfo() {
-        checkLoadFinish();
-        return mCameraInfoMap.get(String.valueOf(CameraCharacteristics.LENS_FACING_BACK));
-    }
-
     public CameraInfo getCameraInfo(String cameraId) {
         checkLoadFinish();
         return mCameraInfoMap.get(cameraId);

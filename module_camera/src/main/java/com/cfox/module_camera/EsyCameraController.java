@@ -6,6 +6,7 @@ import android.graphics.ImageFormat;
 import android.util.Range;
 import android.util.Size;
 
+import com.cfox.camera.EsCamera;
 import com.cfox.camera.EsCameraManager;
 import com.cfox.camera.request.PreviewRequest;
 import com.cfox.camera.capture.Capture;
@@ -14,14 +15,13 @@ import com.cfox.camera.capture.PreviewStateListener;
 import com.cfox.camera.request.RepeatRequest;
 import com.cfox.camera.utils.EsParams;
 import com.cfox.module_camera.reader.CaptureImageReader;
-import com.cfox.module_camera.reader.PreviewImageReader;
 
 class EsyCameraController {
     private final EsCameraManager mCameraManager;
     private Capture mCameraCapture;
 
     public EsyCameraController(Context context) {
-        mCameraManager = new EsCameraManager(context);
+        mCameraManager = EsCamera.createCameraManager(context);
         mCameraCapture = mCameraManager.photoModule();
     }
 

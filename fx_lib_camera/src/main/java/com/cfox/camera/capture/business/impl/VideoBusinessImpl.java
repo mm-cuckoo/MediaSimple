@@ -2,11 +2,11 @@ package com.cfox.camera.capture.business.impl;
 
 import android.util.Size;
 
-import com.cfox.camera.IConfigWrapper;
+import com.cfox.camera.ConfigWrapper;
 import com.cfox.camera.capture.business.BaseBusiness;
 
 public class VideoBusinessImpl extends BaseBusiness {
-    public VideoBusinessImpl(IConfigWrapper configWrapper) {
+    public VideoBusinessImpl(ConfigWrapper configWrapper) {
         super(configWrapper);
     }
 
