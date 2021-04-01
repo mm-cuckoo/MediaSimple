@@ -9,7 +9,7 @@ import com.cfox.camera.mode.VideoMode;
 import com.cfox.camera.mode.BaseMode;
 import com.cfox.camera.surface.SurfaceManager;
 import com.cfox.camera.utils.EsError;
-import com.cfox.camera.utils.EsParams;
+import com.cfox.camera.EsParams;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;

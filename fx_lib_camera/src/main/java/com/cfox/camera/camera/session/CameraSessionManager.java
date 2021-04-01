@@ -1,7 +1,7 @@
 package com.cfox.camera.camera.session;
 
 
-import com.cfox.camera.utils.EsParams;
+import com.cfox.camera.EsParams;
 
 import io.reactivex.Observable;
 

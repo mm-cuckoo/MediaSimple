@@ -10,7 +10,7 @@ import androidx.annotation.NonNull;
 
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.utils.CameraObserver;
-import com.cfox.camera.utils.EsParams;
+import com.cfox.camera.EsParams;
 
 import java.util.Arrays;
 import java.util.HashMap;

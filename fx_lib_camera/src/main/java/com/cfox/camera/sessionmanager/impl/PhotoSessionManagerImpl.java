@@ -1,14 +1,10 @@
 package com.cfox.camera.sessionmanager.impl;
 
 import android.hardware.camera2.CameraAccessException;
-import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
-import android.hardware.camera2.CaptureResult;
-import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.MeteringRectangle;
 import android.util.Pair;
-import android.util.Size;
 import android.view.Surface;
 
 import androidx.annotation.NonNull;
@@ -24,9 +20,8 @@ import com.cfox.camera.sessionmanager.callback.PhotoCaptureCallback;
 import com.cfox.camera.sessionmanager.callback.PreviewCaptureCallback;
 import com.cfox.camera.sessionmanager.req.SessionRequestManager;
 import com.cfox.camera.log.EsLog;
-import com.cfox.camera.surface.SurfaceManager;
 import com.cfox.camera.utils.CameraObserver;
-import com.cfox.camera.utils.EsParams;
+import com.cfox.camera.EsParams;
 
 
 import java.util.List;
@@ -139,8 +134,17 @@ public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoS
                 zoomRepeatingRequest(getPreviewBuilder(),esParams);
                 evRepeatingRequest(getPreviewBuilder(), esParams);
                 afTriggerRepeatingRequest(getPreviewBuilder(), esParams);
+                resetFocusRepeatingRequest(getPreviewBuilder(), esParams);
             }
         });
+    }
+
+    private void resetFocusRepeatingRequest(CaptureRequest.Builder builder, EsParams esParams) {
+        Boolean isResetFocus = esParams.get(EsParams.Key.RESET_FOCUS, false);
+        if (isResetFocus) {
+            mSessionRequestManager.applyFocusModeRequest(builder, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+            mPhotoSession.onRepeatingRequest(esParams).subscribe();
+        }
     }
 
     private void afTriggerRepeatingRequest(CaptureRequest.Builder builder, EsParams esParams) {
@@ -165,15 +169,11 @@ public class PhotoSessionManagerImpl extends AbsSessionManager implements PhotoS
 
     private void flashRepeatingRequest(final CaptureRequest.Builder builder, final EsParams esParams) {
         final Integer flashState = esParams.get(EsParams.Key.FLASH_STATE);
-        if (flashState == null) {
+        final Integer currFlashMode = mSessionRequestManager.getCurrFlashMode();
+        if (flashState == null || currFlashMode.equals(flashState)) {
             return;
         }
 
-        //todo 切换待调整
-        if (flashState != EsParams.Value.FLASH_STATE.OFF) {
-            mSessionRequestManager.applyFlashRequest(builder, EsParams.Value.FLASH_STATE.OFF);
-            mPhotoSession.onRepeatingRequest(esParams).subscribe();
-        }
         mSessionRequestManager.applyFlashRequest(builder, flashState);
         mPhotoSession.onRepeatingRequest(esParams).subscribe();
     }

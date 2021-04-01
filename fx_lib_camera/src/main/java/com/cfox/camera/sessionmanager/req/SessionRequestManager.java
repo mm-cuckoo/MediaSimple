@@ -6,7 +6,7 @@ import android.hardware.camera2.params.MeteringRectangle;
 
 import com.cfox.camera.camera.info.CameraInfoManager;
 import com.cfox.camera.log.EsLog;
-import com.cfox.camera.utils.EsParams;
+import com.cfox.camera.EsParams;
 
 public class SessionRequestManager {
 
@@ -29,6 +29,10 @@ public class SessionRequestManager {
         REQUEST_CACHE.reset();
     }
 
+    public Integer getCurrFlashMode() {
+        return mFlashMode;
+    }
+
     private <T> void apply(CaptureRequest.Builder builder, CaptureRequest.Key<T> key , T value) {
         REQUEST_CACHE.put(key, value);
         builder.set(key, value);
@@ -37,17 +41,20 @@ public class SessionRequestManager {
     public void applyPreviewRequest(CaptureRequest.Builder builder) {
         int afMode = mCameraHelper.getValidAFMode(CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
         int antiBMode = mCameraHelper.getValidAntiBandingMode(CaptureRequest.CONTROL_AE_ANTIBANDING_MODE_AUTO);
+        EsLog.d("applyTouch2FocusRequest  af mode:" + afMode + "   antiBMode:" + antiBMode);
+
         apply(builder,CaptureRequest.CONTROL_AF_MODE, afMode);
-        apply(builder,CaptureRequest.CONTROL_AE_ANTIBANDING_MODE, antiBMode);
-        apply(builder,CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO);
-        apply(builder,CaptureRequest.CONTROL_AF_TRIGGER, CaptureRequest.CONTROL_AF_TRIGGER_IDLE);
+
+        builder.set(CaptureRequest.CONTROL_AE_ANTIBANDING_MODE, antiBMode);
+        builder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO);
+        builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CaptureRequest.CONTROL_AF_TRIGGER_IDLE);
     }
 
     public void applyTouch2FocusRequest(CaptureRequest.Builder builder,
                                                 MeteringRectangle focus, MeteringRectangle metering) {
         int afMode = mCameraHelper.getValidAFMode(CaptureRequest.CONTROL_AF_MODE_AUTO);
-        builder.set(CaptureRequest.CONTROL_AF_MODE, afMode);
-        builder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO);
+        EsLog.d("applyTouch2FocusRequest  af mode:" + afMode);
+
         if (mFocusArea == null) {
             mFocusArea = new MeteringRectangle[] {focus};
         } else {
@@ -64,17 +71,22 @@ public class SessionRequestManager {
         if (mCameraHelper.isMeteringSupport(false)) {
             builder.set(CaptureRequest.CONTROL_AE_REGIONS, mMeteringArea);
         }
+
+        apply(builder, CaptureRequest.CONTROL_AF_MODE, afMode);
+
+        builder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO);
         builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CaptureRequest.CONTROL_AF_TRIGGER_IDLE);
     }
 
-    public void getFocusModeRequest(CaptureRequest.Builder builder, int focusMode) {
+    public void applyFocusModeRequest(CaptureRequest.Builder builder, int focusMode) {
         int afMode = mCameraHelper.getValidAFMode(focusMode);
+        EsLog.d("applyFocusModeRequest  af mode:" + afMode);
+        apply(builder, CaptureRequest.CONTROL_AF_MODE, afMode);
+
         builder.set(CaptureRequest.CONTROL_MODE, CaptureRequest.CONTROL_MODE_AUTO);
-        builder.set(CaptureRequest.CONTROL_AF_MODE, afMode);
         builder.set(CaptureRequest.CONTROL_AF_REGIONS, mResetRect);
         builder.set(CaptureRequest.CONTROL_AE_REGIONS, mResetRect);
-        // cancel af trigger
-        builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CaptureRequest.CONTROL_AF_TRIGGER_IDLE);
+        builder.set(CaptureRequest.CONTROL_AF_TRIGGER, CaptureRequest.CONTROL_AF_TRIGGER_IDLE);// cancel af trigger
     }
 
     public void applyEvRange(CaptureRequest.Builder builder, Integer value) {
@@ -101,21 +113,21 @@ public class SessionRequestManager {
         mFlashMode = value;
         switch (value) {
             case EsParams.Value.FLASH_STATE.ON:
-                builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH);
-                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
+                apply(builder,CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH);
+                apply(builder,CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
                 break;
             case EsParams.Value.FLASH_STATE.OFF:
-                builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
+                apply(builder,CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
                 builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_OFF);
                 break;
             case EsParams.Value.FLASH_STATE.AUTO:
-                builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
-                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
+                apply(builder,CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH);
+                apply(builder,CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_SINGLE);
                 break;
-            case EsParams.Value.FLASH_STATE.TORCH:
-                builder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
-                builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
-                break;
+//            case EsParams.Value.FLASH_STATE.TORCH:
+//                apply(builder,CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON);
+//                apply(builder,CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);
+//                break;
             default:
                 EsLog.e("error value for flash mode");
                 break;
@@ -124,7 +136,6 @@ public class SessionRequestManager {
     }
 
     public void applyAllRequest(CaptureRequest.Builder builder) {
-        applyFlashRequest(builder, mFlashMode);
         for (CaptureRequest.Key key : REQUEST_CACHE.getKeySet()) {
             EsLog.d("apply all request key:" + key);
             builder.set(key, REQUEST_CACHE.get(key));

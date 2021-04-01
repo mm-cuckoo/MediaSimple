@@ -3,6 +3,8 @@ package com.cfox.camera.surface;
 import android.util.Size;
 import android.view.Surface;
 
+import com.cfox.camera.log.EsLog;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,6 +50,9 @@ public class SurfaceManager {
     public List<Surface> getTotalSurface() {
         List<Surface> surfaceList = new ArrayList<>(mCaptureSurface);
         surfaceList.addAll(getPreviewSurface());
+        if (surfaceList.size() == 0) {
+            EsLog.e("getTotalSurface surface list size is 0");
+        }
         return surfaceList;
     }
 

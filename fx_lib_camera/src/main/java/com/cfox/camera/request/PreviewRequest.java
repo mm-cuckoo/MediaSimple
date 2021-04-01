@@ -4,7 +4,7 @@ import android.util.Size;
 
 import com.cfox.camera.imagereader.ImageReaderProvider;
 import com.cfox.camera.surface.SurfaceProvider;
-import com.cfox.camera.utils.EsParams;
+import com.cfox.camera.EsParams;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -93,8 +93,8 @@ public class PreviewRequest {
             return this;
         }
 
-        public Builder setFlash(int flashState){
-            mFlashState = flashState;
+        public Builder setFlash(FlashState flashState){
+            mFlashState = flashState.getState();
             return this;
         }
 

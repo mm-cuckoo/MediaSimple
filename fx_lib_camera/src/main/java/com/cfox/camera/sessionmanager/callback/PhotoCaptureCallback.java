@@ -10,7 +10,7 @@ import androidx.annotation.NonNull;
 
 import com.cfox.camera.camera.session.CameraSession;
 import com.cfox.camera.log.EsLog;
-import com.cfox.camera.utils.EsParams;
+import com.cfox.camera.EsParams;
 
 import io.reactivex.ObservableEmitter;
 

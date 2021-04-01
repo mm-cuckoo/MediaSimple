@@ -8,12 +8,12 @@ import android.util.Size;
 
 import com.cfox.camera.EsCamera;
 import com.cfox.camera.EsCameraManager;
+import com.cfox.camera.request.FlashState;
 import com.cfox.camera.request.PreviewRequest;
 import com.cfox.camera.capture.Capture;
 import com.cfox.camera.capture.PhotoCapture;
 import com.cfox.camera.capture.PreviewStateListener;
 import com.cfox.camera.request.RepeatRequest;
-import com.cfox.camera.utils.EsParams;
 import com.cfox.module_camera.reader.CaptureImageReader;
 
 class EsyCameraController {
@@ -62,32 +62,32 @@ class EsyCameraController {
         return PreviewRequest.createBuilder()
                 .setPreviewSize(previewSize)
                 .setPictureSize(picSize, ImageFormat.JPEG)
-                .setFlash(EsParams.Value.FLASH_STATE.OFF)
+                .setFlash(FlashState.OFF)
 //                .addImageReaderProvider(new PreviewImageReader())
                 .addImageReaderProvider(new CaptureImageReader());
     }
 
     void torchFlash() {
         RepeatRequest.Builder builder = RepeatRequest.createBuilder();
-        builder.setFlash(EsParams.Value.FLASH_STATE.TORCH);
+//        builder.setFlash(EsParams.Value.FLASH_STATE.TORCH);
         mCameraCapture.onCameraRepeating(builder.builder());
     }
 
     void autoFlash() {
         RepeatRequest.Builder builder = RepeatRequest.createBuilder();
-        builder.setFlash(EsParams.Value.FLASH_STATE.AUTO);
+        builder.setFlash(FlashState.AUTO);
         mCameraCapture.onCameraRepeating(builder.builder());
     }
 
     void onFlash() {
         RepeatRequest.Builder builder = RepeatRequest.createBuilder();
-        builder.setFlash(EsParams.Value.FLASH_STATE.ON);
+        builder.setFlash(FlashState.ON);
         mCameraCapture.onCameraRepeating(builder.builder());
     }
 
     void closeFlash() {
         RepeatRequest.Builder builder = RepeatRequest.createBuilder();
-        builder.setFlash(EsParams.Value.FLASH_STATE.OFF);
+        builder.setFlash(FlashState.OFF);
         mCameraCapture.onCameraRepeating(builder.builder());
     }
 
@@ -99,6 +99,12 @@ class EsyCameraController {
     void setFocus(float touchX, float touchY) {
         RepeatRequest.Builder builder = RepeatRequest.createBuilder();
         builder.setAfTouchXY(touchX, touchY);
+        mCameraCapture.onCameraRepeating(builder.builder());
+    }
+
+    public void resetFocus() {
+        RepeatRequest.Builder builder = RepeatRequest.createBuilder();
+        builder.resetFocus();
         mCameraCapture.onCameraRepeating(builder.builder());
     }
 
@@ -118,4 +124,6 @@ class EsyCameraController {
     Range<Integer> getEvRange() {
         return mCameraCapture.getEvRange();
     }
+
+
 }

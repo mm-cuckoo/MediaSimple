@@ -23,6 +23,10 @@ public class SurfaceProviderImpl implements SurfaceProvider {
         if (mSurface == null) {
             mSurface = new Surface(mTextureView.getSurfaceTexture());
         }
+
+        if (!mSurface.isValid()) {
+            EsLog.e("==>mSurface isValid false ");
+        }
         return mSurface;
     }
 

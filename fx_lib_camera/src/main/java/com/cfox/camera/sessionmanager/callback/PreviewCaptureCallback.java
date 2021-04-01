@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 import com.cfox.camera.camera.session.CameraSession;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.utils.CameraObserver;
-import com.cfox.camera.utils.EsParams;
+import com.cfox.camera.EsParams;
 
 import io.reactivex.ObservableEmitter;
 
@@ -25,6 +25,7 @@ public class PreviewCaptureCallback extends CameraCaptureSession.CaptureCallback
 
     private int mState = 0;
     private int mAFState = -1;
+    private int mFlashState = -1;
     private boolean mFirstFrameCompleted = false;
     private CaptureRequest.Builder mPreviewBuilder;
     private CameraSession mCameraSession;
@@ -51,6 +52,7 @@ public class PreviewCaptureCallback extends CameraCaptureSession.CaptureCallback
                                     @NonNull CaptureRequest request,
                                     @NonNull CaptureResult partialResult) {
         updateAFState(partialResult);
+        updateFlashState(partialResult);
         processPreCapture(partialResult);
     }
 
@@ -69,6 +71,7 @@ public class PreviewCaptureCallback extends CameraCaptureSession.CaptureCallback
         }
 
         updateAFState(result);
+        updateFlashState(result);
         processPreCapture(result);
     }
 
@@ -136,7 +139,16 @@ public class PreviewCaptureCallback extends CameraCaptureSession.CaptureCallback
             esParams.put(EsParams.Key.AF_STATE, afState);
             mEmitter.onNext(esParams);
         }
+    }
 
+    private void updateFlashState(CaptureResult captureResult) {
+        Integer flashState = captureResult.get(CaptureResult.FLASH_MODE);
+        if (flashState != null && flashState != mFlashState) {
+            mFlashState = flashState;
+            EsParams esParams = new EsParams();
+            esParams.put(EsParams.Key.FLASH_STATE, flashState);
+            mEmitter.onNext(esParams);
+        }
     }
 
     public void capture() {

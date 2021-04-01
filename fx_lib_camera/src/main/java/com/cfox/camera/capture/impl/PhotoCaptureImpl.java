@@ -1,7 +1,6 @@
 package com.cfox.camera.capture.impl;
 
 
-import android.hardware.camera2.CaptureResult;
 import android.util.Pair;
 import android.util.Range;
 import android.util.Size;
@@ -22,7 +21,7 @@ import com.cfox.camera.capture.business.impl.PhotoBusinessImpl;
 import com.cfox.camera.request.RepeatRequest;
 import com.cfox.camera.surface.SurfaceManager;
 import com.cfox.camera.utils.CameraObserver;
-import com.cfox.camera.utils.EsParams;
+import com.cfox.camera.EsParams;
 
 import io.reactivex.annotations.NonNull;
 
@@ -39,7 +38,7 @@ public class PhotoCaptureImpl implements PhotoCapture {
     }
 
     @Override
-    public void onStartPreview(@NonNull PreviewRequest request, final PreviewStateListener listener) {
+    public final void onStartPreview(@NonNull PreviewRequest request, final PreviewStateListener listener) {
         SurfaceManager surfaceManager = new SurfaceManager(request.getSurfaceProvider());
         final EsParams esParams = new EsParams();
         esParams.put(EsParams.Key.SURFACE_MANAGER, surfaceManager);
@@ -71,36 +70,14 @@ public class PhotoCaptureImpl implements PhotoCapture {
                 EsLog.d("onNext: .requestPreview...." + resultParams);
                 Integer afState = resultParams.get(EsParams.Key.AF_STATE);
                 if (afState != null && listener != null) {
-                    updateAFState(afState, listener);
+                    listener.onFocusStateChange(afState);
                 }
             }
         });
     }
 
-    private void updateAFState(int state, PreviewStateListener listener) {
-        switch (state) {
-            case CaptureResult.CONTROL_AF_STATE_ACTIVE_SCAN:
-                listener.startFocus();
-                break;
-            case CaptureResult.CONTROL_AF_STATE_PASSIVE_FOCUSED:
-            case CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED:
-                listener.focusSuccess();
-                break;
-            case CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED:
-            case CaptureResult.CONTROL_AF_STATE_PASSIVE_UNFOCUSED:
-                listener.focusFailed();
-                break;
-            case CaptureResult.CONTROL_AF_STATE_PASSIVE_SCAN:
-                listener.autoFocus();
-                break;
-            case CaptureResult.CONTROL_AF_STATE_INACTIVE:
-                listener.hideFocus();
-                break;
-        }
-    }
-
     @Override
-    public void onCameraRepeating(@NonNull RepeatRequest request) {
+    public final void onCameraRepeating(@NonNull RepeatRequest request) {
         EsParams esParams = new EsParams();
         Float zoomSize = request.getZoomSize();
         if (zoomSize != null) {
@@ -122,29 +99,31 @@ public class PhotoCaptureImpl implements PhotoCapture {
             esParams.put(EsParams.Key.AF_TRIGGER, afTouchXy);
         }
 
+        esParams.put(EsParams.Key.RESET_FOCUS, request.isResetFocus());
+
         EsLog.d("CameraRepeating==>" + esParams);
 
         mPhotoMode.requestCameraRepeating(esParams).subscribe(new CameraObserver<EsParams>());
     }
 
     @Override
-    public void onStop() {
+    public final void onStop() {
         EsParams esParams = new EsParams();
         mPhotoMode.requestStop(esParams).subscribe(new CameraObserver<EsParams>());
     }
 
     @Override
-    public Range<Integer> getEvRange() {
+    public final Range<Integer> getEvRange() {
         return mCameraInfoManager.getEvRange();
     }
 
     @Override
-    public Range<Float> getFocusRange() {
+    public final Range<Float> getFocusRange() {
         return mCameraInfoManager.getFocusRange();
     }
 
     @Override
-    public void onCapture(final CaptureStateListener listener) {
+    public final void onCapture(final CaptureStateListener listener) {
         EsParams esParams = new EsParams();
         int sensorOrientation = mCameraInfoManager.getSensorOrientation();
         int picOrientation = mBusiness.getPictureOrientation(sensorOrientation);

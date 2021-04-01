@@ -2,7 +2,7 @@ package com.cfox.camera.sessionmanager;
 
 import android.hardware.camera2.CameraAccessException;
 
-import com.cfox.camera.utils.EsParams;
+import com.cfox.camera.EsParams;
 
 import io.reactivex.Observable;
 

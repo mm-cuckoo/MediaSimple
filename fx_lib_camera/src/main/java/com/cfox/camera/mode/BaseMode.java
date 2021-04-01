@@ -3,7 +3,7 @@ package com.cfox.camera.mode;
 
 import com.cfox.camera.sessionmanager.SessionManager;
 import com.cfox.camera.log.EsLog;
-import com.cfox.camera.utils.EsParams;
+import com.cfox.camera.EsParams;
 import com.cfox.camera.utils.WorkerHandlerManager;
 
 import io.reactivex.Observable;
@@ -30,7 +30,7 @@ public abstract class BaseMode implements IMode {
             @Override
             public ObservableSource<EsParams> apply(@NonNull EsParams esParams) {
                 EsLog.d("open camera request ===>params:" + esParams);
-                // open camera requst
+                // open camera request
                 return mSessionManager.onOpenCamera(esParams);
             }
         }).flatMap(new Function<EsParams, ObservableSource<EsParams>>() {

@@ -9,7 +9,7 @@ import com.cfox.camera.camera.session.CameraSession;
 import com.cfox.camera.sessionmanager.SessionManager;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.surface.SurfaceManager;
-import com.cfox.camera.utils.EsParams;
+import com.cfox.camera.EsParams;
 
 import java.util.List;
 

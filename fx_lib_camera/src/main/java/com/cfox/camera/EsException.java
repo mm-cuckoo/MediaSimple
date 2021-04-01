@@ -1,7 +1,5 @@
 package com.cfox.camera;
 
-import com.cfox.camera.utils.EsParams;
-
 public class EsException extends Exception {
     public final int errorCode;
     public final EsParams esParams;

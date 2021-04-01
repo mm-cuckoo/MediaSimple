@@ -6,7 +6,7 @@ import com.cfox.camera.camera.session.CameraSession;
 import com.cfox.camera.camera.session.CameraSessionManager;
 import com.cfox.camera.sessionmanager.VideoSessionManger;
 import com.cfox.camera.utils.CameraObserver;
-import com.cfox.camera.utils.EsParams;
+import com.cfox.camera.EsParams;
 
 import io.reactivex.Observable;
 

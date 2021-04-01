@@ -12,7 +12,7 @@ import com.cfox.camera.camera.device.EsCameraDevice;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.surface.SurfaceManager;
 import com.cfox.camera.utils.EsError;
-import com.cfox.camera.utils.EsParams;
+import com.cfox.camera.EsParams;
 import com.cfox.camera.utils.WorkerHandlerManager;
 
 import io.reactivex.Observable;

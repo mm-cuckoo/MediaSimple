@@ -1,5 +1,6 @@
 package com.cfox.module_camera;
 
+import android.hardware.camera2.CaptureResult;
 import android.os.Bundle;
 import android.util.Pair;
 import android.view.LayoutInflater;
@@ -16,6 +17,8 @@ import androidx.annotation.Nullable;
 import com.alibaba.android.arouter.facade.annotation.Route;
 import com.cfox.camera.capture.PreviewStateListener;
 import com.cfox.camera.log.EsLog;
+import com.cfox.camera.utils.OrientationFilter;
+import com.cfox.camera.utils.OrientationSensorManager;
 import com.cfox.lib_common.arouter.RouterPath;
 import com.cfox.lib_common.base.BaseFragment;
 
@@ -27,11 +30,15 @@ public class CameraMainFragment extends BaseFragment implements PreviewStateList
     private SurfaceProviderImpl mSurfaceHelperImpl;
     private EsyCameraController mCameraController;
     private FocusView mFocusView;
+    private OrientationFilter mOrientationFilter;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mCameraController = new EsyCameraController(getActivity());
+        OrientationSensorManager manager =  OrientationSensorManager.getInstance();
+        manager.init(getActivity());
+        mOrientationFilter = new OrientationFilter(manager);
     }
 
     @Nullable
@@ -159,8 +166,15 @@ public class CameraMainFragment extends BaseFragment implements PreviewStateList
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_UP) {
+                    mOrientationFilter.setOnceListener(new OrientationFilter.OrientationChangeListener() {
+                        @Override
+                        public void onChanged() {
+                            mCameraController.resetFocus();
+                        }
+                    });
                     mCameraController.setFocus(event.getX(), event.getY());
                     mFocusView.moveToPosition(event.getX(), event.getY());
+
                 }
                 return true;
             }
@@ -171,6 +185,7 @@ public class CameraMainFragment extends BaseFragment implements PreviewStateList
     @Override
     public void onResume() {
         super.onResume();
+        mOrientationFilter.onResume();
         mSurfaceHelperImpl = new SurfaceProviderImpl(mPreviewView);
         EsLog.d("onResume: .......");
         mCameraController.backCamera(mSurfaceHelperImpl, this);
@@ -179,6 +194,7 @@ public class CameraMainFragment extends BaseFragment implements PreviewStateList
     @Override
     public void onPause() {
         super.onPause();
+        mOrientationFilter.onPause();
         EsLog.d("onPause: ........");
         if (mCameraController == null) return;
         mCameraController.stopCamera();
@@ -189,27 +205,46 @@ public class CameraMainFragment extends BaseFragment implements PreviewStateList
     }
 
     @Override
-    public void startFocus() {
-        mFocusView.startFocus();
+    public void onFocusStateChange(int state) {
+        switch (state) {
+            case CaptureResult.CONTROL_AF_STATE_ACTIVE_SCAN:
+            mFocusView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mFocusView.startFocus();
+                    }
+                });
+                break;
+            case CaptureResult.CONTROL_AF_STATE_PASSIVE_FOCUSED:
+            case CaptureResult.CONTROL_AF_STATE_FOCUSED_LOCKED:
+                mFocusView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mFocusView.focusSuccess();
+                    }
+                });
+                break;
+            case CaptureResult.CONTROL_AF_STATE_NOT_FOCUSED_LOCKED:
+            case CaptureResult.CONTROL_AF_STATE_PASSIVE_UNFOCUSED:
+                mFocusView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mFocusView.focusFailed();
+                    }
+                });
+                break;
+            case CaptureResult.CONTROL_AF_STATE_PASSIVE_SCAN:
+//                listener.autoFocus();
+                break;
+            case CaptureResult.CONTROL_AF_STATE_INACTIVE:
+                mFocusView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mFocusView.hideFocusView();
+                    }
+                });
+                break;
+        }
     }
 
-    @Override
-    public void focusSuccess() {
-        mFocusView.focusSuccess();
-    }
-
-    @Override
-    public void focusFailed() {
-        mFocusView.focusFailed();
-    }
-
-    @Override
-    public void autoFocus() {
-
-    }
-
-    @Override
-    public void hideFocus() {
-        mFocusView.hideFocusView();
-    }
 }

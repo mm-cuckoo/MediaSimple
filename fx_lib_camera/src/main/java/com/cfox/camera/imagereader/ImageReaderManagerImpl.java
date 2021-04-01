@@ -4,7 +4,7 @@ import android.media.ImageReader;
 import android.os.Handler;
 import android.util.Size;
 
-import com.cfox.camera.utils.EsParams;
+import com.cfox.camera.EsParams;
 import com.cfox.camera.utils.WorkerHandlerManager;
 
 import java.util.ArrayList;

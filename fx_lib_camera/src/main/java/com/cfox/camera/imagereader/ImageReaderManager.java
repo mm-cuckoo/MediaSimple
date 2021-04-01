@@ -2,7 +2,8 @@ package com.cfox.camera.imagereader;
 
 import android.media.ImageReader;
 
-import com.cfox.camera.utils.EsParams;
+import com.cfox.camera.EsParams;
+
 
 public interface ImageReaderManager {
 

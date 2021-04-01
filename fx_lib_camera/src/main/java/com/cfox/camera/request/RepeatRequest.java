@@ -8,11 +8,14 @@ public class RepeatRequest {
     private final Float mZoomSize;
     private final Integer mFlashState;
     private final Pair<Float, Float> mAfTouchXY;
+    private final boolean mIsResetFocus;
+
     public RepeatRequest(Builder builder) {
         mEv = builder.mEv;
         mZoomSize = builder.mZoomSize;
         mFlashState = builder.mFlashState;
         mAfTouchXY = builder.mAfTouchXY;
+        mIsResetFocus = builder.mIsResetFocus;
     }
 
     public Float getZoomSize() {
@@ -31,6 +34,10 @@ public class RepeatRequest {
         return mAfTouchXY;
     }
 
+    public boolean isResetFocus() {
+        return mIsResetFocus;
+    }
+
     public static Builder createBuilder() {
         return new Builder();
     }
@@ -40,10 +47,10 @@ public class RepeatRequest {
         private Integer mEv;
         private Float mZoomSize;
         private Pair<Float, Float> mAfTouchXY;
+        private boolean mIsResetFocus = false;
 
-
-        public Builder setFlash(int flashState){
-            mFlashState = flashState;
+        public Builder setFlash(FlashState flashState){
+            mFlashState = flashState.getState();
             return this;
         }
 
@@ -58,6 +65,11 @@ public class RepeatRequest {
         }
         public Builder setAfTouchXY(float x, float y) {
             mAfTouchXY = new Pair<>(x, y);
+            return this;
+        }
+
+        public Builder resetFocus() {
+            mIsResetFocus = true;
             return this;
         }
 

@@ -6,7 +6,6 @@ import androidx.annotation.NonNull;
 
 import com.cfox.camera.request.PreviewRequest;
 import com.cfox.camera.request.RepeatRequest;
-import com.cfox.camera.utils.EsParams;
 
 public interface Capture {
 

@@ -1,4 +1,4 @@
-package com.cfox.camera.utils;
+package com.cfox.camera;
 
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
@@ -6,7 +6,6 @@ import android.hardware.camera2.CaptureRequest;
 import android.util.Pair;
 import android.util.Size;
 
-import com.cfox.camera.BuildConfig;
 import com.cfox.camera.imagereader.ImageReaderProvider;
 import com.cfox.camera.surface.SurfaceManager;
 
@@ -59,7 +58,7 @@ public class EsParams {
         }
 
         interface FLASH_STATE {
-            int TORCH       = 1;
+//            int TORCH       = 1;
             int OFF         = 2;
             int AUTO        = 3;
             int ON          = 4;
@@ -98,6 +97,7 @@ public class EsParams {
         public static final EsParams.Key<Integer> FLASH_STATE = new EsParams.Key<>("camera_flash_value");
         public static final EsParams.Key<Integer> EV_SIZE = new EsParams.Key<>("ev_size");
         public static final EsParams.Key<Pair<Float, Float>> AF_TRIGGER = new EsParams.Key<>("af_trigger");// Pair<X, Y>
+        public static final EsParams.Key<Boolean> RESET_FOCUS = new EsParams.Key<>("reset_focus");
 
         public final String NAME;
         public Key(String name) {

@@ -5,7 +5,7 @@ import android.content.Context;
 import com.cfox.camera.camera.device.EsCameraDeviceImpl;
 import com.cfox.camera.log.EsLog;
 import com.cfox.camera.utils.CameraObserver;
-import com.cfox.camera.utils.EsParams;
+import com.cfox.camera.EsParams;
 
 import java.util.ArrayList;
 import java.util.HashMap;
